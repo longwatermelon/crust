@@ -45,9 +45,9 @@ char *util_int_to_str(int i)
     if (i == 0)
         len = 1;
     else
-        len = (int)((ceil(log10(i)) + 1) * sizeof(char) + 1);
+        len = (int)((ceil(log10(i)) + 1) * sizeof(char));
 
-    char *str = malloc(sizeof(char) * len);
+    char *str = malloc(sizeof(char) * (len + 1));
     sprintf(str, "%d", i);
     return str;
 }

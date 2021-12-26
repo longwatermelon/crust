@@ -140,7 +140,7 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, lc, node->string_value);
 
-    as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s)));
+    as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s) + 1));
     strcat(as->data, s);
 
     size_t id_len = strlen(".LC") + strlen(lc);
@@ -166,7 +166,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     sprintf(s, template, node->function_call_name);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s)));
+    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
     strcat(as->root, s);
     free(s);
 }

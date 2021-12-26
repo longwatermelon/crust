@@ -59,6 +59,9 @@ void node_free(struct Node *node)
     if (node->variable_def_value)
         node_free(node->variable_def_value);
 
+    if (node->string_asm_id)
+        free(node->string_asm_id);
+
     free(node);
 }
 
