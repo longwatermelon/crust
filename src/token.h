@@ -13,6 +13,9 @@ struct Token
         TOKEN_RBRACE,
         TOKEN_SEMI,
         TOKEN_INT,
+        TOKEN_EQUALS,
+        TOKEN_COMMA,
+        TOKEN_COLON,
         TOKEN_EOF
     } type;
 

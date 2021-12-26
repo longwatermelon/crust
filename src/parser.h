@@ -28,5 +28,12 @@ struct Node *parser_parse_id(struct Parser *parser);
 struct Node *parser_parse_function_def(struct Parser *parser);
 struct Node *parser_parse_return(struct Parser *parser);
 
+struct Node *parser_parse_variable_def(struct Parser *parser);
+struct Node *parser_parse_variable(struct Parser *parser);
+
+struct Node *parser_parse_function_call(struct Parser *parser);
+
+int type_from_id(const char *id);
+
 #endif
 

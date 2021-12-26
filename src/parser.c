@@ -90,11 +90,10 @@ struct Node *parser_parse_id(struct Parser *parser)
         return parser_parse_function_def(parser);
     else if (strcmp(parser->curr_tok->value, "return") == 0)
         return parser_parse_return(parser);
+    else if (strcmp(parser->curr_tok->value, "let") == 0)
+        return parser_parse_variable_def(parser);
     else
-    {
-        fprintf(stderr, "Unrecognized identifier '%s'\n", parser->curr_tok->value);
-        exit(EXIT_FAILURE);
-    }
+        return parser_parse_variable(parser);
 }
 
 
@@ -111,9 +110,9 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     parser_eat(parser, TOKEN_ARROW);
 
-    if (strcmp(parser->curr_tok->value, "int") == 0)
-        node->function_def_return_type = NODE_INT;
-    else
+    node->function_def_return_type = type_from_id(parser->curr_tok->value);
+
+    if (node->function_def_return_type == -1)
     {
         fprintf(stderr, "Unrecognized return type '%s'\n", parser->curr_tok->value);
         exit(EXIT_FAILURE);
@@ -137,5 +136,85 @@ struct Node *parser_parse_return(struct Parser *parser)
 
     node->return_value = parser_parse_expr(parser);
     return node;
+}
+
+
+struct Node *parser_parse_variable_def(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_VARIABLE_DEF);
+    parser_eat(parser, TOKEN_ID);
+
+    char *name = parser->curr_tok->value;
+    parser_eat(parser, TOKEN_ID);
+
+    parser_eat(parser, TOKEN_COLON);
+    node->variable_def_type = type_from_id(parser->curr_tok->value);
+
+    if (node->variable_def_type == -1)
+    {
+        fprintf(stderr, "Unrecognized type annotation '%s'\n", parser->curr_tok->value);
+        exit(EXIT_FAILURE);
+    }
+
+    parser_eat(parser, TOKEN_ID);
+
+    parser_eat(parser, TOKEN_EQUALS);
+
+    node->variable_def_name = name;
+    node->variable_def_value = parser_parse_expr(parser);
+
+    return node;
+}
+
+
+struct Node *parser_parse_variable(struct Parser *parser)
+{
+    char *variable_name = parser->curr_tok->value;
+    parser_eat(parser, TOKEN_ID);
+
+    if (parser->curr_tok->type == TOKEN_LPAREN)
+        return parser_parse_function_call(parser);
+
+    struct Node *node = node_alloc(NODE_VARIABLE);
+    node->variable_name = variable_name;
+
+    return node;
+}
+
+
+struct Node *parser_parse_function_call(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_FUNCTION_CALL);
+    node->function_call_name = parser->tokens[parser->curr_idx - 1]->value;
+
+    parser_eat(parser, TOKEN_LPAREN);
+    struct Node *expr = parser_parse_expr(parser);
+
+    node->function_call_args = realloc(node->function_call_args,
+                            sizeof(struct Node*) * ++node->function_call_args_size);
+    node->function_call_args[node->function_call_args_size - 1] = expr;
+
+    while (parser->curr_tok->type == TOKEN_COMMA)
+    {
+        parser_eat(parser, TOKEN_COMMA);
+        expr = parser_parse_expr(parser);
+
+        node->function_call_args = realloc(node->function_call_args,
+                                sizeof(struct Node*) * ++node->function_call_args_size);
+
+        node->function_call_args[node->function_call_args_size - 1] = expr;
+    }
+
+    parser_eat(parser, TOKEN_RPAREN);
+    return node;
+}
+
+
+int type_from_id(const char *id)
+{
+    if (strcmp(id, "int") == 0)
+        return NODE_INT;
+
+    return -1;
 }
 

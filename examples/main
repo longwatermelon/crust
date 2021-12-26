@@ -1,3 +1,5 @@
 fn main() -> int {
-    return 42;
+    let x: int = 69;
+    pront(x);
+    return 0;
 };

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 
 char *util_read_file(const char *fp)
@@ -34,5 +35,20 @@ char *util_read_file(const char *fp)
     fclose(file);
 
     return contents;
+}
+
+
+char *util_int_to_str(int i)
+{
+    int len;
+
+    if (i == 0)
+        len = 1;
+    else
+        len = (int)((ceil(log10(i)) + 1) * sizeof(char) + 1);
+
+    char *str = malloc(sizeof(char) * len);
+    sprintf(str, "%d", i);
+    return str;
 }
 

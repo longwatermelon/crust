@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "asm.h"
+#include "scope.h"
 #include "util.h"
 
 
@@ -25,7 +26,9 @@ void ham_compile(const char *fp)
     struct Parser *parser = parser_alloc(tokens, ntokens);
     struct Node *root = parser_parse(parser);
 
-    char *s = asm_gen_root(root);
+    struct Asm *as = asm_alloc();
+    char *s = asm_gen_root(as, root);
+    asm_free(as);
 
     FILE *out = fopen("a.s", "w");
     fprintf(out, "%s\n", s);

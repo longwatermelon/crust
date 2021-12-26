@@ -2,12 +2,31 @@
 #define ASM_H
 
 #include "node.h"
+#include "scope.h"
 
-char *asm_gen_root(struct Node *node);
-char *asm_gen(struct Node *node);
+struct Asm
+{
+    char *data;
+    char *root;
 
-char *asm_gen_function_def(struct Node *node);
-char *asm_gen_return(struct Node *node);
+    struct Scope *scope;
+};
+
+struct Asm *asm_alloc();
+void asm_free(struct Asm *as);
+
+char *asm_gen_root(struct Asm *as, struct Node *node);
+void asm_gen(struct Asm *as, struct Node *node);
+
+void asm_gen_function_def(struct Asm *as, struct Node *node);
+void asm_gen_return(struct Asm *as, struct Node *node);
+
+void asm_gen_variable_def(struct Asm *as, struct Node *node);
+void asm_gen_variable(struct Asm *as, struct Node *node);
+
+void asm_gen_function_call(struct Asm *as, struct Node *node);
+
+void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 
 #endif
 
