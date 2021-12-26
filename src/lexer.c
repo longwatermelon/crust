@@ -17,6 +17,7 @@ struct Lexer *lexer_alloc(char *contents)
 
 void lexer_free(struct Lexer *lexer)
 {
+    free(lexer->contents);
     free(lexer);
 }
 
