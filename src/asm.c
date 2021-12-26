@@ -126,27 +126,31 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
     // Only store data if string, other data types can be directly accessed
     if (node->variable_def_type == NODE_STRING)
-    {
-        const char *template = ".LC%s: .string \"%s\"\n";
+        asm_gen_store_string(as, node->variable_def_value);
+}
 
-        char *lc = util_int_to_str(as->lc);
-        size_t len = strlen(template) + strlen(node->variable_def_value->string_value) + strlen(lc);
-        char *s = calloc(len + 1, sizeof(char));
-        sprintf(s, template, lc, node->variable_def_value->string_value);
 
-        as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s)));
-        strcat(as->data, s);
+void asm_gen_store_string(struct Asm *as, struct Node *node)
+{
+    const char *template = ".LC%s: .string \"%s\"\n";
 
-        free(s);
-        free(lc);
+    char *lc = util_int_to_str(as->lc);
+    size_t len = strlen(template) + strlen(node->string_value) + strlen(lc);
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, template, lc, node->string_value);
 
-        size_t id_len = strlen(".LC") + strlen(lc);
-        node->variable_def_value->string_asm_id = malloc(sizeof(char) * (id_len + 1));
-        sprintf(node->variable_def_value->string_asm_id, ".LC%lu", as->lc);
-        node->variable_def_value->string_asm_id[id_len] = '\0';
+    as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s)));
+    strcat(as->data, s);
 
-        ++as->lc;
-    }
+    size_t id_len = strlen(".LC") + strlen(lc);
+    node->string_asm_id = malloc(sizeof(char) * (id_len + 1));
+    sprintf(node->string_asm_id, ".LC%lu", as->lc);
+    node->string_asm_id[id_len] = '\0';
+
+    free(s);
+    free(lc);
+
+    ++as->lc;
 }
 
 
@@ -171,11 +175,20 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 
     for (size_t i = 0; i < node->function_call_args_size; ++i)
     {
-        struct Node *value = scope_find_variable(as->scope, node->function_call_args[i]->variable_name)->variable_def_value;
+        struct Node *arg = node->function_call_args[i];
+        struct Node *value = 0;
 
-        if (value->type != NODE_STRING)
+        if (arg->type == NODE_VARIABLE)
+            value = scope_find_variable(as->scope, arg->variable_name)->variable_def_value;
+        else if (arg->type == NODE_STRING)
         {
-            fprintf(stderr, "Unable to print data of type %d\n", value->type);
+            value = arg;
+            asm_gen_store_string(as, value);
+        }
+
+        if (!value)
+        {
+            fprintf(stderr, "Unable to print data of type %d\n", arg->type);
             exit(EXIT_FAILURE);
         }
 

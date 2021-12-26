@@ -1,5 +1,5 @@
 fn main() -> int {
     let x: str = "sample text\n";
-    pront(x, x);
+    pront(x, x, "lmfoo\n");
     return 0;
 };
