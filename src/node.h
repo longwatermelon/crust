@@ -9,6 +9,7 @@ struct Node
     {
         NODE_COMPOUND,
         NODE_INT,
+        NODE_STRING,
         NODE_FUNCTION_DEF,
         NODE_RETURN,
         NODE_VARIABLE_DEF,
@@ -22,6 +23,10 @@ struct Node
 
     // Int
     int int_value;
+
+    // String
+    char *string_value;
+    char *string_asm_id;
 
     // Function def
     char *function_def_name;

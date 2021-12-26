@@ -14,6 +14,9 @@ struct Node *node_alloc(int type)
 
     node->int_value = 0;
 
+    node->string_value = 0;
+    node->string_asm_id = 0;
+
     node->return_value = 0;
 
     node->variable_def_value = 0;

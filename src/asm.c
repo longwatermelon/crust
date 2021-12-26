@@ -24,6 +24,7 @@ struct Asm *asm_alloc()
     strcpy(as->root, root_template);
 
     as->scope = scope_alloc();
+    as->lc = 0;
 
     return as;
 }
@@ -123,61 +124,28 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
-    // TODO Use appropriate types for int; string representation is only for testing
-    const char *template = "%s: %s \"%s\"\n";
-
-    char *type = 0, *value = 0;
-
-    switch (node->variable_def_type)
+    // Only store data if string, other data types can be directly accessed
+    if (node->variable_def_type == NODE_STRING)
     {
-    case NODE_INT:
-        type = ".string";
-        value = util_int_to_str(node->variable_def_value->int_value);
-        break;
-    default: break;
-    }
+        const char *template = ".LC%s: .string \"%s\"\n";
 
-    if (!type)
-    {
-        fprintf(stderr, "Assigning invalid data of type %d to variable %s\n",
-                        node->variable_def_type, node->variable_def_name);
-        exit(EXIT_FAILURE);
-    }
+        char *lc = util_int_to_str(as->lc);
+        size_t len = strlen(template) + strlen(node->variable_def_value->string_value) + strlen(lc);
+        char *s = calloc(len + 1, sizeof(char));
+        sprintf(s, template, lc, node->variable_def_value->string_value);
 
-    size_t len = strlen(template) + strlen(node->variable_def_name);
-    char *s = calloc(len + 1, sizeof(char));
+        as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s)));
+        strcat(as->data, s);
 
-    sprintf(s, template, node->variable_def_name, type, value);
-    s = realloc(s, sizeof(char) * (strlen(s) + 1));
-
-    as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s) + 1));
-    strcat(as->data, s);
-
-    free(value);
-    free(s);
-}
-
-
-void asm_gen_variable(struct Asm *as, struct Node *node)
-{
-    struct Node *var = scope_find_variable(as->scope, node->variable_name);
-
-    if (!var)
-    {
-        fprintf(stderr, "No variable named '%s' defined\n", node->variable_name);
-        exit(EXIT_FAILURE);
-    }
-
-    switch (var->variable_def_type)
-    {
-    case NODE_INT:
-    {
-        char *s = util_int_to_str(var->variable_def_value->int_value);
-        as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
-        strcat(as->root, s);
         free(s);
-    } break;
-    default: break;
+        free(lc);
+
+        size_t id_len = strlen(".LC") + strlen(lc);
+        node->variable_def_value->string_asm_id = malloc(sizeof(char) * (id_len + 1));
+        sprintf(node->variable_def_value->string_asm_id, ".LC%lu", as->lc);
+        node->variable_def_value->string_asm_id[id_len] = '\0';
+
+        ++as->lc;
     }
 }
 
@@ -203,23 +171,21 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 
     struct Node *var = scope_find_variable(as->scope, node->function_call_args[0]->variable_name);
 
-    int edx_len = 0;
-    switch (var->variable_def_type)
+    if (var->variable_def_type != NODE_STRING)
     {
-    case NODE_INT:
-    {
-        char *tmp = util_int_to_str(var->variable_def_value->int_value);
-        edx_len = strlen(tmp);
-        free(tmp);
-    } break;
-    default: break;
+        fprintf(stderr, "Unable to print data of type %d\n", var->variable_def_type);
+        exit(EXIT_FAILURE);
     }
 
-    size_t len = strlen(template) + strlen(node->function_call_args[0]->variable_name) + edx_len;
+    size_t len = strlen(template) + strlen(var->variable_def_value->string_asm_id)
+                + strlen(var->variable_def_value->string_value);
+
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, edx_len, "%e", node->function_call_args[0]->variable_name, "%e", "%e", "%e");
+    sprintf(s, template, strlen(var->variable_def_value->string_value), "%e",
+                    var->variable_def_value->string_asm_id, "%e", "%e", "%e");
 
     as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
     strcat(as->root, s);
+    free(s);
 }
 

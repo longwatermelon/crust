@@ -68,6 +68,7 @@ struct Node *parser_parse_expr(struct Parser *parser)
     switch (parser->curr_tok->type)
     {
     case TOKEN_INT: return parser_parse_int(parser);
+    case TOKEN_STRING: return parser_parse_str(parser);
     case TOKEN_ID: return parser_parse_id(parser);
     default: return 0;
     }
@@ -80,6 +81,16 @@ struct Node *parser_parse_int(struct Parser *parser)
     node->int_value = atoi(parser->curr_tok->value);
 
     parser_eat(parser, TOKEN_INT);
+    return node;
+}
+
+
+struct Node *parser_parse_str(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_STRING);
+    node->string_value = parser->curr_tok->value;
+
+    parser_eat(parser, TOKEN_STRING);
     return node;
 }
 
@@ -214,6 +225,8 @@ int type_from_id(const char *id)
 {
     if (strcmp(id, "int") == 0)
         return NODE_INT;
+    if (strcmp(id, "str") == 0)
+        return NODE_STRING;
 
     return -1;
 }

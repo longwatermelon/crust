@@ -59,6 +59,23 @@ char *lexer_collect_id(struct Lexer *lexer)
 }
 
 
+char *lexer_collect_str(struct Lexer *lexer)
+{
+    lexer_advance(lexer);
+    size_t start = lexer->index;
+
+    while (lexer->current_c != '"' && lexer->current_c != '\0' && lexer->current_c != '\n')
+        lexer_advance(lexer);
+
+    char *substr = malloc(sizeof(char) * (lexer->index - start + 1));
+    memcpy(substr, &lexer->contents[start], lexer->index - start);
+    substr[lexer->index - start] = '\0';
+
+    lexer_advance(lexer);
+    return substr;
+}
+
+
 struct Token *lexer_get_next_token(struct Lexer *lexer)
 {
     while (lexer->index < strlen(lexer->contents))
@@ -71,6 +88,9 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
 
         if (isalnum(lexer->current_c))
             return token_alloc(TOKEN_ID, lexer_collect_id(lexer));
+
+        if (lexer->current_c == '"')
+            return token_alloc(TOKEN_STRING, lexer_collect_str(lexer));
 
         switch (lexer->current_c)
         {

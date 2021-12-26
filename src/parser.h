@@ -23,6 +23,7 @@ struct Node *parser_parse(struct Parser *parser);
 struct Node *parser_parse_expr(struct Parser *parser);
 
 struct Node *parser_parse_int(struct Parser *parser);
+struct Node *parser_parse_str(struct Parser *parser);
 struct Node *parser_parse_id(struct Parser *parser);
 
 struct Node *parser_parse_function_def(struct Parser *parser);

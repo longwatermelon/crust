@@ -20,6 +20,7 @@ void lexer_advance(struct Lexer *lexer);
 
 char *lexer_collect_int(struct Lexer *lexer);
 char *lexer_collect_id(struct Lexer *lexer);
+char *lexer_collect_str(struct Lexer *lexer);
 
 struct Token *lexer_get_next_token(struct Lexer *lexer);
 
