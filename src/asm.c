@@ -99,6 +99,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
     {
     case NODE_INT:
         ret = util_int_to_str(node->return_value->int_value);
+        break;
     default:
         break;
     }
