@@ -26,6 +26,8 @@ char *asm_gen_root(struct Node *node)
         {
             str = realloc(str, sizeof(char) * (strlen(str) + strlen(new) + 1));
             strcat(str, new);
+
+            free(new);
         }
     }
 
@@ -59,6 +61,7 @@ char *asm_gen_function_def(struct Node *node)
         char *new = asm_gen(node->function_def_body->compound_nodes[i]);
         s = realloc(s, sizeof(char) * (strlen(s) + strlen(new) + 1));
         strcat(s, new);
+        free(new);
     }
 
     return s;
@@ -94,6 +97,7 @@ char *asm_gen_return(struct Node *node)
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, ret, "%e");
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
+    free(ret);
 
     return s;
 }
