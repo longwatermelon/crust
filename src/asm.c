@@ -169,20 +169,20 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
                             "mov $4, %sax\n" // %eax
                             "int $0x80\n";
 
-    struct Node *var = scope_find_variable(as->scope, node->function_call_args[0]->variable_name);
+    struct Node *value = scope_find_variable(as->scope, node->function_call_args[0]->variable_name)->variable_def_value;
 
-    if (var->variable_def_type != NODE_STRING)
+    if (value->type != NODE_STRING)
     {
-        fprintf(stderr, "Unable to print data of type %d\n", var->variable_def_type);
+        fprintf(stderr, "Unable to print data of type %d\n", value->type);
         exit(EXIT_FAILURE);
     }
 
-    size_t len = strlen(template) + strlen(var->variable_def_value->string_asm_id)
-                + strlen(var->variable_def_value->string_value);
+    size_t len = strlen(template) + strlen(value->string_asm_id)
+                + strlen(value->string_value);
 
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, strlen(var->variable_def_value->string_value), "%e",
-                    var->variable_def_value->string_asm_id, "%e", "%e", "%e");
+    sprintf(s, template, strlen(value->string_value), "%e",
+                    value->string_asm_id, "%e", "%e", "%e");
 
     as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
     strcat(as->root, s);
