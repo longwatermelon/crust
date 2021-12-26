@@ -1,2 +1,4 @@
 *.o
 hamcc
+a.out
+a.s

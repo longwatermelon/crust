@@ -195,15 +195,29 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
-    const char *template = "mov $5, %sdx\n" // %edx
+    const char *template = "mov $%d, %sdx\n" // %edx
                             "mov $%s, %scx\n" // %ecx
                             "mov $1, %sbx\n" // %ebx
                             "mov $4, %sax\n" // %eax
                             "int $0x80\n";
 
-    size_t len = strlen(template) + strlen(node->function_call_args[0]->variable_name);
+    struct Node *var = scope_find_variable(as->scope, node->function_call_args[0]->variable_name);
+
+    int edx_len = 0;
+    switch (var->variable_def_type)
+    {
+    case NODE_INT:
+    {
+        char *tmp = util_int_to_str(var->variable_def_value->int_value);
+        edx_len = strlen(tmp);
+        free(tmp);
+    } break;
+    default: break;
+    }
+
+    size_t len = strlen(template) + strlen(node->function_call_args[0]->variable_name) + edx_len;
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, "%e", node->function_call_args[0]->variable_name, "%e", "%e", "%e");
+    sprintf(s, template, edx_len, "%e", node->function_call_args[0]->variable_name, "%e", "%e", "%e");
 
     as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
     strcat(as->root, s);
