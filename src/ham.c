@@ -1,6 +1,7 @@
 #include "ham.h"
 #include "lexer.h"
 #include "parser.h"
+#include "asm.h"
 #include "util.h"
 
 
@@ -23,6 +24,17 @@ void ham_compile(const char *fp)
 
     struct Parser *parser = parser_alloc(tokens, ntokens);
     struct Node *root = parser_parse(parser);
+
+    char *s = asm_gen_root(root);
+
+    FILE *out = fopen("a.s", "w");
+    fprintf(out, "%s\n", s);
+    fclose(out);
+
+    system("as --32 a.s -o a.o");
+    system("ld a.o -o a.out -m elf_i386");
+
+    free(s);
 
     parser_free(parser);
     lexer_free(lexer);
