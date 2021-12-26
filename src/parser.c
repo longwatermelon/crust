@@ -43,7 +43,9 @@ struct Node *parser_parse(struct Parser *parser)
     struct Node *root = node_alloc(NODE_COMPOUND);
     root->compound_nodes = malloc(sizeof(struct Node*));
     root->compound_nodes[0] = parser_parse_expr(parser);
-    ++root->compound_size;
+
+    if (root->compound_nodes[0])
+        ++root->compound_size;
 
     while (parser->curr_idx < parser->ntokens)
     {
@@ -201,9 +203,12 @@ struct Node *parser_parse_function_call(struct Parser *parser)
     parser_eat(parser, TOKEN_LPAREN);
     struct Node *expr = parser_parse_expr(parser);
 
-    node->function_call_args = realloc(node->function_call_args,
-                            sizeof(struct Node*) * ++node->function_call_args_size);
-    node->function_call_args[node->function_call_args_size - 1] = expr;
+    if (expr)
+    {
+        node->function_call_args = realloc(node->function_call_args,
+                                sizeof(struct Node*) * ++node->function_call_args_size);
+        node->function_call_args[node->function_call_args_size - 1] = expr;
+    }
 
     while (parser->curr_tok->type == TOKEN_COMMA)
     {

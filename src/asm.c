@@ -160,9 +160,21 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     if (strcmp(node->function_call_name, "pront") == 0)
         return asm_gen_builtin_print(as, node);
 
+    const char *template = "call %s\n";
+    size_t len = strlen(template) + strlen(node->function_call_name);
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, template, node->function_call_name);
+    s = realloc(s, sizeof(char) * (strlen(s) + 1));
+
+    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s)));
+    strcat(as->root, s);
+    free(s);
+
+    #if 0
     // TODO Call user defined functions
     fprintf(stderr, "Unrecognized function '%s'\n", node->function_call_name);
     exit(EXIT_FAILURE);
+    #endif
 }
 
 
