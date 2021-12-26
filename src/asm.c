@@ -169,12 +169,6 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s)));
     strcat(as->root, s);
     free(s);
-
-    #if 0
-    // TODO Call user defined functions
-    fprintf(stderr, "Unrecognized function '%s'\n", node->function_call_name);
-    exit(EXIT_FAILURE);
-    #endif
 }
 
 
