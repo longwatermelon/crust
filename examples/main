@@ -5,7 +5,7 @@ fn main() -> int {
     return 0;
 };
 
-fn test() -> int {
+fn test() -> str {
     pront("text\n");
-    return 1;
+    return "lool";
 };

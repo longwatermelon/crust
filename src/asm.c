@@ -100,6 +100,11 @@ void asm_gen_return(struct Asm *as, struct Node *node)
     case NODE_INT:
         ret = util_int_to_str(node->return_value->int_value);
         break;
+    case NODE_STRING:
+        asm_gen_store_string(as, node->return_value);
+        ret = malloc(sizeof(char) * (strlen(node->return_value->string_asm_id) + 1));
+        strcpy(ret, node->return_value->string_asm_id);
+        break;
     default:
         break;
     }
