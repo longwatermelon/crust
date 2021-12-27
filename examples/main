@@ -9,6 +9,7 @@ fn main() -> int {
 fn func() -> int {
     let x: str = "stringn\n";
     pront(x);
+    other();
     return 1;
 };
 

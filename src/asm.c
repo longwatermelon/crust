@@ -103,7 +103,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
 void asm_gen_return(struct Asm *as, struct Node *node)
 {
     // %sbx -> temporary hack to get around % being accepted as a format specifier in sprintf
-    const char *template = "movl $%s, %sbx\n"
+    const char *template =  "movl $%s, %sbx\n"
                             "leave\n"
                             "ret\n";
 
@@ -120,13 +120,9 @@ void asm_gen_return(struct Asm *as, struct Node *node)
         strcpy(ret, node->return_value->string_asm_id);
         break;
     default:
-        break;
-    }
-
-    if (!ret)
-    {
         fprintf(stderr, "Returning invalid data of type %d\n", node->return_value->type);
         exit(EXIT_FAILURE);
+        break;
     }
 
     size_t len = strlen(template) + strlen(ret);
@@ -144,7 +140,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
-    // Only create new label if string, other data types can be directly accessed
+    // Creating a new label is only necessary for strings
     if (node->variable_def_type == NODE_STRING)
         asm_gen_store_string(as, node->variable_def_value);
 
