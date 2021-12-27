@@ -140,11 +140,13 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
+    struct Node *literal = asm_eval_node(as, node);
+
     // Creating a new label is only necessary for strings
     if (node->variable_def_type == NODE_STRING)
-        asm_gen_store_string(as, node->variable_def_value);
+        asm_gen_store_string(as, literal);
 
-    asm_gen_add_to_stack(as, node->variable_def_value);
+    asm_gen_add_to_stack(as, literal);
 }
 
 
@@ -185,6 +187,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 
 void asm_gen_store_string(struct Asm *as, struct Node *node)
 {
+    node = asm_eval_node(as, node);
     const char *template = ".LC%s: .string \"%s\"\n";
 
     char *lc = util_int_to_str(as->lc);
@@ -234,18 +237,15 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 
     for (size_t i = 0; i < node->function_call_args_size; ++i)
     {
-        struct Node *arg = node->function_call_args[i];
+        struct Node *arg = asm_eval_node(as, node->function_call_args[i]);
         struct Node *value = 0;
 
-        if (arg->type == NODE_VARIABLE)
-            value = scope_find_variable(as->scope, arg->variable_name)->variable_def_value;
-        else if (arg->type == NODE_STRING)
+        if (arg->type == NODE_STRING)
         {
             value = arg;
             asm_gen_store_string(as, value);
         }
-
-        if (!value)
+        else
         {
             fprintf(stderr, "Unable to print data of type %d\n", arg->type);
             exit(EXIT_FAILURE);
@@ -261,6 +261,22 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
         as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
         strcat(as->root, s);
         free(s);
+    }
+}
+
+
+struct Node *asm_eval_node(struct Asm *as, struct Node *node)
+{
+    switch (node->type)
+    {
+    case NODE_INT:
+    case NODE_STRING:
+        return node;
+    case NODE_VARIABLE:
+        return asm_eval_node(as, scope_find_variable(as->scope, node->variable_name));
+    case NODE_VARIABLE_DEF:
+        return asm_eval_node(as, node->variable_def_value);
+    default: return 0;
     }
 }
 

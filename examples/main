@@ -1,6 +1,7 @@
 fn main() -> int {
     let a: str = "string\n";
-    pront(a);
+    let b: str = a;
+    pront(a, b);
     func();
     func();
     return 0;
