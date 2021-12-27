@@ -1,5 +1,6 @@
 #include "scope.h"
 #include <string.h>
+#include <stdio.h>
 
 
 struct Scope *scope_alloc()
@@ -36,6 +37,7 @@ struct Node *scope_find_variable(struct Scope *scope, char *name)
             return scope->variable_defs[i];
     }
 
-    return 0;
+    fprintf(stderr, "No variable named '%s'\n", name);
+    exit(EXIT_FAILURE);
 }
 

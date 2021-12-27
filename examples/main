@@ -1,12 +1,19 @@
 fn main() -> int {
-    let a: str = "string";
+    let a: str = "string\n";
+    pront(a);
     func();
     func();
     return 0;
 };
 
 fn func() -> int {
-    pront("Lmao\n");
-    let x: str = "string";
+    let x: str = "stringn\n";
+    pront(x);
     return 1;
+};
+
+fn other() -> int {
+    let x: str = "lmfaooo\n";
+    pront(x);
+    return 0;
 };

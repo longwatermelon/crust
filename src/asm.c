@@ -88,11 +88,15 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     free(s);
 
     size_t prev_size = as->stack_size;
+    struct Scope *prev_scope = as->scope;
+    as->scope = scope_alloc();
 
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen(as, node->function_def_body->compound_nodes[i]);
 
+    scope_free(as->scope);
     as->stack_size = prev_size;
+    as->scope = prev_scope;
 }
 
 
