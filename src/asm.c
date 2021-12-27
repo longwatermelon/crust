@@ -14,17 +14,19 @@ struct Asm *asm_alloc()
     as->data = calloc(strlen(data_template) + 1, sizeof(char));
     strcpy(as->data, data_template);
 
-    const char *root_template = ".section .text\n"
-                                ".globl _start\n"
-                                "_start:\n"
-                                "call main\n"
-                                "mov $1, %eax\n"
-                                "int $0x80\n";
-    as->root = calloc(strlen(root_template) + 1, sizeof(char));
-    strcpy(as->root, root_template);
+    const char *begin = ".section .text\n"
+                        ".globl _start\n"
+                        "_start:\n"
+                        "call main\n"
+                        "mov $1, %eax\n"
+                        "int $0x80\n";
+
+    as->root = calloc(strlen(begin) + 1, sizeof(char));
+    strcpy(as->root, begin);
 
     as->scope = scope_alloc();
     as->lc = 0;
+    as->stack_size = 0;
 
     return as;
 }
@@ -44,9 +46,10 @@ char *asm_gen_root(struct Asm *as, struct Node *node)
     for (size_t i = 0; i < node->compound_size; ++i)
         asm_gen(as, node->compound_nodes[i]);
 
-    char *str = malloc(sizeof(char) * (strlen(as->data) + strlen(as->root) + 1));
+    size_t len = strlen(as->data) + strlen(as->root);
+    char *str = calloc(len + 1, sizeof(char));
     sprintf(str, "%s%s", as->data, as->root);
-    str[strlen(as->data) + strlen(as->root)] = '\0';
+    str = realloc(str, sizeof(char) * (strlen(str) + 1));
 
     return str;
 }
@@ -70,12 +73,14 @@ void asm_gen(struct Asm *as, struct Node *node)
 
 void asm_gen_function_def(struct Asm *as, struct Node *node)
 {
-    const char *template = ".globl %s\n"
-                            "%s:\n";
+    const char *template =  ".globl %s\n"
+                            "%s:\n"
+                            "pushl %sbp\n" // %ebp
+                            "movl %ssp, %sbp\n"; // %esp, %ebp
 
     size_t len = strlen(template) + strlen(node->function_def_name) * 2;
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, node->function_def_name, node->function_def_name);
+    sprintf(s, template, node->function_def_name, node->function_def_name, "%e", "%e", "%e");
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
     as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
@@ -90,7 +95,8 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
 void asm_gen_return(struct Asm *as, struct Node *node)
 {
     // %sbx -> temporary hack to get around % being accepted as a format specifier in sprintf
-    const char *template = "mov $%s, %sbx\n"
+    const char *template = "movl $%s, %sbx\n"
+                            "leave\n"
                             "ret\n";
 
     char *ret = 0;
@@ -130,9 +136,46 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
-    // Only store data if string, other data types can be directly accessed
+    // Only create new label if string, other data types can be directly accessed
     if (node->variable_def_type == NODE_STRING)
         asm_gen_store_string(as, node->variable_def_value);
+
+    asm_gen_add_to_stack(as, node->variable_def_value);
+}
+
+
+void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
+{
+    as->stack_size += 4;
+    const char *template =  "subl $4, %ssp\n" // %esp
+                            "movl $%s, -%s(%sbp)\n"; // %ebp
+
+    char *left = 0;
+    char *stack_size_str = util_int_to_str(as->stack_size);
+
+    switch (node->type)
+    {
+    case NODE_INT: left = util_int_to_str(node->int_value); break;
+    case NODE_STRING:
+        left = malloc(sizeof(char) * (strlen(node->string_asm_id) + 1));
+        strcpy(left, node->string_asm_id);
+        break;
+    default:
+        fprintf(stderr, "Can't add data of type %d to stack\n", node->type);
+        exit(EXIT_FAILURE);
+    }
+
+    size_t len = strlen(left) + strlen(stack_size_str) + strlen(template);
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, template, "%e", left, stack_size_str, "%e");
+    s = realloc(s, sizeof(char) * (strlen(s) + 1));
+
+    free(left);
+    free(stack_size_str);
+
+    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
+    strcat(as->root, s);
+    free(s);
 }
 
 
@@ -179,10 +222,10 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
-    const char *template = "mov $%d, %sdx\n" // %edx
-                            "mov $%s, %scx\n" // %ecx
-                            "mov $1, %sbx\n" // %ebx
-                            "mov $4, %sax\n" // %eax
+    const char *template =  "movl $%d, %sdx\n" // %edx
+                            "movl $%s, %scx\n" // %ecx
+                            "movl $1, %sbx\n" // %ebx
+                            "movl $4, %sax\n" // %eax
                             "int $0x80\n";
 
     for (size_t i = 0; i < node->function_call_args_size; ++i)

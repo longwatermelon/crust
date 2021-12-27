@@ -1,11 +1,6 @@
 fn main() -> int {
-    let x: str = "sample text\n";
-    pront(x, x, "lmfoo\n");
-    test();
+    let a: int = 5;
+    let b: str = "string\n";
+    pront(b);
     return 0;
-};
-
-fn test() -> str {
-    pront("text\n");
-    return "lool";
 };

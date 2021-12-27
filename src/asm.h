@@ -12,6 +12,7 @@ struct Asm
     struct Scope *scope;
 
     size_t lc;
+    size_t stack_size;
 };
 
 struct Asm *asm_alloc();
@@ -25,6 +26,7 @@ void asm_gen_return(struct Asm *as, struct Node *node);
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node);
 void asm_gen_store_string(struct Asm *as, struct Node *node);
+void asm_gen_add_to_stack(struct Asm *as, struct Node *node);
 
 void asm_gen_function_call(struct Asm *as, struct Node *node);
 
