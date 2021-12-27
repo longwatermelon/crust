@@ -11,6 +11,8 @@ struct Node *node_alloc(int type)
 
     node->function_def_body = 0;
     node->function_def_name = 0;
+    node->function_def_params = 0;
+    node->function_def_params_size = 0;
 
     node->int_value = 0;
 
@@ -48,6 +50,14 @@ void node_free(struct Node *node)
             node_free(node->function_call_args[i]);
 
         free(node->function_call_args);
+    }
+
+    if (node->function_def_params)
+    {
+        for (size_t i = 0; i < node->function_def_params_size; ++i)
+            node_free(node->function_def_params[i]);
+
+        free(node->function_def_params);
     }
 
     if (node->function_def_body)

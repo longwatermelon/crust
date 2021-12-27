@@ -118,7 +118,31 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     node->function_def_name = parser->curr_tok->value;
     parser_eat(parser, TOKEN_ID); // function name
     parser_eat(parser, TOKEN_LPAREN);
-    // TODO Function params
+
+    if (parser->curr_tok->type != TOKEN_RPAREN)
+    {
+        struct Node *param = node_alloc(NODE_VARIABLE);
+        param->variable_name = parser->curr_tok->value;
+        parser_eat(parser, TOKEN_ID);
+
+        node->function_def_params = realloc(node->function_def_params,
+                    sizeof(struct Node*) * ++node->function_def_params_size);
+        node->function_def_params[node->function_def_params_size - 1] = param;
+
+        while (parser->curr_tok->type != TOKEN_RPAREN)
+        {
+            parser_eat(parser, TOKEN_COMMA);
+
+            param = node_alloc(NODE_VARIABLE);
+            param->variable_name = parser->curr_tok->value;
+            parser_eat(parser, TOKEN_ID);
+
+            node->function_def_params = realloc(node->function_def_params,
+                        sizeof(struct Node*) * ++node->function_def_params_size);
+            node->function_def_params[node->function_def_params_size - 1] = param;
+        }
+    }
+
     parser_eat(parser, TOKEN_RPAREN);
 
     parser_eat(parser, TOKEN_ARROW);

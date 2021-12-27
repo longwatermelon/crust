@@ -33,6 +33,9 @@ struct Node
     struct Node *function_def_body;
     int function_def_return_type;
 
+    struct Node **function_def_params;
+    size_t function_def_params_size;
+
     // Return
     struct Node *return_value;
 

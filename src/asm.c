@@ -58,14 +58,20 @@ char *asm_gen_root(struct Asm *as, struct Node *node)
 void asm_gen(struct Asm *as, struct Node *node)
 {
     if (node->type == NODE_FUNCTION_DEF)
+    {
+        scope_add_function_def(as->scope, node);
         asm_gen_function_def(as, node);
+    }
+
     if (node->type == NODE_RETURN)
         asm_gen_return(as, node);
+
     if (node->type == NODE_VARIABLE_DEF)
     {
         scope_add_variable_def(as->scope, node);
         asm_gen_variable_def(as, node);
     }
+
     if (node->type == NODE_FUNCTION_CALL)
         asm_gen_function_call(as, node);
 }
@@ -88,15 +94,17 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     free(s);
 
     size_t prev_size = as->stack_size;
-    struct Scope *prev_scope = as->scope;
-    as->scope = scope_alloc();
+    struct Node **variable_defs = as->scope->variable_defs;
+    size_t variable_defs_size = as->scope->variable_defs_size;
+    as->scope->variable_defs = 0;
+    as->scope->variable_defs_size = 0;
 
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen(as, node->function_def_body->compound_nodes[i]);
 
-    scope_free(as->scope);
     as->stack_size = prev_size;
-    as->scope = prev_scope;
+    as->scope->variable_defs = variable_defs;
+    as->scope->variable_defs_size = variable_defs_size;
 }
 
 
@@ -214,6 +222,17 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 {
     if (strcmp(node->function_call_name, "pront") == 0)
         return asm_gen_builtin_print(as, node);
+
+    struct Node *func = scope_find_function(as->scope, node->function_call_name);
+
+    if (func->function_def_params_size != node->function_call_args_size)
+    {
+        fprintf(stderr, "Argument number mistmatch; function '%s'"
+                        "has %lu parameters but %lu arguments were provided\n",
+                        func->function_def_name, func->function_def_params_size,
+                        node->function_call_args_size);
+        exit(EXIT_FAILURE);
+    }
 
     const char *template = "call %s\n";
     size_t len = strlen(template) + strlen(node->function_call_name);
