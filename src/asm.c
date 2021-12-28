@@ -353,7 +353,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     else if (var->type == NODE_VARIABLE_DEF)
     {
         const char *tmp = "%d(%%ebp)";
-        char *s = calloc(strlen(tmp) + MAX_INT_LEN, sizeof(char));
+        char *s = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
         sprintf(s, tmp, var->variable_def_stack_offset);
         s = realloc(s, sizeof(char) * (strlen(s) + 1));
         return s;
@@ -370,7 +370,7 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
 {
     const char *tmp = "%d(%%ebp)";
 
-    char *value = calloc(strlen(tmp) + MAX_INT_LEN, sizeof(char));
+    char *value = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
     sprintf(value, tmp, node->param_stack_offset);
     value = realloc(value, sizeof(char) * (strlen(value) + 1));
     return value;
