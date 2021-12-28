@@ -14,7 +14,8 @@ struct Node
         NODE_RETURN,
         NODE_VARIABLE_DEF,
         NODE_VARIABLE,
-        NODE_FUNCTION_CALL
+        NODE_FUNCTION_CALL,
+        NODE_PARAMETER
     } type;
 
     // Compound
@@ -51,6 +52,11 @@ struct Node
     char *function_call_name;
     struct Node **function_call_args;
     size_t function_call_args_size;
+
+    // Parameter
+    char *param_name;
+    int param_type;
+    int param_stack_offset;
 };
 
 struct Node *node_alloc(int type);

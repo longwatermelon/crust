@@ -1,17 +1,12 @@
-fn test() -> int {
-    let x: int = 5;
-    let y: str = "string test\n";
-    let z: str = y;
-    let a: int = x;
-
-    pront(y, z, y, "sample text\n");
-    return 9;
+fn test(a: str, b:str) -> str {
+    pront(a, b);
+    return "string";
 };
 
 fn main() -> int {
-    let x: str = "string\n";
-    pront(x);
-    test();
+    let b: str = "lool\n";
+    let c: str = b;
+    test("test\n", c);
     return 0;
 };
 

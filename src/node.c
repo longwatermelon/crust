@@ -13,6 +13,7 @@ struct Node *node_alloc(int type)
     node->function_def_name = 0;
     node->function_def_params = 0;
     node->function_def_params_size = 0;
+    node->function_def_return_type = 0;
 
     node->int_value = 0;
 
@@ -23,12 +24,17 @@ struct Node *node_alloc(int type)
 
     node->variable_def_value = 0;
     node->variable_def_name = 0;
+    node->variable_def_type = 0;
 
     node->variable_name = 0;
 
     node->function_call_name = 0;
     node->function_call_args = 0;
     node->function_call_args_size = 0;
+
+    node->param_name = 0;
+    node->param_type = 0;
+    node->param_stack_offset = 0;
 
     return node;
 }

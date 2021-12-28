@@ -25,6 +25,7 @@ struct Asm *asm_alloc()
     strcpy(as->root, begin);
 
     as->scope = scope_alloc();
+    // Global scope even though it holds nothing
     scope_push_layer(as->scope);
 
     as->lc = 0;
@@ -97,6 +98,9 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     size_t prev_size = as->stack_size;
     scope_push_layer(as->scope);
 
+    as->scope->curr_layer->params = node->function_def_params;
+    as->scope->curr_layer->nparams = node->function_def_params_size;
+
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
 
@@ -107,7 +111,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
 
 void asm_gen_return(struct Asm *as, struct Node *node)
 {
-    const char *template =  "movl $%s, %%ebx\n"
+    const char *template =  "movl %s, %%ebx\n"
                             "leave\n"
                             "ret\n";
 
@@ -116,13 +120,31 @@ void asm_gen_return(struct Asm *as, struct Node *node)
     switch (node->return_value->type)
     {
     case NODE_INT:
-        ret = util_int_to_str(node->return_value->int_value);
-        break;
+    {
+        char *num = util_int_to_str(node->return_value->int_value);
+        ret = malloc(sizeof(char) * (strlen(num) + 2));
+        ret[0] = '$';
+        strcpy(&ret[1], num);
+        free(num);
+    } break;
     case NODE_STRING:
         asm_gen_store_string(as, node->return_value);
-        ret = malloc(sizeof(char) * (strlen(node->return_value->string_asm_id) + 1));
-        strcpy(ret, node->return_value->string_asm_id);
+        ret = malloc(sizeof(char) * (strlen(node->return_value->string_asm_id) + 2));
+        ret[0] = '$';
+        strcpy(&ret[1], node->return_value->string_asm_id);
         break;
+    case NODE_VARIABLE:
+    {
+        struct Node *var = scope_find_variable(as->scope, node->return_value->variable_name);
+
+        if (var->type == NODE_PARAMETER)
+        {
+            const char *tmp = "%d(%%ebp)";
+            ret = calloc(strlen(tmp) + 12, sizeof(char));
+            sprintf(ret, tmp, var->param_stack_offset);
+            ret = realloc(ret, sizeof(char) * (strlen(ret) + 1));
+        }
+    } break;
     default:
         fprintf(stderr, "Returning invalid data of type %d\n", node->return_value->type);
         exit(EXIT_FAILURE);
@@ -231,6 +253,55 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
         exit(EXIT_FAILURE);
     }
 
+    for (size_t i = 0; i < node->function_call_args_size; ++i)
+    {
+        const char *template = "pushl %s\n";
+        struct Node *arg = asm_eval_node(as, node->function_call_args[i]);
+        char *value;
+
+        // TODO Fix this actual garbage; wrap up into a function
+        switch (arg->type)
+        {
+        case NODE_INT:
+        {
+            char *num = util_int_to_str(arg->int_value);
+            value = malloc(sizeof(char) * (strlen(num) + 2));
+            value[0] = '$';
+            strcpy(&value[1], num);
+            free(num);
+        } break;
+        case NODE_STRING:
+            asm_gen_store_string(as, arg);
+            value = malloc(sizeof(char) * (strlen(arg->string_asm_id) + 2));
+            value[0] = '$';
+            strcpy(&value[1], arg->string_asm_id);
+            break;
+        case NODE_VARIABLE:
+        {
+            struct Node *var = scope_find_variable(as->scope, arg->variable_name);
+
+            if (var->type == NODE_PARAMETER)
+            {
+                const char *tmp = "%d(%%ebp)";
+                value = calloc(strlen(tmp) + 12, sizeof(char));
+                sprintf(value, tmp, var->param_stack_offset);
+                value = realloc(value, sizeof(char) * (strlen(value) + 1));
+            }
+        } break;
+        default:
+            fprintf(stderr, "Invalid data passed as argument of type %d\n", arg->type);
+            exit(EXIT_FAILURE);
+            break;
+        }
+
+        size_t len = strlen(template) + strlen(value);
+        char *s = calloc(len + 1, sizeof(char));
+        sprintf(s, template, value);
+
+        asm_append_str(&as->root, s);
+        free(s);
+    }
+
     const char *template = "call %s\n";
     size_t len = strlen(template) + strlen(node->function_call_name);
     char *s = calloc(len + 1, sizeof(char));
@@ -244,8 +315,9 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
+    // TODO Replace with custom print written in asm
     const char *template =  "movl $%d, %%edx\n"
-                            "movl $%s, %%ecx\n"
+                            "movl %s, %%ecx\n"
                             "movl $1, %%ebx\n"
                             "movl $4, %%eax\n"
                             "int $0x80\n";
@@ -253,12 +325,21 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
     for (size_t i = 0; i < node->function_call_args_size; ++i)
     {
         struct Node *arg = asm_eval_node(as, node->function_call_args[i]);
-        struct Node *value = 0;
+        char *value;
 
         if (arg->type == NODE_STRING)
         {
-            value = arg;
-            asm_gen_store_string(as, value);
+            value = malloc(sizeof(char) * (strlen(arg->string_asm_id) + 2));
+            value[0] = '$';
+            strcpy(&value[1], arg->string_asm_id);
+            asm_gen_store_string(as, arg);
+        }
+        else if (arg->type == NODE_PARAMETER)
+        {
+            const char *tmp = "%d(%%ebp)";
+            value = calloc(strlen(tmp) + 12, sizeof(char));
+            sprintf(value, tmp, arg->param_stack_offset);
+            value = realloc(value, sizeof(char) * (strlen(value) + 1));
         }
         else
         {
@@ -266,11 +347,10 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
             exit(EXIT_FAILURE);
         }
 
-        size_t len = strlen(template) + strlen(value->string_asm_id)
-                    + strlen(value->string_value);
+        size_t len = strlen(template) + strlen(value) + 12;
 
         char *s = calloc(len + 1, sizeof(char));
-        sprintf(s, template, strlen(value->string_value), value->string_asm_id);
+        sprintf(s, template, 5, value);
 
         asm_append_str(&as->root, s);
         free(s);
@@ -289,7 +369,7 @@ struct Node *asm_eval_node(struct Asm *as, struct Node *node)
         return asm_eval_node(as, scope_find_variable(as->scope, node->variable_name));
     case NODE_VARIABLE_DEF:
         return asm_eval_node(as, node->variable_def_value);
-    default: return 0;
+    default: return node;
     }
 }
 

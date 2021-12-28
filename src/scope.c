@@ -40,6 +40,9 @@ struct ScopeLayer *layer_alloc()
     layer->variable_defs = 0;
     layer->variable_defs_size = 0;
 
+    layer->params = 0;
+    layer->nparams = 0;
+
     return layer;
 }
 
@@ -48,6 +51,9 @@ void layer_free(struct ScopeLayer *layer)
 {
     if (layer->variable_defs)
         free(layer->variable_defs);
+
+    // Params are never freed because params is a non owning pointer
+    // pointing to memory owned by a node
 
     free(layer);
 }
@@ -82,6 +88,14 @@ struct Node *scope_find_variable(struct Scope *scope, char *name)
             if (strcmp(var->variable_def_name, name) == 0)
                 return var;
         }
+    }
+
+    for (size_t i = 0; i < scope->curr_layer->nparams; ++i)
+    {
+        struct Node *param = scope->curr_layer->params[i];
+
+        if (strcmp(param->param_name, name) == 0)
+            return param;
     }
 
     fprintf(stderr, "No variable named '%s'\n", name);

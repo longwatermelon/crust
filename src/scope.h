@@ -9,6 +9,9 @@ struct Scope
     {
         struct Node **variable_defs;
         size_t variable_defs_size;
+
+        struct Node **params;
+        size_t nparams;
     } **layers;
     size_t nlayers;
     struct ScopeLayer *curr_layer;
