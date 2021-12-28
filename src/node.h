@@ -15,7 +15,8 @@ struct Node
         NODE_VARIABLE_DEF,
         NODE_VARIABLE,
         NODE_FUNCTION_CALL,
-        NODE_PARAMETER
+        NODE_PARAMETER,
+        NODE_ASSIGNMENT
     } type;
 
     // Compound
@@ -58,6 +59,9 @@ struct Node
     char *param_name;
     int param_type;
     int param_stack_offset;
+
+    // Assignment
+    struct Node *assignment_dst, *assignment_src;
 };
 
 struct Node *node_alloc(int type);

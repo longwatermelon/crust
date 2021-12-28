@@ -1,9 +1,7 @@
-fn test(a: str) -> str {
-    return a;
-};
-
 fn main() -> int {
-    let a: str = test("test\n");
+    let a: str = "test\n";
+    pront(a);
+    a = "str\n";
     pront(a);
     return 0;
 };

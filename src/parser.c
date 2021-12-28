@@ -214,6 +214,8 @@ struct Node *parser_parse_variable(struct Parser *parser)
 
     if (parser->curr_tok->type == TOKEN_LPAREN)
         return parser_parse_function_call(parser);
+    else if (parser->curr_tok->type == TOKEN_EQUALS)
+        return parser_parse_assignment(parser);
 
     struct Node *node = node_alloc(NODE_VARIABLE);
     node->variable_name = variable_name;
@@ -249,6 +251,19 @@ struct Node *parser_parse_function_call(struct Parser *parser)
     }
 
     parser_eat(parser, TOKEN_RPAREN);
+    return node;
+}
+
+
+struct Node *parser_parse_assignment(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_ASSIGNMENT);
+    node->assignment_dst = node_alloc(NODE_VARIABLE);
+    node->assignment_dst->variable_name = parser->tokens[parser->curr_idx - 1]->value;
+    parser_eat(parser, TOKEN_EQUALS);
+
+    node->assignment_src = parser_parse_expr(parser);
+
     return node;
 }
 

@@ -37,6 +37,9 @@ struct Node *node_alloc(int type)
     node->param_type = 0;
     node->param_stack_offset = 0;
 
+    node->assignment_dst = 0;
+    node->assignment_src = 0;
+
     return node;
 }
 
@@ -78,6 +81,12 @@ void node_free(struct Node *node)
 
     if (node->string_asm_id)
         free(node->string_asm_id);
+
+    if (node->assignment_dst)
+        node_free(node->assignment_dst);
+
+    if (node->assignment_src)
+        node_free(node->assignment_src);
 
     free(node);
 }

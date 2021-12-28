@@ -77,6 +77,9 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
     if (node->type == NODE_FUNCTION_CALL)
         asm_gen_function_call(as, node);
+
+    if (node->type == NODE_ASSIGNMENT)
+        asm_gen_assignment(as, node);
 }
 
 
@@ -231,6 +234,25 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
     asm_append_str(&as->root, s);
+    free(s);
+}
+
+
+void asm_gen_assignment(struct Asm *as, struct Node *node)
+{
+    char *src = asm_str_from_node(as, node->assignment_src);
+    char *dst = asm_str_from_node(as, node->assignment_dst);
+
+    const char *template = "movl %s, %s\n";
+    size_t len = strlen(template) + strlen(src) + strlen(dst);
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, template, src, dst);
+    s = realloc(s, sizeof(char) * (strlen(s) + 1));
+
+    asm_append_str(&as->root, s);
+
+    free(src);
+    free(dst);
     free(s);
 }
 
