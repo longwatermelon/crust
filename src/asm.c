@@ -25,7 +25,7 @@ struct Asm *asm_alloc()
     strcpy(as->root, begin);
 
     as->scope = scope_alloc();
-    // Global scope even though it holds nothing
+    // Global scope
     scope_push_layer(as->scope);
 
     as->lc = 0;
