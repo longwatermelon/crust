@@ -254,6 +254,7 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 
         asm_append_str(&as->root, s);
         free(s);
+        free(value);
     }
 }
 
