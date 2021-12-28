@@ -44,7 +44,7 @@ void asm_free(struct Asm *as)
 char *asm_gen_root(struct Asm *as, struct Node *node)
 {
     for (size_t i = 0; i < node->compound_size; ++i)
-        asm_gen(as, node->compound_nodes[i]);
+        asm_gen_expr(as, node->compound_nodes[i]);
 
     size_t len = strlen(as->data) + strlen(as->root);
     char *str = calloc(len + 1, sizeof(char));
@@ -55,7 +55,7 @@ char *asm_gen_root(struct Asm *as, struct Node *node)
 }
 
 
-void asm_gen(struct Asm *as, struct Node *node)
+void asm_gen_expr(struct Asm *as, struct Node *node)
 {
     if (node->type == NODE_FUNCTION_DEF)
     {
@@ -100,7 +100,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     as->scope->variable_defs_size = 0;
 
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
-        asm_gen(as, node->function_def_body->compound_nodes[i]);
+        asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
 
     as->stack_size = prev_size;
     as->scope->variable_defs = variable_defs;

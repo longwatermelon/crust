@@ -19,7 +19,7 @@ struct Asm *asm_alloc();
 void asm_free(struct Asm *as);
 
 char *asm_gen_root(struct Asm *as, struct Node *node);
-void asm_gen(struct Asm *as, struct Node *node);
+void asm_gen_expr(struct Asm *as, struct Node *node);
 
 void asm_gen_function_def(struct Asm *as, struct Node *node);
 void asm_gen_return(struct Asm *as, struct Node *node);
