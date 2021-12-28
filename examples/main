@@ -1,12 +1,13 @@
-fn test(a: str, b:str) -> str {
-    pront(a, b);
+fn test(a: str, b:str, c: str) -> str {
+    pront(a, b, c);
     return "string";
 };
 
 fn main() -> int {
     let b: str = "lool\n";
     let c: str = b;
-    test("test\n", c);
+    let a: str = "str\n";
+    test("test\n", c, a);
     return 0;
 };
 

@@ -35,5 +35,11 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 struct Node *asm_eval_node(struct Asm *as, struct Node *node);
 void asm_append_str(char **dst, char *src);
 
+char *asm_str_from_node(struct Asm *as, struct Node *node);
+char *asm_str_from_int(struct Asm *as, struct Node *node);
+char *asm_str_from_str(struct Asm *as, struct Node *node);
+char *asm_str_from_var(struct Asm *as, struct Node *node);
+char *asm_str_from_param(struct Asm *as, struct Node *node);
+
 #endif
 
