@@ -6,8 +6,9 @@
 struct Scope *scope_alloc()
 {
     struct Scope *scope = malloc(sizeof(struct Scope));
-    scope->variable_defs = 0;
-    scope->variable_defs_size = 0;
+    scope->layers = 0;
+    scope->nlayers = 0;
+    scope->curr_layer = 0;
 
     scope->function_defs = 0;
     scope->function_defs_size = 0;
@@ -18,8 +19,13 @@ struct Scope *scope_alloc()
 
 void scope_free(struct Scope *scope)
 {
-    if (scope->variable_defs)
-        free(scope->variable_defs);
+    if (scope->layers)
+    {
+        for (size_t i = 0; i < scope->nlayers; ++i)
+            layer_free(scope->layers[i]);
+
+        free(scope->layers);
+    }
 
     if (scope->function_defs)
         free(scope->function_defs);
@@ -28,10 +34,33 @@ void scope_free(struct Scope *scope)
 }
 
 
+struct ScopeLayer *layer_alloc()
+{
+    struct ScopeLayer *layer = malloc(sizeof(struct ScopeLayer));
+    layer->variable_defs = 0;
+    layer->variable_defs_size = 0;
+
+    return layer;
+}
+
+
+void layer_free(struct ScopeLayer *layer)
+{
+    if (layer->variable_defs)
+        free(layer->variable_defs);
+
+    free(layer);
+}
+
+
 void scope_add_variable_def(struct Scope *scope, struct Node *node)
 {
-    scope->variable_defs = realloc(scope->variable_defs, sizeof(struct Node*) * ++scope->variable_defs_size);
-    scope->variable_defs[scope->variable_defs_size - 1] = node;
+    scope->curr_layer->variable_defs = realloc(
+        scope->curr_layer->variable_defs,
+        sizeof(struct Node*) * ++scope->curr_layer->variable_defs_size
+    );
+
+    scope->curr_layer->variable_defs[scope->curr_layer->variable_defs_size - 1] = node;
 }
 
 
@@ -42,13 +71,17 @@ void scope_add_function_def(struct Scope *scope, struct Node *node)
 }
 
 
-
 struct Node *scope_find_variable(struct Scope *scope, char *name)
 {
-    for (size_t i = 0; i < scope->variable_defs_size; ++i)
+    for (size_t layer = 0; layer < scope->nlayers; ++layer)
     {
-        if (strcmp(scope->variable_defs[i]->variable_def_name, name) == 0)
-            return scope->variable_defs[i];
+        for (size_t i = 0; i < scope->layers[layer]->variable_defs_size; ++i)
+        {
+            struct Node *var = scope->layers[layer]->variable_defs[i];
+
+            if (strcmp(var->variable_def_name, name) == 0)
+                return var;
+        }
     }
 
     fprintf(stderr, "No variable named '%s'\n", name);
@@ -66,5 +99,23 @@ struct Node *scope_find_function(struct Scope *scope, char *name)
 
     fprintf(stderr, "No function named '%s'\n", name);
     exit(EXIT_FAILURE);
+}
+
+
+void scope_pop_layer(struct Scope *scope)
+{
+    layer_free(scope->layers[scope->nlayers - 1]);
+    scope->layers = realloc(scope->layers, sizeof(struct ScopeLayer*) * --scope->nlayers);
+
+    scope->curr_layer = scope->layers[scope->nlayers - 1];
+}
+
+
+void scope_push_layer(struct Scope *scope)
+{
+    scope->layers = realloc(scope->layers, sizeof(struct ScopeLayer*) * ++scope->nlayers);
+    scope->layers[scope->nlayers - 1] = layer_alloc();
+
+    scope->curr_layer = scope->layers[scope->nlayers - 1];
 }
 

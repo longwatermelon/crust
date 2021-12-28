@@ -25,6 +25,8 @@ struct Asm *asm_alloc()
     strcpy(as->root, begin);
 
     as->scope = scope_alloc();
+    scope_push_layer(as->scope);
+
     as->lc = 0;
     as->stack_size = 0;
 
@@ -93,17 +95,13 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     free(s);
 
     size_t prev_size = as->stack_size;
-    struct Node **variable_defs = as->scope->variable_defs;
-    size_t variable_defs_size = as->scope->variable_defs_size;
-    as->scope->variable_defs = 0;
-    as->scope->variable_defs_size = 0;
+    scope_push_layer(as->scope);
 
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
 
     as->stack_size = prev_size;
-    as->scope->variable_defs = variable_defs;
-    as->scope->variable_defs_size = variable_defs_size;
+    scope_pop_layer(as->scope);
 }
 
 
