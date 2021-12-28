@@ -1,14 +1,10 @@
-let x: str = "glb\n";
-
-fn test(a: str, b: str, c: str) -> str {
-    pront(b, c);
+fn test(a: str) -> str {
     return a;
 };
 
 fn main() -> int {
-    let a: str = test("test\n", "test", "test");
+    let a: str = test("test\n");
     pront(a);
-    pront(x);
     return 0;
 };
 

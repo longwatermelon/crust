@@ -139,6 +139,7 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
         asm_gen_store_string(as, literal);
 
     asm_gen_add_to_stack(as, literal);
+    node->variable_def_stack_offset = -as->stack_size;
 }
 
 
@@ -245,8 +246,7 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 
     for (size_t i = 0; i < node->function_call_args_size; ++i)
     {
-        struct Node *arg = asm_eval_node(as, node->function_call_args[i]);
-        char *value = asm_str_from_node(as, arg);
+        char *value = asm_str_from_node(as, node->function_call_args[i]);
 
         size_t len = strlen(template) + strlen(value) + 12;
 
@@ -330,6 +330,14 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     if (var->type == NODE_PARAMETER)
     {
         return asm_str_from_param(as, var);
+    }
+    else if (var->type == NODE_VARIABLE_DEF)
+    {
+        const char *tmp = "%d(%%ebp)";
+        char *s = calloc(strlen(tmp) + 12, sizeof(char));
+        sprintf(s, tmp, var->variable_def_stack_offset);
+        s = realloc(s, sizeof(char) * (strlen(s) + 1));
+        return s;
     }
     else
     {

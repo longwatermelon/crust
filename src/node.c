@@ -25,6 +25,7 @@ struct Node *node_alloc(int type)
     node->variable_def_value = 0;
     node->variable_def_name = 0;
     node->variable_def_type = 0;
+    node->variable_def_stack_offset = 0;
 
     node->variable_name = 0;
 

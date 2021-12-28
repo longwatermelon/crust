@@ -44,6 +44,7 @@ struct Node
     struct Node *variable_def_value;
     char *variable_def_name;
     int variable_def_type;
+    int variable_def_stack_offset;
 
     // Variable
     char *variable_name;
