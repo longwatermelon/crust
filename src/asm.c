@@ -5,6 +5,7 @@
 #include <string.h>
 #include <math.h>
 
+#define MAX_INT_LEN 10
 
 struct Asm *asm_alloc()
 {
@@ -154,7 +155,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 
     char *left = asm_str_from_node(as, node);
 
-    size_t len = strlen(left) + 12 + strlen(template);
+    size_t len = strlen(left) + MAX_INT_LEN + strlen(template);
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, left, as->stack_size);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
@@ -175,13 +176,13 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
 
     const char *template = ".LC%d: .string \"%s\"\n";
 
-    size_t len = strlen(template) + strlen(node->string_value) + 12;
+    size_t len = strlen(template) + strlen(node->string_value) + MAX_INT_LEN;
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, as->lc, node->string_value);
 
     asm_append_str(&as->data, s);
 
-    size_t id_len = strlen(".LC") + 12;
+    size_t id_len = strlen(".LC") + MAX_INT_LEN;
     node->string_asm_id = calloc(id_len + 1, sizeof(char));
     sprintf(node->string_asm_id, ".LC%lu", as->lc);
     node->string_asm_id = realloc(node->string_asm_id, sizeof(char) * (strlen(node->string_asm_id) + 1));
@@ -266,7 +267,7 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
     {
         char *value = asm_str_from_node(as, node->function_call_args[i]);
 
-        size_t len = strlen(template) + strlen(value) + 12;
+        size_t len = strlen(template) + strlen(value) + MAX_INT_LEN;
 
         char *s = calloc(len + 1, sizeof(char));
         sprintf(s, template, 5, value);
@@ -352,7 +353,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     else if (var->type == NODE_VARIABLE_DEF)
     {
         const char *tmp = "%d(%%ebp)";
-        char *s = calloc(strlen(tmp) + 12, sizeof(char));
+        char *s = calloc(strlen(tmp) + MAX_INT_LEN, sizeof(char));
         sprintf(s, tmp, var->variable_def_stack_offset);
         s = realloc(s, sizeof(char) * (strlen(s) + 1));
         return s;
@@ -369,7 +370,7 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
 {
     const char *tmp = "%d(%%ebp)";
 
-    char *value = calloc(strlen(tmp) + 12, sizeof(char));
+    char *value = calloc(strlen(tmp) + MAX_INT_LEN, sizeof(char));
     sprintf(value, tmp, node->param_stack_offset);
     value = realloc(value, sizeof(char) * (strlen(value) + 1));
     return value;
