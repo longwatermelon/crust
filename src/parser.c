@@ -119,9 +119,8 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     parser_eat(parser, TOKEN_ID); // function name
     parser_eat(parser, TOKEN_LPAREN);
 
-    if (parser->curr_tok->type != TOKEN_RPAREN)
+    while (parser->curr_tok->type != TOKEN_RPAREN)
     {
-        // TODO Refactor for less repeated code
         struct Node *param = node_alloc(NODE_PARAMETER);
         param->param_name = parser->curr_tok->value;
         parser_eat(parser, TOKEN_ID);
@@ -133,21 +132,10 @@ struct Node *parser_parse_function_def(struct Parser *parser)
                     sizeof(struct Node*) * ++node->function_def_params_size);
         node->function_def_params[node->function_def_params_size - 1] = param;
 
-        while (parser->curr_tok->type != TOKEN_RPAREN)
-        {
-            parser_eat(parser, TOKEN_COMMA);
+        if (parser->curr_tok->type == TOKEN_RPAREN)
+            break;
 
-            param = node_alloc(NODE_PARAMETER);
-            param->param_name = parser->curr_tok->value;
-            parser_eat(parser, TOKEN_ID);
-            parser_eat(parser, TOKEN_COLON);
-            param->param_type = type_from_id(parser->curr_tok->value);
-            parser_eat(parser, TOKEN_ID);
-
-            node->function_def_params = realloc(node->function_def_params,
-                        sizeof(struct Node*) * ++node->function_def_params_size);
-            node->function_def_params[node->function_def_params_size - 1] = param;
-        }
+        parser_eat(parser, TOKEN_COMMA);
     }
 
     size_t offset = 8;
