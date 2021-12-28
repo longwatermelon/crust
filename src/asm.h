@@ -40,6 +40,7 @@ char *asm_str_from_int(struct Asm *as, struct Node *node);
 char *asm_str_from_str(struct Asm *as, struct Node *node);
 char *asm_str_from_var(struct Asm *as, struct Node *node);
 char *asm_str_from_param(struct Asm *as, struct Node *node);
+char *asm_str_from_function_call(struct Asm *as, struct Node *node);
 
 #endif
 

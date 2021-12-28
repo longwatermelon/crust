@@ -133,9 +133,16 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
     struct Node *literal = asm_eval_node(as, node);
 
-    // Creating a new label is only necessary for strings
-    if (node->variable_def_type == NODE_STRING)
-        asm_gen_store_string(as, literal);
+    if (literal->type == NODE_FUNCTION_CALL)
+    {
+        asm_gen_function_call(as, literal);
+    }
+    else
+    {
+        // Creating a new label is only necessary for strings
+        if (node->variable_def_type == NODE_STRING)
+            asm_gen_store_string(as, literal);
+    }
 
     asm_gen_add_to_stack(as, literal);
 }
@@ -145,22 +152,10 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 {
     as->stack_size += 4;
     const char *template =  "subl $4, %%esp\n"
-                            "movl $%s, -%s(%%ebp)\n";
+                            "movl %s, -%s(%%ebp)\n";
 
-    char *left = 0;
+    char *left = asm_str_from_node(as, node);
     char *stack_size_str = util_int_to_str(as->stack_size);
-
-    switch (node->type)
-    {
-    case NODE_INT: left = util_int_to_str(node->int_value); break;
-    case NODE_STRING:
-        left = malloc(sizeof(char) * (strlen(node->string_asm_id) + 1));
-        strcpy(left, node->string_asm_id);
-        break;
-    default:
-        fprintf(stderr, "Can't add data of type %d to stack\n", node->type);
-        exit(EXIT_FAILURE);
-    }
 
     size_t len = strlen(left) + strlen(stack_size_str) + strlen(template);
     char *s = calloc(len + 1, sizeof(char));
@@ -301,6 +296,7 @@ char *asm_str_from_node(struct Asm *as, struct Node *node)
     case NODE_STRING: return asm_str_from_str(as, node);
     case NODE_VARIABLE: return asm_str_from_var(as, node);
     case NODE_PARAMETER: return asm_str_from_param(as, node);
+    case NODE_FUNCTION_CALL: return asm_str_from_function_call(as, node);
     default:
         fprintf(stderr, "Cannot extract value from data of type %d\n", node->type);
         exit(EXIT_FAILURE);
@@ -356,5 +352,14 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
     sprintf(value, tmp, node->param_stack_offset);
     value = realloc(value, sizeof(char) * (strlen(value) + 1));
     return value;
+}
+
+
+char *asm_str_from_function_call(struct Asm *as, struct Node *node)
+{
+    const char *tmp = "%ebx";
+    char *s = malloc(sizeof(char) * (strlen(tmp) + 1));
+    strcpy(s, tmp);
+    return s;
 }
 
