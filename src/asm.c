@@ -193,6 +193,10 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 void asm_gen_store_string(struct Asm *as, struct Node *node)
 {
     node = asm_eval_node(as, node);
+
+    if (node->string_asm_id)
+        return;
+
     const char *template = ".LC%s: .string \"%s\"\n";
 
     char *lc = util_int_to_str(as->lc);

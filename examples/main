@@ -1,22 +1,6 @@
-fn other() -> int {
-    let x: str = "lmfaooo\n";
-    pront(x);
-    return 0;
-};
-
-fn func() -> int {
-    let x: str = "stringn\n";
-    pront(x);
-    other();
-    return 1;
-};
-
 fn main() -> int {
-    let a: str = "string\n";
-    let b: str = a;
-    pront(a, b);
-    func();
-    func();
+    let x: str = "string";
+    pront(x);
     return 0;
 };
 

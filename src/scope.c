@@ -9,6 +9,9 @@ struct Scope *scope_alloc()
     scope->variable_defs = 0;
     scope->variable_defs_size = 0;
 
+    scope->function_defs = 0;
+    scope->function_defs_size = 0;
+
     return scope;
 }
 
@@ -17,6 +20,9 @@ void scope_free(struct Scope *scope)
 {
     if (scope->variable_defs)
         free(scope->variable_defs);
+
+    if (scope->function_defs)
+        free(scope->function_defs);
 
     free(scope);
 }
