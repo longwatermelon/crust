@@ -96,6 +96,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     free(s);
 
     size_t prev_size = as->stack_size;
+    as->stack_size = 0;
     scope_push_layer(as->scope);
 
     as->scope->curr_layer->params = node->function_def_params;
