@@ -34,7 +34,7 @@ void asm_gen_assignment(struct Asm *as, struct Node *node);
 
 void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 
-struct Node *asm_eval_node(struct Asm *as, struct Node *node);
+struct Node *asm_literal_from_node(struct Asm *as, struct Node *node);
 void asm_append_str(char **dst, char *src);
 
 char *asm_str_from_node(struct Asm *as, struct Node *node);

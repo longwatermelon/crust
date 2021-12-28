@@ -135,7 +135,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
-    struct Node *literal = asm_eval_node(as, node);
+    struct Node *literal = asm_literal_from_node(as, node);
 
     // Creating a new label is only necessary for strings
     if (literal->type == NODE_STRING)
@@ -170,7 +170,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 
 void asm_gen_store_string(struct Asm *as, struct Node *node)
 {
-    node = asm_eval_node(as, node);
+    node = asm_literal_from_node(as, node);
 
     if (node->string_asm_id)
         return;
@@ -215,7 +215,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     for (size_t i = 0; i < node->function_call_args_size; ++i)
     {
         const char *template = "pushl %s\n";
-        struct Node *arg = asm_eval_node(as, node->function_call_args[i]);
+        struct Node *arg = asm_literal_from_node(as, node->function_call_args[i]);
         char *value = asm_str_from_node(as, arg);
 
         size_t len = strlen(template) + strlen(value);
@@ -282,7 +282,7 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 }
 
 
-struct Node *asm_eval_node(struct Asm *as, struct Node *node)
+struct Node *asm_literal_from_node(struct Asm *as, struct Node *node)
 {
     switch (node->type)
     {
@@ -290,9 +290,9 @@ struct Node *asm_eval_node(struct Asm *as, struct Node *node)
     case NODE_STRING:
         return node;
     case NODE_VARIABLE:
-        return asm_eval_node(as, scope_find_variable(as->scope, node->variable_name));
+        return asm_literal_from_node(as, scope_find_variable(as->scope, node->variable_name));
     case NODE_VARIABLE_DEF:
-        return asm_eval_node(as, node->variable_def_value);
+        return asm_literal_from_node(as, node->variable_def_value);
     default: return node;
     }
 }
@@ -363,7 +363,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     }
     else
     {
-        struct Node *literal = asm_eval_node(as, var);
+        struct Node *literal = asm_literal_from_node(as, var);
         return asm_str_from_node(as, literal);
     }
 }
