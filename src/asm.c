@@ -150,18 +150,16 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 {
     as->stack_size += 4;
     const char *template =  "subl $4, %%esp\n"
-                            "movl %s, -%s(%%ebp)\n";
+                            "movl %s, -%d(%%ebp)\n";
 
     char *left = asm_str_from_node(as, node);
-    char *stack_size_str = util_int_to_str(as->stack_size);
 
-    size_t len = strlen(left) + strlen(stack_size_str) + strlen(template);
+    size_t len = strlen(left) + 12 + strlen(template);
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, left, stack_size_str);
+    sprintf(s, template, left, as->stack_size);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
     free(left);
-    free(stack_size_str);
 
     asm_append_str(&as->root, s);
     free(s);
@@ -175,22 +173,20 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
     if (node->string_asm_id)
         return;
 
-    const char *template = ".LC%s: .string \"%s\"\n";
+    const char *template = ".LC%d: .string \"%s\"\n";
 
-    char *lc = util_int_to_str(as->lc);
-    size_t len = strlen(template) + strlen(node->string_value) + strlen(lc);
+    size_t len = strlen(template) + strlen(node->string_value) + 12;
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, lc, node->string_value);
+    sprintf(s, template, as->lc, node->string_value);
 
     asm_append_str(&as->data, s);
 
-    size_t id_len = strlen(".LC") + strlen(lc);
-    node->string_asm_id = malloc(sizeof(char) * (id_len + 1));
+    size_t id_len = strlen(".LC") + 12;
+    node->string_asm_id = calloc(id_len + 1, sizeof(char));
     sprintf(node->string_asm_id, ".LC%lu", as->lc);
-    node->string_asm_id[id_len] = '\0';
+    node->string_asm_id = realloc(node->string_asm_id, sizeof(char) * (strlen(node->string_asm_id) + 1));
 
     free(s);
-    free(lc);
 
     ++as->lc;
 }
