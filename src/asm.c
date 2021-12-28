@@ -209,7 +209,8 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
         exit(EXIT_FAILURE);
     }
 
-    for (size_t i = 0; i < node->function_call_args_size; ++i)
+    // Push args on stack backwards so they're in order
+    for (int i = node->function_call_args_size - 1; i >= 0; --i)
     {
         const char *template = "pushl %s\n";
         struct Node *arg = asm_literal_from_node(as, node->function_call_args[i]);

@@ -119,9 +119,14 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     parser_eat(parser, TOKEN_ID); // function name
     parser_eat(parser, TOKEN_LPAREN);
 
+    size_t offset = 8;
+
     while (parser->curr_tok->type != TOKEN_RPAREN)
     {
         struct Node *param = node_alloc(NODE_PARAMETER);
+        param->param_stack_offset = offset;
+        offset += 4;
+
         param->param_name = parser->curr_tok->value;
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_COLON);
@@ -136,14 +141,6 @@ struct Node *parser_parse_function_def(struct Parser *parser)
             break;
 
         parser_eat(parser, TOKEN_COMMA);
-    }
-
-    size_t offset = 8;
-
-    for (int i = node->function_def_params_size - 1; i >= 0; --i)
-    {
-        node->function_def_params[i]->param_stack_offset = offset;
-        offset += 4;
     }
 
     parser_eat(parser, TOKEN_RPAREN);
