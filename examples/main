@@ -7,7 +7,7 @@ fn other() -> int {
 fn func() -> int {
     let x: str = "stringn\n";
     pront(x);
-    func();
+    other();
     return 1;
 };
 

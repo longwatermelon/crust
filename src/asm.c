@@ -89,8 +89,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     sprintf(s, template, node->function_def_name, node->function_def_name, "%e", "%e", "%e");
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
-    strcat(as->root, s);
+    asm_append_str(&as->root, s);
     free(s);
 
     size_t prev_size = as->stack_size;
@@ -138,8 +137,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
     sprintf(s, template, ret, "%e");
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
-    strcat(as->root, s);
+    asm_append_str(&as->root, s);
 
     free(s);
     free(ret);
@@ -187,8 +185,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
     free(left);
     free(stack_size_str);
 
-    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
-    strcat(as->root, s);
+    asm_append_str(&as->root, s);
     free(s);
 }
 
@@ -203,8 +200,7 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, lc, node->string_value);
 
-    as->data = realloc(as->data, sizeof(char) * (strlen(as->data) + strlen(s) + 1));
-    strcat(as->data, s);
+    asm_append_str(&as->data, s);
 
     size_t id_len = strlen(".LC") + strlen(lc);
     node->string_asm_id = malloc(sizeof(char) * (id_len + 1));
@@ -240,8 +236,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     sprintf(s, template, node->function_call_name);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
-    strcat(as->root, s);
+    asm_append_str(&as->root, s);
     free(s);
 }
 
@@ -277,8 +272,7 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
         sprintf(s, template, strlen(value->string_value), "%e",
                         value->string_asm_id, "%e", "%e", "%e");
 
-        as->root = realloc(as->root, sizeof(char) * (strlen(as->root) + strlen(s) + 1));
-        strcat(as->root, s);
+        asm_append_str(&as->root, s);
         free(s);
     }
 }
@@ -297,5 +291,12 @@ struct Node *asm_eval_node(struct Asm *as, struct Node *node)
         return asm_eval_node(as, node->variable_def_value);
     default: return 0;
     }
+}
+
+
+void asm_append_str(char **dst, char *src)
+{
+    *dst = realloc(*dst, sizeof(char) * (strlen(*dst) + strlen(src) + 1));
+    strcat(*dst, src);
 }
 

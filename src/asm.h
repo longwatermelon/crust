@@ -33,6 +33,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node);
 void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 
 struct Node *asm_eval_node(struct Asm *as, struct Node *node);
+void asm_append_str(char **dst, char *src);
 
 #endif
 
