@@ -1,11 +1,16 @@
 let x: str = "glb\n";
 
+fn other(param: str) -> str {
+    return param;
+};
+
 fn test(a: str) -> str {
-    return a;
+    return other(a);
 };
 
 fn main() -> int {
-    let a: str = test("test\n");
+    let teststr: str = "a\n";
+    let a: str = test(teststr);
     pront(a);
     pront(x);
     return 0;

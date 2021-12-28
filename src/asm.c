@@ -133,16 +133,9 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
     struct Node *literal = asm_eval_node(as, node);
 
-    if (literal->type == NODE_FUNCTION_CALL)
-    {
-        asm_gen_function_call(as, literal);
-    }
-    else
-    {
-        // Creating a new label is only necessary for strings
-        if (node->variable_def_type == NODE_STRING)
-            asm_gen_store_string(as, literal);
-    }
+    // Creating a new label is only necessary for strings
+    if (literal->type == NODE_STRING)
+        asm_gen_store_string(as, literal);
 
     asm_gen_add_to_stack(as, literal);
 }
@@ -357,6 +350,7 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
 
 char *asm_str_from_function_call(struct Asm *as, struct Node *node)
 {
+    asm_gen_function_call(as, node);
     const char *tmp = "%ebx";
     char *s = malloc(sizeof(char) * (strlen(tmp) + 1));
     strcpy(s, tmp);
