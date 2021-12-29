@@ -1,4 +1,4 @@
-fn func(a: str, b: str, c: int) -> str {
+fn func(a: str, b: str, c: str) -> str {
     pront(a, b, "    \n");
     return b;
 };
