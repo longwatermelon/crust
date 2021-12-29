@@ -90,6 +90,34 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
         errors_print_lines(as, def->error_line, ERROR_RANGE);
         exit(EXIT_FAILURE);
     }
+
+    struct Node *orig = 0;
+    bool duplicate = false;
+
+    for (size_t i = 0; i < as->scope->curr_layer->variable_defs_size; ++i)
+    {
+        if (strcmp(as->scope->curr_layer->variable_defs[i]->variable_def_name, def->variable_def_name) == 0)
+        {
+            if (orig)
+            {
+                duplicate = true;
+                break;
+            }
+
+            orig = as->scope->curr_layer->variable_defs[i];
+        }
+    }
+
+    if (duplicate)
+    {
+        fprintf(stderr, ERROR ON_LINE "Attempting to redefine variable '%s'.\n",
+                        def->error_line, def->variable_def_name);
+        errors_print_lines(as, def->error_line, ERROR_RANGE);
+
+        fprintf(stderr, "First defined here:\n");
+        errors_print_lines(as, orig->error_line, ERROR_RANGE);
+        exit(EXIT_FAILURE);
+    }
 }
 
 
