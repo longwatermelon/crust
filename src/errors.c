@@ -71,9 +71,9 @@ void errors_check_function_return(struct Node *def, struct Scope *scope)
 }
 
 
-void errors_check_variable_def(struct Node *def)
+void errors_check_variable_def(struct Node *def, struct Scope *scope)
 {
-    if (def->variable_def_type != def->variable_def_value->type)
+    if (def->variable_def_type != node_type_from_node(def->variable_def_value, scope))
     {
         fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
                         "'%s' of type %s.\n", def->error_line,

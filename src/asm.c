@@ -148,7 +148,7 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
     asm_gen_add_to_stack(as, literal);
     node->variable_def_stack_offset = -as->stack_size;
 
-    errors_check_variable_def(node);
+    errors_check_variable_def(node, as->scope);
 }
 
 
@@ -179,7 +179,7 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
     if (node->string_asm_id)
         return;
 
-    const char *template = ".LC%d: .string \"%s\"\n";
+    const char *template = ".LC%d: .asciz \"%s\"\n";
 
     size_t len = strlen(template) + strlen(node->string_value) + MAX_INT_LEN;
     char *s = calloc(len + 1, sizeof(char));

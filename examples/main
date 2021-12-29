@@ -1,14 +1,27 @@
-fn func(a: str, b: str) -> str {
-    a = "aval2";
-    pront(a);
+fn func(a: str, b: str, c: int) -> str {
+    pront(a, b, "    \n");
     return b;
 };
 
+
 fn main() -> int {
-    let a: str = "test\n";
-    pront(a, func("a val", "b val"));
-    a = "str\n";
-    pront(a);
+    func("aaaaa", "bbbbb", 0);
+
+    pront("   \n\n");
+
+    let a: str = "aaaaa";
+    let b: str = "bbbbb";
+    let c: int = 9;
+
+    func(a, "bbbbb", 0);
+    func(b, "bbbbb", 0);
+
+    b = a;
+    func(a, b, 0);
+    func("aaaaa", "bbbbb", 0);
+    let d: str = b;
+
+    pront("\n");
     return 0;
 };
 
