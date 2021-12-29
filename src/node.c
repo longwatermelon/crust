@@ -133,3 +133,27 @@ int node_type_from_str(char *str)
     return -1;
 }
 
+
+int node_type_from_node(struct Node *node, struct Scope *scope)
+{
+    switch (node->type)
+    {
+    case NODE_INT:
+    case NODE_STRING:
+        return node->type;
+    case NODE_RETURN:
+        return node_type_from_node(node->return_value, scope);
+    case NODE_VARIABLE:
+        return node_type_from_node(scope_find_variable(scope, node->variable_name), scope);
+    case NODE_VARIABLE_DEF:
+        return node_strip_to_literal(node->variable_def_value, scope)->type;
+    case NODE_PARAMETER:
+        return node->param_type;
+    case NODE_FUNCTION_DEF:
+        return node->function_def_return_type;
+    case NODE_FUNCTION_CALL:
+        return scope_find_function(scope, node->function_call_name)->function_def_return_type;
+    default: return -1;
+    }
+}
+

@@ -43,3 +43,29 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Scop
     }
 }
 
+
+void errors_check_function_return(struct Node *def, struct Scope *scope)
+{
+    struct Node *comp = def->function_def_body;
+
+    for (size_t i = 0; i < comp->compound_size; ++i)
+    {
+        struct Node *node = comp->compound_nodes[i];
+
+        if (node->type == NODE_RETURN)
+        {
+            int type = node_type_from_node(node->return_value, scope);
+
+            if (type != def->function_def_return_type)
+            {
+                fprintf(stderr, ERROR_ON_LINE "Mismatched return types; Function "
+                                "'%s' has a return type of %s, but returns type %s.\n",
+                                node->error_line, def->function_def_name,
+                                node_str_from_type(def->function_def_return_type),
+                                node_str_from_type(type));
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+}
+

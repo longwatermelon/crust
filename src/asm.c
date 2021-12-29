@@ -110,6 +110,8 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
 
+    errors_check_function_return(node, as->scope);
+
     as->stack_size = prev_size;
     scope_pop_layer(as->scope);
 }

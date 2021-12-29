@@ -77,5 +77,7 @@ struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope);
 char *node_str_from_type(int type);
 int node_type_from_str(char *str);
 
+int node_type_from_node(struct Node *node, struct Scope *scope);
+
 #endif
 

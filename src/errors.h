@@ -5,6 +5,7 @@
 #include "scope.h"
 
 void errors_check_function_call(struct Node *def, struct Node *call, struct Scope *scope);
+void errors_check_function_return(struct Node *def, struct Scope *scope);
 
 #endif
 
