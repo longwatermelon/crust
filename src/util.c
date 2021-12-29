@@ -38,6 +38,37 @@ char *util_read_file(const char *fp)
 }
 
 
+char **util_read_file_lines(const char *fp, size_t *nlines)
+{
+    FILE* file = fopen(fp, "r");
+
+    if (!file)
+    {
+        fprintf(stderr, "Couldn't open file %s\n", fp);
+        return 0;
+    }
+
+    char **lines = 0;
+    *nlines = 0;
+
+    char* line = 0;
+    size_t len = 0;
+    ssize_t read;
+
+    while ((read = getline(&line, &len, file)) != -1)
+    {
+        lines = realloc(lines, sizeof(char*) * ++*nlines);
+        lines[*nlines - 1] = malloc(sizeof(char) * (strlen(line) + 1));
+        strcpy(lines[*nlines - 1], line);
+    }
+
+    free(line);
+    fclose(file);
+
+    return lines;
+}
+
+
 char *util_int_to_str(int i)
 {
     int len;

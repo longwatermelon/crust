@@ -26,7 +26,7 @@ void ham_compile(const char *fp)
     struct Parser *parser = parser_alloc(tokens, ntokens);
     struct Node *root = parser_parse(parser);
 
-    struct Asm *as = asm_alloc();
+    struct Asm *as = asm_alloc(fp);
     char *s = asm_gen_root(as, root);
     asm_free(as);
 

@@ -9,7 +9,7 @@
 
 #define MAX_INT_LEN 10
 
-struct Asm *asm_alloc()
+struct Asm *asm_alloc(const char *fp)
 {
     struct Asm *as = malloc(sizeof(struct Asm));
 
@@ -34,12 +34,19 @@ struct Asm *asm_alloc()
     as->lc = 0;
     as->stack_size = 0;
 
+    as->source = util_read_file_lines(fp, &as->source_size);
+
     return as;
 }
 
 
 void asm_free(struct Asm *as)
 {
+    for (size_t i = 0; i < as->source_size; ++i)
+        free(as->source[i]);
+
+    free(as->source);
+
     free(as->data);
     free(as->root);
     scope_free(as->scope);
@@ -111,7 +118,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
 
-    errors_check_function_return(node, as->scope);
+    errors_check_function_return(node, as);
 
     as->stack_size = prev_size;
     scope_pop_layer(as->scope);
@@ -149,7 +156,7 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
     asm_gen_add_to_stack(as, literal);
     node->variable_def_stack_offset = -as->stack_size;
 
-    errors_check_variable_def(node, as->scope);
+    errors_check_variable_def(node, as);
 }
 
 
@@ -206,7 +213,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
-    errors_check_function_call(func, node, as->scope);
+    errors_check_function_call(func, node, as);
 
     // Push args on stack backwards so they're in order
     for (int i = node->function_call_args_size - 1; i >= 0; --i)
@@ -237,7 +244,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_assignment(struct Asm *as, struct Node *node)
 {
-    errors_check_assignment(node, as->scope);
+    errors_check_assignment(node, as);
 
     char *src = asm_str_from_node(as, node->assignment_src);
     char *dst = asm_str_from_node(as, node->assignment_dst);
