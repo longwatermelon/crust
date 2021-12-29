@@ -1,4 +1,6 @@
 #include "node.h"
+#include "scope.h"
+#include <string.h>
 
 
 struct Node *node_alloc(int type)
@@ -91,5 +93,43 @@ void node_free(struct Node *node)
         node_free(node->assignment_src);
 
     free(node);
+}
+
+
+struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope)
+{
+    switch (node->type)
+    {
+    case NODE_INT:
+    case NODE_STRING:
+        return node;
+    case NODE_VARIABLE:
+        return node_strip_to_literal(scope_find_variable(scope, node->variable_name), scope);
+    case NODE_VARIABLE_DEF:
+        return node_strip_to_literal(node->variable_def_value, scope);
+    default: return node;
+    }
+}
+
+
+char *node_str_from_type(int type)
+{
+    switch (type)
+    {
+    case NODE_INT: return "int";
+    case NODE_STRING: return "str";
+    default: return 0;
+    }
+}
+
+
+int node_type_from_str(char *str)
+{
+    if (strcmp(str, "int") == 0)
+        return NODE_INT;
+    if (strcmp(str, "str") == 0)
+        return NODE_STRING;
+
+    return -1;
 }
 

@@ -134,7 +134,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
         param->param_name = parser->curr_tok->value;
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_COLON);
-        param->param_type = type_from_id(parser->curr_tok->value);
+        param->param_type = node_type_from_str(parser->curr_tok->value);
         parser_eat(parser, TOKEN_ID);
 
         node->function_def_params = realloc(node->function_def_params,
@@ -151,7 +151,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     parser_eat(parser, TOKEN_ARROW);
 
-    node->function_def_return_type = type_from_id(parser->curr_tok->value);
+    node->function_def_return_type = node_type_from_str(parser->curr_tok->value);
 
     if (node->function_def_return_type == -1)
     {
@@ -191,7 +191,7 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
     parser_eat(parser, TOKEN_ID);
 
     parser_eat(parser, TOKEN_COLON);
-    node->variable_def_type = type_from_id(parser->curr_tok->value);
+    node->variable_def_type = node_type_from_str(parser->curr_tok->value);
 
     if (node->variable_def_type == -1)
     {
@@ -271,16 +271,5 @@ struct Node *parser_parse_assignment(struct Parser *parser)
     node->assignment_src = parser_parse_expr(parser);
 
     return node;
-}
-
-
-int type_from_id(const char *id)
-{
-    if (strcmp(id, "int") == 0)
-        return NODE_INT;
-    if (strcmp(id, "str") == 0)
-        return NODE_STRING;
-
-    return -1;
 }
 

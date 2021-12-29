@@ -137,7 +137,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
-    struct Node *literal = asm_literal_from_node(as, node);
+    struct Node *literal = node_strip_to_literal(node, as->scope);
 
     // Creating a new label is only necessary for strings
     if (literal->type == NODE_STRING)
@@ -170,7 +170,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 
 void asm_gen_store_string(struct Asm *as, struct Node *node)
 {
-    node = asm_literal_from_node(as, node);
+    node = node_strip_to_literal(node, as->scope);
 
     if (node->string_asm_id)
         return;
@@ -201,13 +201,13 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
-    errors_check_function_call(func, node);
+    errors_check_function_call(as->scope, func, node);
 
     // Push args on stack backwards so they're in order
     for (int i = node->function_call_args_size - 1; i >= 0; --i)
     {
         const char *template = "pushl %s\n";
-        struct Node *arg = asm_literal_from_node(as, node->function_call_args[i]);
+        struct Node *arg = node_strip_to_literal(node->function_call_args[i], as->scope);
         char *value = asm_str_from_node(as, arg);
 
         size_t len = strlen(template) + strlen(value);
@@ -270,22 +270,6 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
         asm_append_str(&as->root, s);
         free(s);
         free(value);
-    }
-}
-
-
-struct Node *asm_literal_from_node(struct Asm *as, struct Node *node)
-{
-    switch (node->type)
-    {
-    case NODE_INT:
-    case NODE_STRING:
-        return node;
-    case NODE_VARIABLE:
-        return asm_literal_from_node(as, scope_find_variable(as->scope, node->variable_name));
-    case NODE_VARIABLE_DEF:
-        return asm_literal_from_node(as, node->variable_def_value);
-    default: return node;
     }
 }
 
@@ -355,7 +339,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     }
     else
     {
-        struct Node *literal = asm_literal_from_node(as, var);
+        struct Node *literal = node_strip_to_literal(var, as->scope);
         return asm_str_from_node(as, literal);
     }
 }

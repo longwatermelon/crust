@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+struct Scope;
+
 struct Node
 {
     enum
@@ -69,6 +71,11 @@ struct Node
 
 struct Node *node_alloc(int type);
 void node_free(struct Node *node);
+
+struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope);
+
+char *node_str_from_type(int type);
+int node_type_from_str(char *str);
 
 #endif
 

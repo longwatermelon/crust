@@ -36,7 +36,5 @@ struct Node *parser_parse_function_call(struct Parser *parser);
 
 struct Node *parser_parse_assignment(struct Parser *parser);
 
-int type_from_id(const char *id);
-
 #endif
 
