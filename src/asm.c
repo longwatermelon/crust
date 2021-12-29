@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #define MAX_INT_LEN 10
 
@@ -241,7 +242,15 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
     char *src = asm_str_from_node(as, node->assignment_src);
     char *dst = asm_str_from_node(as, node->assignment_dst);
 
-    const char *template = "movl %s, %s\n";
+    char *template;
+
+     // Gas complains about code that looks like movl 4(%ebp), 8(%ebp)
+    if (isdigit(src[src[0] == '-' ? 1 : 0]) && isdigit(dst[dst[0] == '-' ? 1 : 0]))
+        template =  "movl %s, %%ecx\n"
+                    "movl %%ecx, %s\n";
+    else
+        template = "movl %s, %s\n";
+
     size_t len = strlen(template) + strlen(src) + strlen(dst);
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, src, dst);
@@ -252,6 +261,16 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
     free(src);
     free(dst);
     free(s);
+
+    struct Node *node_src = node_strip_to_literal(node->assignment_src, as->scope);
+    struct Node *node_dst = node_strip_to_literal(node->assignment_dst, as->scope);
+
+    if (node_dst->type == NODE_STRING && node_src->type == NODE_STRING)
+    {
+        free(node_dst->string_asm_id);
+        node_dst->string_asm_id = malloc(sizeof(char) * (strlen(node_src->string_asm_id) + 1));
+        strcpy(node_dst->string_asm_id, node_src->string_asm_id);
+    }
 }
 
 
