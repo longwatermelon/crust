@@ -26,7 +26,7 @@ void parser_eat(struct Parser *parser, int type)
 {
     if (parser->curr_tok->type != type)
     {
-        fprintf(stderr, "Unexpected token '%s' of type %d, expected type %d\n",
+        fprintf(stderr, "Parser error: Unexpected token '%s' of type %d, expected type %d\n",
                         parser->curr_tok->value, parser->curr_tok->type, type);
         exit(EXIT_FAILURE);
     }
@@ -155,7 +155,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     if (node->function_def_return_type == -1)
     {
-        fprintf(stderr, "Unrecognized return type '%s'\n", parser->curr_tok->value);
+        fprintf(stderr, "Parser error: Unrecognized return type '%s'\n", parser->curr_tok->value);
         exit(EXIT_FAILURE);
     }
 
@@ -195,7 +195,7 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
 
     if (node->variable_def_type == -1)
     {
-        fprintf(stderr, "Unrecognized type annotation '%s'\n", parser->curr_tok->value);
+        fprintf(stderr, "Parser error: Unrecognized type annotation '%s'\n", parser->curr_tok->value);
         exit(EXIT_FAILURE);
     }
 

@@ -117,8 +117,8 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             ++lexer->line_num;
             break;
         default:
-            fprintf(stderr, "Lexer error: unrecognized character '%c' at index %lu\n",
-                            lexer->current_c, lexer->index);
+            fprintf(stderr, "Lexer error: unrecognized character '%c' at line %lu\n",
+                            lexer->current_c, lexer->line_num);
             exit(EXIT_FAILURE);
             break;
         }
