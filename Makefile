@@ -5,14 +5,14 @@ CC=gcc
 CFLAGS=-std=gnu17 -ggdb -Wall -Werror
 LDFLAGS=-lm
 
-all: hamcc
+all: deezc
 
-hamcc: $(OBJS)
+deezc: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o: src/%.c src/%.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -c $< -o $@
 
 clean:
-	rm *.o hamcc
+	rm *.o deezc
 

@@ -1,6 +1,6 @@
-#include "ham.h"
-#include "util.h"
+#include "deez.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 
 int main(int argc, char **argv)
@@ -11,7 +11,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    ham_compile(argv[1]);
+    deez_compile(argv[1]);
     return 0;
 }
 
