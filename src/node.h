@@ -62,6 +62,9 @@ struct Node
 
     // Assignment
     struct Node *assignment_dst, *assignment_src;
+
+    // Error values
+    size_t error_line;
 };
 
 struct Node *node_alloc(int type);

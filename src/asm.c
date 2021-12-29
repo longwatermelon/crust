@@ -1,5 +1,6 @@
 #include "asm.h"
 #include "util.h"
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -200,14 +201,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
-    if (func->function_def_params_size != node->function_call_args_size)
-    {
-        fprintf(stderr, "Argument number mistmatch; function '%s'"
-                        "has %lu parameters but %lu arguments were provided\n",
-                        func->function_def_name, func->function_def_params_size,
-                        node->function_call_args_size);
-        exit(EXIT_FAILURE);
-    }
+    errors_check_function_call(func, node);
 
     // Push args on stack backwards so they're in order
     for (int i = node->function_call_args_size - 1; i >= 0; --i)

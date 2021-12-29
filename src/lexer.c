@@ -2,6 +2,7 @@
 #include "token.h"
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 
 
 struct Lexer *lexer_alloc(char *contents)
@@ -10,6 +11,7 @@ struct Lexer *lexer_alloc(char *contents)
     lexer->contents = contents;
     lexer->index = 0;
     lexer->current_c = contents[lexer->index];
+    lexer->line_num = 1;
 
     return lexer;
 }
@@ -80,40 +82,49 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
 {
     while (lexer->index < strlen(lexer->contents))
     {
-        while (isspace(lexer->current_c) && lexer->current_c != '\n')
+        while (isspace(lexer->current_c) && lexer->current_c != '\n' && lexer->current_c != '\0')
             lexer_advance(lexer);
 
         if (isdigit(lexer->current_c))
-            return token_alloc(TOKEN_INT, lexer_collect_int(lexer));
+            return token_alloc(TOKEN_INT, lexer_collect_int(lexer), lexer->line_num);
 
         if (isalnum(lexer->current_c))
-            return token_alloc(TOKEN_ID, lexer_collect_id(lexer));
+            return token_alloc(TOKEN_ID, lexer_collect_id(lexer), lexer->line_num);
 
         if (lexer->current_c == '"')
-            return token_alloc(TOKEN_STRING, lexer_collect_str(lexer));
+            return token_alloc(TOKEN_STRING, lexer_collect_str(lexer), lexer->line_num);
 
         switch (lexer->current_c)
         {
-        case ';': lexer_advance(lexer); return token_alloc(TOKEN_SEMI, make_dyn_str(";"));
-        case '(': lexer_advance(lexer); return token_alloc(TOKEN_LPAREN, make_dyn_str("("));
-        case ')': lexer_advance(lexer); return token_alloc(TOKEN_RPAREN, make_dyn_str(")"));
-        case '{': lexer_advance(lexer); return token_alloc(TOKEN_LBRACE, make_dyn_str("{"));
-        case '}': lexer_advance(lexer); return token_alloc(TOKEN_RBRACE, make_dyn_str("}"));
-        case '=': lexer_advance(lexer); return token_alloc(TOKEN_EQUALS, make_dyn_str("="));
-        case ',': lexer_advance(lexer); return token_alloc(TOKEN_COMMA, make_dyn_str(","));
-        case ':': lexer_advance(lexer); return token_alloc(TOKEN_COLON, make_dyn_str(":"));
+        case ';': lexer_advance(lexer); return token_alloc(TOKEN_SEMI, make_dyn_str(";"), lexer->line_num);
+        case '(': lexer_advance(lexer); return token_alloc(TOKEN_LPAREN, make_dyn_str("("), lexer->line_num);
+        case ')': lexer_advance(lexer); return token_alloc(TOKEN_RPAREN, make_dyn_str(")"), lexer->line_num);
+        case '{': lexer_advance(lexer); return token_alloc(TOKEN_LBRACE, make_dyn_str("{"), lexer->line_num);
+        case '}': lexer_advance(lexer); return token_alloc(TOKEN_RBRACE, make_dyn_str("}"), lexer->line_num);
+        case '=': lexer_advance(lexer); return token_alloc(TOKEN_EQUALS, make_dyn_str("="), lexer->line_num);
+        case ',': lexer_advance(lexer); return token_alloc(TOKEN_COMMA, make_dyn_str(","), lexer->line_num);
+        case ':': lexer_advance(lexer); return token_alloc(TOKEN_COLON, make_dyn_str(":"), lexer->line_num);
         case '-':
             lexer_advance(lexer);
             if (lexer->current_c == '>')
-                return token_alloc(TOKEN_ARROW, make_dyn_str("->"));
+            {
+                lexer_advance(lexer);
+                return token_alloc(TOKEN_ARROW, make_dyn_str("->"), lexer->line_num);
+            }
+            break;
+        case '\n':
+            lexer_advance(lexer);
+            ++lexer->line_num;
+            break;
+        default:
+            fprintf(stderr, "Lexer error: unrecognized character '%c' at index %lu\n",
+                            lexer->current_c, lexer->index);
+            exit(EXIT_FAILURE);
             break;
         }
-
-        lexer_advance(lexer);
-        ++lexer->line_num;
     }
 
-    return token_alloc(TOKEN_EOF, make_dyn_str(""));
+    return token_alloc(TOKEN_EOF, make_dyn_str(""), lexer->line_num);
 }
 
 

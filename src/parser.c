@@ -81,6 +81,7 @@ struct Node *parser_parse_int(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_INT);
     node->int_value = atoi(parser->curr_tok->value);
+    node->error_line = parser->curr_tok->line_num;
 
     parser_eat(parser, TOKEN_INT);
     return node;
@@ -91,6 +92,7 @@ struct Node *parser_parse_str(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_STRING);
     node->string_value = parser->curr_tok->value;
+    node->error_line = parser->curr_tok->line_num;
 
     parser_eat(parser, TOKEN_STRING);
     return node;
@@ -113,6 +115,7 @@ struct Node *parser_parse_id(struct Parser *parser)
 struct Node *parser_parse_function_def(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_FUNCTION_DEF);
+    node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID); // fn
 
     node->function_def_name = parser->curr_tok->value;
@@ -124,6 +127,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     while (parser->curr_tok->type != TOKEN_RPAREN)
     {
         struct Node *param = node_alloc(NODE_PARAMETER);
+        param->error_line = parser->curr_tok->line_num;
         param->param_stack_offset = offset;
         offset += 4;
 
@@ -169,6 +173,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 struct Node *parser_parse_return(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_RETURN);
+    node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID);
 
     node->return_value = parser_parse_expr(parser);
@@ -179,6 +184,7 @@ struct Node *parser_parse_return(struct Parser *parser)
 struct Node *parser_parse_variable_def(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_VARIABLE_DEF);
+    node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID);
 
     char *name = parser->curr_tok->value;
@@ -215,6 +221,7 @@ struct Node *parser_parse_variable(struct Parser *parser)
         return parser_parse_assignment(parser);
 
     struct Node *node = node_alloc(NODE_VARIABLE);
+    node->error_line = parser->curr_tok->line_num;
     node->variable_name = variable_name;
 
     return node;
@@ -224,6 +231,7 @@ struct Node *parser_parse_variable(struct Parser *parser)
 struct Node *parser_parse_function_call(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_FUNCTION_CALL);
+    node->error_line = parser->curr_tok->line_num;
     node->function_call_name = parser->tokens[parser->curr_idx - 1]->value;
 
     parser_eat(parser, TOKEN_LPAREN);
@@ -232,7 +240,7 @@ struct Node *parser_parse_function_call(struct Parser *parser)
     if (expr)
     {
         node->function_call_args = realloc(node->function_call_args,
-                                sizeof(struct Node*) * ++node->function_call_args_size);
+                    sizeof(struct Node*) * ++node->function_call_args_size);
         node->function_call_args[node->function_call_args_size - 1] = expr;
     }
 
@@ -255,6 +263,7 @@ struct Node *parser_parse_function_call(struct Parser *parser)
 struct Node *parser_parse_assignment(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_ASSIGNMENT);
+    node->error_line = parser->curr_tok->line_num;
     node->assignment_dst = node_alloc(NODE_VARIABLE);
     node->assignment_dst->variable_name = parser->tokens[parser->curr_idx - 1]->value;
     parser_eat(parser, TOKEN_EQUALS);

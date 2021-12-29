@@ -40,6 +40,8 @@ struct Node *node_alloc(int type)
     node->assignment_dst = 0;
     node->assignment_src = 0;
 
+    node->error_line = 0;
+
     return node;
 }
 

@@ -1,4 +1,5 @@
 fn func(a: str, b: str) -> str {
+    a = "aval2";
     pront(a);
     return b;
 };

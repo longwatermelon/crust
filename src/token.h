@@ -1,6 +1,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <stdlib.h>
+
 struct Token
 {
     enum
@@ -21,9 +23,10 @@ struct Token
     } type;
 
     char *value;
+    size_t line_num;
 };
 
-struct Token *token_alloc(int type, char *value);
+struct Token *token_alloc(int type, char *value, size_t line_num);
 void token_free(struct Token *token);
 
 #endif
