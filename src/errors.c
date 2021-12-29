@@ -75,7 +75,7 @@ void errors_check_variable_def(struct Node *def)
 {
     if (def->variable_def_type != def->variable_def_value->type)
     {
-        fprintf(stderr, ERROR ON_LINE "Assigning value of type %s to variable "
+        fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
                         "'%s' of type %s.\n", def->error_line,
                         node_str_from_type(def->variable_def_value->type),
                         def->variable_def_name, node_str_from_type(def->variable_def_type));
@@ -84,7 +84,19 @@ void errors_check_variable_def(struct Node *def)
 }
 
 
-void errors_check_assignment(struct Node *assignment)
+void errors_check_assignment(struct Node *assignment, struct Scope *scope)
 {
+    int src_type = node_type_from_node(assignment->assignment_src, scope);
+    int dst_type = node_type_from_node(assignment->assignment_dst, scope);
+
+    if (src_type != dst_type)
+    {
+        fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
+                        "'%s' of type %s.\n", assignment->error_line,
+                        node_str_from_type(src_type),
+                        assignment->assignment_dst->variable_name,
+                        node_str_from_type(dst_type));
+        exit(EXIT_FAILURE);
+    }
 }
 

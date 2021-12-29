@@ -236,6 +236,8 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_assignment(struct Asm *as, struct Node *node)
 {
+    errors_check_assignment(node, as->scope);
+
     char *src = asm_str_from_node(as, node->assignment_src);
     char *dst = asm_str_from_node(as, node->assignment_dst);
 
