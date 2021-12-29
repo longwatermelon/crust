@@ -201,7 +201,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
-    errors_check_function_call(as->scope, func, node);
+    errors_check_function_call(func, node, as->scope);
 
     // Push args on stack backwards so they're in order
     for (int i = node->function_call_args_size - 1; i >= 0; --i)

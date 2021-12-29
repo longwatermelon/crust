@@ -8,7 +8,7 @@
 
 #define ERROR_ON_LINE RED_BOLD "Error: " WHITE "Line %lu: "
 
-void errors_check_function_call(struct Scope *scope, struct Node *def, struct Node *call)
+void errors_check_function_call(struct Node *def, struct Node *call, struct Scope *scope)
 {
     if (def->function_def_params_size != call->function_call_args_size)
     {
