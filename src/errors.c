@@ -70,3 +70,21 @@ void errors_check_function_return(struct Node *def, struct Scope *scope)
     }
 }
 
+
+void errors_check_variable_def(struct Node *def)
+{
+    if (def->variable_def_type != def->variable_def_value->type)
+    {
+        fprintf(stderr, ERROR ON_LINE "Assigning value of type %s to variable "
+                        "'%s' of type %s.\n", def->error_line,
+                        node_str_from_type(def->variable_def_value->type),
+                        def->variable_def_name, node_str_from_type(def->variable_def_type));
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+void errors_check_assignment(struct Node *assignment)
+{
+}
+

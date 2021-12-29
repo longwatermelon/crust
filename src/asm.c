@@ -147,6 +147,8 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 
     asm_gen_add_to_stack(as, literal);
     node->variable_def_stack_offset = -as->stack_size;
+
+    errors_check_variable_def(node);
 }
 
 

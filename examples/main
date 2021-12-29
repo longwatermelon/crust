@@ -9,6 +9,7 @@ fn main() -> int {
     pront(a, func("a val", "b val"));
     a = "str\n";
     pront(a);
+    let variable: int = "string";
     return 0;
 };
 
