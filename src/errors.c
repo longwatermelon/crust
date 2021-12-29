@@ -21,16 +21,7 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Scop
 
     for (size_t i = 0; i < call->function_call_args_size; ++i)
     {
-        struct Node *node = node_strip_to_literal(call->function_call_args[i], scope);
-
-        int type;
-
-        if (node->type == NODE_VARIABLE_DEF)
-            type = node->variable_def_type;
-        else if (node->type == NODE_PARAMETER)
-            type = node->param_type;
-        else
-            type = node->type;
+        int type = node_type_from_node(call->function_call_args[i], scope);
 
         if (type != def->function_def_params[i]->param_type)
         {
