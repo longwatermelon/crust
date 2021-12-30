@@ -14,5 +14,5 @@ deezc: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -c $< -o $@
 
 clean:
-	rm *.o deezc
+	-rm *.o deezc
 
