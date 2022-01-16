@@ -20,8 +20,7 @@ void crust_compile(const char *fp)
         tokens[ntokens - 1] = t;
     }
 
-    tokens = realloc(tokens, sizeof(struct Token*) * ++ntokens);
-    tokens[ntokens - 1] = t;
+    token_free(t);
 
     struct Parser *parser = parser_alloc(tokens, ntokens);
     struct Node *root = parser_parse(parser);
