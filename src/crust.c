@@ -26,21 +26,19 @@ void crust_compile(const char *fp)
     struct Node *root = parser_parse(parser);
 
     struct Asm *as = asm_alloc(fp);
-    char *s = asm_gen_root(as, root);
-    asm_free(as);
+    asm_gen_expr(as, root);
 
     FILE *out = fopen("a.s", "w");
-    fprintf(out, "%s\n", s);
+    fprintf(out, "%s%s\n", as->data, as->root);
     fclose(out);
 
     system("as --32 a.s -o a.o");
     system("ld a.o -o a.out -m elf_i386");
 
-    free(s);
-
     parser_free(parser);
     lexer_free(lexer);
     node_free(root);
+    asm_free(as);
 
     for (size_t i = 0; i < ntokens; ++i)
         token_free(tokens[i]);

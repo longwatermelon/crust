@@ -54,22 +54,14 @@ void asm_free(struct Asm *as)
 }
 
 
-char *asm_gen_root(struct Asm *as, struct Node *node)
-{
-    for (size_t i = 0; i < node->compound_size; ++i)
-        asm_gen_expr(as, node->compound_nodes[i]);
-
-    size_t len = strlen(as->data) + strlen(as->root);
-    char *str = calloc(len + 1, sizeof(char));
-    sprintf(str, "%s%s", as->data, as->root);
-    str = realloc(str, sizeof(char) * (strlen(str) + 1));
-
-    return str;
-}
-
-
 void asm_gen_expr(struct Asm *as, struct Node *node)
 {
+    if (node->type == NODE_COMPOUND)
+    {
+        for (size_t i = 0; i < node->compound_size; ++i)
+            asm_gen_expr(as, node->compound_nodes[i]);
+    }
+
     if (node->type == NODE_FUNCTION_DEF)
     {
         scope_add_function_def(as->scope, node);
