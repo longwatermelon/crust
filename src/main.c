@@ -1,4 +1,4 @@
-#include "deez.h"
+#include "crust.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,7 +11,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    deez_compile(argv[1]);
+    crust_compile(argv[1]);
     return 0;
 }
 

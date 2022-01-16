@@ -5,14 +5,14 @@ CC=gcc
 CFLAGS=-std=gnu17 -ggdb -Wall -Werror
 LDFLAGS=-lm
 
-all: cdeez
+all: crust
 
-cdeez: $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+crust: $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 %.o: src/%.c src/%.h
-	$(CC) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
 clean:
-	-rm *.o cdeez
+	-rm *.o crust
 

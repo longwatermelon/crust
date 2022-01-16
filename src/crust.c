@@ -1,4 +1,4 @@
-#include "deez.h"
+#include "crust.h"
 #include "lexer.h"
 #include "parser.h"
 #include "asm.h"
@@ -6,7 +6,7 @@
 #include "util.h"
 
 
-void deez_compile(const char *fp)
+void crust_compile(const char *fp)
 {
     struct Lexer *lexer = lexer_alloc(util_read_file(fp));
 
