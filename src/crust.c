@@ -41,7 +41,11 @@ void crust_compile(struct Args *args)
     system(cmd);
     free(cmd);
 
-    system("rm /tmp/a{.s,.o}");
+    if (args->keep_assembly)
+        system("cp /tmp/a.s .");
+
+    remove("/tmp/a.s");
+    remove("/tmp/a.o");
 
     parser_free(parser);
     lexer_free(lexer);
