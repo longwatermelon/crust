@@ -27,6 +27,7 @@ struct Node *parser_parse_str(struct Parser *parser);
 struct Node *parser_parse_id(struct Parser *parser);
 
 struct Node *parser_parse_function_def(struct Parser *parser);
+struct Node **parser_parse_function_def_params(struct Parser *parser, size_t *nparams);
 struct Node *parser_parse_return(struct Parser *parser);
 
 struct Node *parser_parse_variable_def(struct Parser *parser);

@@ -85,7 +85,7 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
     {
         fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
                         "'%s' of type %s.\n", def->error_line,
-                        node_str_from_type(def->variable_def_value->type),
+                        node_str_from_type(node_strip_to_literal(def->variable_def_value, as->scope)->type),
                         def->variable_def_name, node_str_from_type(def->variable_def_type));
         errors_print_lines(as, def->error_line, ERROR_RANGE);
         exit(EXIT_FAILURE);

@@ -17,8 +17,7 @@ struct Asm *asm_alloc(const char *fp)
     as->data = calloc(strlen(data_template) + 1, sizeof(char));
     strcpy(as->data, data_template);
 
-    const char *begin = ".section .text\n"
-                        ".globl _start\n"
+    const char *begin = ".globl _start\n"
                         "_start:\n"
                         "call main\n"
                         "mov $1, %eax\n"
