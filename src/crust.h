@@ -1,7 +1,9 @@
 #ifndef CRUST_H
 #define CRUST_H
 
-void crust_compile(const char *fp);
+#include "args.h"
+
+void crust_compile(struct Args *args);
 
 #endif
 

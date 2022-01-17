@@ -4,11 +4,12 @@
 #include "asm.h"
 #include "scope.h"
 #include "util.h"
+#include <string.h>
 
 
-void crust_compile(const char *fp)
+void crust_compile(struct Args *args)
 {
-    struct Lexer *lexer = lexer_alloc(util_read_file(fp));
+    struct Lexer *lexer = lexer_alloc(util_read_file(args->source));
 
     struct Token **tokens = 0;
     size_t ntokens = 0;
@@ -25,15 +26,22 @@ void crust_compile(const char *fp)
     struct Parser *parser = parser_alloc(tokens, ntokens);
     struct Node *root = parser_parse(parser);
 
-    struct Asm *as = asm_alloc(fp);
+    struct Asm *as = asm_alloc(args->source);
     asm_gen_expr(as, root);
 
-    FILE *out = fopen("a.s", "w");
+    FILE *out = fopen("/tmp/a.s", "w");
     fprintf(out, "%s%s\n", as->data, as->root);
     fclose(out);
 
-    system("as --32 a.s -o a.o");
-    system("ld a.o -o a.out -m elf_i386");
+    system("as --32 /tmp/a.s -o /tmp/a.o");
+
+    const char *template = "ld /tmp/a.o -o %s -m elf_i386";
+    char *cmd = calloc(strlen(template) + strlen(args->out_filename) + 1, sizeof(char));
+    sprintf(cmd, template, args->out_filename);
+    system(cmd);
+    free(cmd);
+
+    system("rm /tmp/a{.s,.o}");
 
     parser_free(parser);
     lexer_free(lexer);

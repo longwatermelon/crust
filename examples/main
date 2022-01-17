@@ -16,7 +16,7 @@ fn main() -> int {
     func(a, "bbbbb", 0);
     func(b, "bbbbb", 0);
 
-    let b2: int = b;
+    let b2: str = b;
     pront(b2, "    \n");
     b = a;
     b2 = func(a, b, 0);

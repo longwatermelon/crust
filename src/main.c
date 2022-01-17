@@ -11,7 +11,10 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    crust_compile(argv[1]);
+    struct Args *args = args_parse(argc, argv);
+    crust_compile(args);
+    args_free(args);
+
     return 0;
 }
 
