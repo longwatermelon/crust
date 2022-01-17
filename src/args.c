@@ -12,7 +12,14 @@ struct Args *args_parse(int argc, char **argv)
 
     for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(argv[i], "-o") == 0)
+        if (strcmp(argv[i], "--help") == 0)
+        {
+            printf( "Crust command line help\n"
+                    "-o [output file]: Specify output executable name\n"
+                    "-S: Keep assembly output\n");
+            exit(0);
+        }
+        else if (strcmp(argv[i], "-o") == 0)
         {
             args->out_filename = argv[i + 1];
             ++i;
