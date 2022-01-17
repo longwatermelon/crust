@@ -6,4 +6,4 @@ I don't have any experience with x86 assembly, everything I know about it is fro
 # Runtime dependencies
 * as
 * ld
-
+* cp
