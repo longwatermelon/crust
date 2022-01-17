@@ -7,3 +7,10 @@ I don't have any experience with x86 assembly, everything I know about it is fro
 * as
 * ld
 * cp
+
+# Building
+```
+git clone https://github.com/longwatermelon/crust
+cd crust
+make
+```
