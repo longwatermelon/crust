@@ -9,6 +9,17 @@
 
 void crust_compile(struct Args *args)
 {
+    struct Node *root = crust_gen_ast(args);
+    char *as = crust_gen_asm(root, args);
+    crust_assemble(as, args);
+
+    node_free(root);
+    free(as);
+}
+
+
+struct Node *crust_gen_ast(struct Args *args)
+{
     struct Lexer *lexer = lexer_alloc(util_read_file(args->source));
 
     struct Token **tokens = 0;
@@ -26,11 +37,38 @@ void crust_compile(struct Args *args)
     struct Parser *parser = parser_alloc(tokens, ntokens);
     struct Node *root = parser_parse(parser);
 
+    parser_free(parser);
+    lexer_free(lexer);
+
+    for (size_t i = 0; i < ntokens; ++i)
+        token_free(tokens[i]);
+
+    free(tokens);
+
+    return root;
+}
+
+
+char *crust_gen_asm(struct Node *root, struct Args *args)
+{
     struct Asm *as = asm_alloc(args->source);
     asm_gen_expr(as, root);
 
+    size_t len = strlen(as->data) + strlen(as->root);
+    char *s = malloc(sizeof(char) * (len + 1));
+    sprintf(s, "%s%s", as->data, as->root);
+    s[len] = '\0';
+
+    asm_free(as);
+
+    return s;
+}
+
+
+void crust_assemble(char *as, struct Args *args)
+{
     FILE *out = fopen("/tmp/a.s", "w");
-    fprintf(out, "%s%s\n", as->data, as->root);
+    fprintf(out, "%s\n", as);
     fclose(out);
 
     system("as --32 /tmp/a.s -o /tmp/a.o");
@@ -46,15 +84,5 @@ void crust_compile(struct Args *args)
 
     remove("/tmp/a.s");
     remove("/tmp/a.o");
-
-    parser_free(parser);
-    lexer_free(lexer);
-    node_free(root);
-    asm_free(as);
-
-    for (size_t i = 0; i < ntokens; ++i)
-        token_free(tokens[i]);
-
-    free(tokens);
 }
 

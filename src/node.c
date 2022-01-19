@@ -74,23 +74,19 @@ void node_free(struct Node *node)
         free(node->function_def_params);
     }
 
-    if (node->function_def_body)
-        node_free(node->function_def_body);
+    if (node->function_def_body) node_free(node->function_def_body);
+    if (node->return_value) node_free(node->return_value);
+    if (node->variable_def_value) node_free(node->variable_def_value);
+    if (node->string_asm_id) free(node->string_asm_id);
+    if (node->assignment_dst) node_free(node->assignment_dst);
+    if (node->assignment_src) node_free(node->assignment_src);
 
-    if (node->return_value)
-        node_free(node->return_value);
-
-    if (node->variable_def_value)
-        node_free(node->variable_def_value);
-
-    if (node->string_asm_id)
-        free(node->string_asm_id);
-
-    if (node->assignment_dst)
-        node_free(node->assignment_dst);
-
-    if (node->assignment_src)
-        node_free(node->assignment_src);
+    if (node->string_value) free(node->string_value);
+    if (node->function_def_name) free(node->function_def_name);
+    if (node->variable_def_name) free(node->variable_def_name);
+    if (node->variable_name) free(node->variable_name);
+    if (node->function_call_name) free(node->function_call_name);
+    if (node->param_name) free(node->param_name);
 
     free(node);
 }

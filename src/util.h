@@ -9,5 +9,7 @@ char **util_read_file_lines(const char *fp, size_t *nlines);
 
 char *util_int_to_str(int i);
 
+char *util_strcpy(char *str);
+
 #endif
 

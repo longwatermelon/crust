@@ -83,3 +83,11 @@ char *util_int_to_str(int i)
     return str;
 }
 
+
+char *util_strcpy(char *str)
+{
+    char *s = malloc(sizeof(char) * (strlen(str) + 1));
+    strcpy(s, str);
+    return s;
+}
+
