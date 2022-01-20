@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define RESET "\e[0m"
-#define RED_BOLD "\e[1;31m"
+#define RESET "\x1b[0m"
+#define RED_BOLD "\x1b[1;31m"
 
 #define ERROR RED_BOLD "Error: " RESET
 #define ON_LINE "Line %lu: "
@@ -144,7 +144,7 @@ void errors_print_lines(struct Asm *as, size_t line, size_t range)
     for (size_t i = line - range; i <= line + range; ++i)
     {
         if (i == line)
-            printf("\e[1;37m");
+            printf("\x1b[1;37m");
 
         errors_print_line(as, i);
 

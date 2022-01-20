@@ -2,7 +2,7 @@ SRC=$(wildcard src/*.c)
 OBJS=$(notdir $(SRC:.c=.o))
 
 CC=gcc
-CFLAGS=-std=gnu17 -ggdb -Wall -Werror
+CFLAGS=-std=gnu17 -ggdb -Wall -Werror -pedantic
 LDFLAGS=-lm
 
 all: crust

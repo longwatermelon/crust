@@ -200,7 +200,10 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
 void asm_gen_function_call(struct Asm *as, struct Node *node)
 {
     if (strcmp(node->function_call_name, "pront") == 0)
-        return asm_gen_builtin_print(as, node);
+    {
+        asm_gen_builtin_print(as, node);
+        return;
+    }
 
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
