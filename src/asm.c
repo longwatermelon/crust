@@ -153,11 +153,18 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 
 void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 {
+    if (node->type == NODE_INIT_LIST)
+    {
+        for (size_t i = 0; i < node->init_list_len; ++i)
+            asm_gen_add_to_stack(as, node->init_list_values[i]);
+
+        return;
+    }
+
     as->stack_size += 4;
     const char *template =  "subl $4, %%esp\n"
                             "movl %s, -%d(%%ebp)\n";
 
-    // TODO Add to stack function for initializer lists
     char *left = asm_str_from_node(as, node);
 
     size_t len = strlen(left) + MAX_INT_LEN + strlen(template);

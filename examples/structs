@@ -1,0 +1,10 @@
+struct example {
+    a: int,
+    b: str
+};
+
+fn main() -> int {
+    let var: example = example{ 1, "string" };
+    return 0;
+};
+
