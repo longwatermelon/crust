@@ -18,6 +18,9 @@ struct Scope
 
     struct Node **function_defs;
     size_t function_defs_size;
+
+    struct Node **struct_defs;
+    size_t struct_defs_size;
 };
 
 struct Scope *scope_alloc();
@@ -27,8 +30,11 @@ void layer_free(struct ScopeLayer *layer);
 
 void scope_add_variable_def(struct Scope *scope, struct Node *node);
 void scope_add_function_def(struct Scope *scope, struct Node *node);
-struct Node *scope_find_variable(struct Scope *scope, char *name);
+void scope_add_struct_def(struct Scope *scope, struct Node *node);
+
+struct Node *scope_find_variable(struct Scope *scope, struct Node *var);
 struct Node *scope_find_function(struct Scope *scope, char *name);
+struct Node *scope_find_struct(struct Scope *scope, char *name);
 
 void scope_pop_layer(struct Scope *scope);
 void scope_push_layer(struct Scope *scope);

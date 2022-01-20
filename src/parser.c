@@ -238,6 +238,17 @@ struct Node *parser_parse_variable(struct Parser *parser)
 
     parser_eat(parser, TOKEN_ID);
 
+    if (parser->curr_tok->type == TOKEN_PERIOD)
+    {
+        struct Node *node = node_alloc(NODE_VARIABLE);
+        node->variable_name = util_strcpy(variable_name);
+
+        parser_eat(parser, TOKEN_PERIOD);
+
+        node->variable_struct_member = parser_parse_variable(parser);
+        return node;
+    }
+
     if (parser->curr_tok->type == TOKEN_LPAREN)
         return parser_parse_function_call(parser);
     else if (parser->curr_tok->type == TOKEN_EQUALS)

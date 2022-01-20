@@ -13,6 +13,9 @@ struct Scope *scope_alloc()
     scope->function_defs = 0;
     scope->function_defs_size = 0;
 
+    scope->struct_defs = 0;
+    scope->struct_defs_size = 0;
+
     return scope;
 }
 
@@ -29,6 +32,9 @@ void scope_free(struct Scope *scope)
 
     if (scope->function_defs)
         free(scope->function_defs);
+
+    if (scope->struct_defs)
+        free(scope->struct_defs);
 
     free(scope);
 }
@@ -77,16 +83,40 @@ void scope_add_function_def(struct Scope *scope, struct Node *node)
 }
 
 
-struct Node *scope_find_variable(struct Scope *scope, char *name)
+void scope_add_struct_def(struct Scope *scope, struct Node *node)
+{
+    scope->struct_defs = realloc(scope->struct_defs, sizeof(struct Node*) * ++scope->struct_defs_size);
+    scope->struct_defs[scope->struct_defs_size - 1] = node;
+}
+
+
+struct Node *scope_find_variable(struct Scope *scope, struct Node *var)
 {
     for (size_t layer = 0; layer < scope->nlayers; ++layer)
     {
         for (size_t i = 0; i < scope->layers[layer]->variable_defs_size; ++i)
         {
-            struct Node *var = scope->layers[layer]->variable_defs[i];
+            struct Node *def = scope->layers[layer]->variable_defs[i];
 
-            if (strcmp(var->variable_def_name, name) == 0)
-                return var;
+            if (strcmp(def->variable_def_name, var->variable_name) == 0)
+            {
+                // TODO Rewrite to handle nested initializer lists
+                if (var->variable_struct_member)
+                {
+                    struct Node *struct_def = scope_find_struct(scope,
+                                node_struct_type_from_node(def->variable_def_value));
+
+                    for (size_t i = 0; i < struct_def->struct_members_size; ++i)
+                    {
+                        if (strcmp(struct_def->struct_members[i]->member_name, var->variable_struct_member->variable_name) == 0)
+                        {
+                            return def->variable_def_value->init_list_values[i];
+                        }
+                    }
+                }
+
+                return def;
+            }
         }
     }
 
@@ -94,11 +124,11 @@ struct Node *scope_find_variable(struct Scope *scope, char *name)
     {
         struct Node *param = scope->curr_layer->params[i];
 
-        if (strcmp(param->param_name, name) == 0)
+        if (strcmp(param->param_name, var->variable_name) == 0)
             return param;
     }
 
-    fprintf(stderr, "No variable named '%s'\n", name);
+    fprintf(stderr, "No variable named '%s'\n", var->variable_name);
     exit(EXIT_FAILURE);
 }
 
@@ -112,6 +142,19 @@ struct Node *scope_find_function(struct Scope *scope, char *name)
     }
 
     fprintf(stderr, "No function named '%s'\n", name);
+    exit(EXIT_FAILURE);
+}
+
+
+struct Node *scope_find_struct(struct Scope *scope, char *name)
+{
+    for (size_t i = 0; i < scope->struct_defs_size; ++i)
+    {
+        if (strcmp(scope->struct_defs[i]->struct_name, name) == 0)
+            return scope->struct_defs[i];
+    }
+
+    fprintf(stderr, "No struct named '%s'\n", name);
     exit(EXIT_FAILURE);
 }
 

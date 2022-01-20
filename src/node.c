@@ -30,6 +30,7 @@ struct Node *node_alloc(int type)
     node->variable_def_stack_offset = 0;
 
     node->variable_name = 0;
+    node->variable_struct_member = 0;
 
     node->function_call_name = 0;
     node->function_call_args = 0;
@@ -104,11 +105,12 @@ void node_free(struct Node *node)
     if (node->function_def_body) node_free(node->function_def_body);
     if (node->return_value) node_free(node->return_value);
     if (node->variable_def_value) node_free(node->variable_def_value);
-    if (node->string_asm_id) free(node->string_asm_id);
     if (node->assignment_dst) node_free(node->assignment_dst);
     if (node->assignment_src) node_free(node->assignment_src);
+    if (node->variable_struct_member) node_free(node->variable_struct_member);
 
     if (node->string_value) free(node->string_value);
+    if (node->string_asm_id) free(node->string_asm_id);
     if (node->function_def_name) free(node->function_def_name);
     if (node->variable_def_name) free(node->variable_def_name);
     if (node->variable_name) free(node->variable_name);
@@ -129,7 +131,7 @@ struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope)
     case NODE_STRING:
         return node;
     case NODE_VARIABLE:
-        return node_strip_to_literal(scope_find_variable(scope, node->variable_name), scope);
+        return node_strip_to_literal(scope_find_variable(scope, node), scope);
     case NODE_VARIABLE_DEF:
         return node_strip_to_literal(node->variable_def_value, scope);
     default: return node;
@@ -169,9 +171,12 @@ int node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_RETURN:
         return node_type_from_node(node->return_value, scope);
     case NODE_VARIABLE:
-        return node_type_from_node(scope_find_variable(scope, node->variable_name), scope);
+    {
+        struct Node *def = scope_find_variable(scope, node);
+        return node_type_from_node(def, scope);
+    } break;
     case NODE_VARIABLE_DEF:
-        return node_strip_to_literal(node->variable_def_value, scope)->type;
+        return node_type_from_node(node_strip_to_literal(node->variable_def_value, scope), scope);
     case NODE_PARAMETER:
         return node->param_type;
     case NODE_FUNCTION_DEF:
@@ -185,6 +190,19 @@ int node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_INIT_LIST:
         return NODE_STRUCT;
     default: return -1;
+    }
+}
+
+
+char *node_struct_type_from_node(struct Node *node)
+{
+    switch (node->type)
+    {
+    case NODE_STRUCT:
+        return node->struct_name;
+    case NODE_INIT_LIST:
+        return node->init_list_struct_type;
+    default: return 0;
     }
 }
 

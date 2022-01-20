@@ -19,6 +19,7 @@ struct Token
         TOKEN_COMMA,
         TOKEN_COLON,
         TOKEN_STRING,
+        TOKEN_PERIOD,
         TOKEN_EOF
     } type;
 

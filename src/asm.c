@@ -81,6 +81,9 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
     if (node->type == NODE_ASSIGNMENT)
         asm_gen_assignment(as, node);
+
+    if (node->type == NODE_STRUCT)
+        scope_add_struct_def(as->scope, node);
 }
 
 
@@ -357,7 +360,7 @@ char *asm_str_from_str(struct Asm *as, struct Node *node)
 
 char *asm_str_from_var(struct Asm *as, struct Node *node)
 {
-    struct Node *var = scope_find_variable(as->scope, node->variable_name);
+    struct Node *var = scope_find_variable(as->scope, node);
 
     if (var->type == NODE_PARAMETER)
     {
