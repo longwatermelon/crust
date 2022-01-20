@@ -10,6 +10,7 @@ fn func(a: str, b: str, c: int) -> str {
 
 
 fn main() -> int {
+    let z: example = example { 1, "string" };
     func("aaaaa", "bbbbb", 0);
 
     pront("   \n\n");

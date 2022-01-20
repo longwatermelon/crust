@@ -49,6 +49,10 @@ struct Node *node_alloc(int type)
     node->member_name = 0;
     node->member_type = 0;
 
+    node->init_list_values = 0;
+    node->init_list_len = 0;
+    node->init_list_struct_type = 0;
+
     node->error_line = 0;
 
     return node;
@@ -87,6 +91,14 @@ void node_free(struct Node *node)
             node_free(node->struct_members[i]);
 
         free(node->struct_members);
+    }
+
+    if (node->init_list_values)
+    {
+        for (size_t i = 0; i < node->init_list_len; ++i)
+            node_free(node->init_list_values[i]);
+
+        free(node->init_list_values);
     }
 
     if (node->function_def_body) node_free(node->function_def_body);
@@ -169,6 +181,8 @@ int node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_STRUCT_MEMBER:
         return node->member_type;
     case NODE_STRUCT:
+        return NODE_STRUCT;
+    case NODE_INIT_LIST:
         return NODE_STRUCT;
     default: return -1;
     }

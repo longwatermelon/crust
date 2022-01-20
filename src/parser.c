@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "util.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -13,12 +14,16 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
     parser->curr_idx = 0;
     parser->curr_tok = parser->tokens[parser->curr_idx];
 
+    parser->struct_types = 0;
+    parser->struct_types_size = 0;
+
     return parser;
 }
 
 
 void parser_free(struct Parser *parser)
 {
+    free(parser->struct_types);
     free(parser);
 }
 
@@ -227,6 +232,10 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
 struct Node *parser_parse_variable(struct Parser *parser)
 {
     char *variable_name = parser->curr_tok->value;
+
+    if (parser_find_struct(parser, variable_name) && parser->tokens[parser->curr_idx + 1]->type == TOKEN_LBRACE)
+        return parser_parse_init_list(parser);
+
     parser_eat(parser, TOKEN_ID);
 
     if (parser->curr_tok->type == TOKEN_LPAREN)
@@ -294,6 +303,11 @@ struct Node *parser_parse_struct(struct Parser *parser)
     parser_eat(parser, TOKEN_ID);
 
     node->struct_name = util_strcpy(parser->curr_tok->value);
+
+    parser->struct_types = realloc(parser->struct_types,
+                            sizeof(char*) * ++parser->struct_types_size);
+    parser->struct_types[parser->struct_types_size - 1] = node->struct_name;
+
     parser_eat(parser, TOKEN_ID);
     parser_eat(parser, TOKEN_LBRACE);
 
@@ -318,5 +332,42 @@ struct Node *parser_parse_struct(struct Parser *parser)
 
     parser_eat(parser, TOKEN_RBRACE);
     return node;
+}
+
+
+struct Node *parser_parse_init_list(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_INIT_LIST);
+    node->init_list_struct_type = util_strcpy(parser->curr_tok->value);
+
+    parser_eat(parser, TOKEN_ID);
+    parser_eat(parser, TOKEN_LBRACE);
+
+    while (parser->curr_tok->type != TOKEN_RBRACE)
+    {
+        struct Node *expr = parser_parse_expr(parser);
+
+        node->init_list_values = realloc(node->init_list_values,
+                        sizeof(struct Node*) * ++node->init_list_len);
+        node->init_list_values[node->init_list_len - 1] = expr;
+
+        if (parser->curr_tok->type == TOKEN_COMMA)
+            parser_eat(parser, TOKEN_COMMA);
+    }
+
+    parser_eat(parser, TOKEN_RBRACE);
+    return node;
+}
+
+
+bool parser_find_struct(struct Parser *parser, char *name)
+{
+    for (size_t i = 0; i < parser->struct_types_size; ++i)
+    {
+        if (strcmp(parser->struct_types[i], name) == 0)
+            return true;
+    }
+
+    return false;
 }
 

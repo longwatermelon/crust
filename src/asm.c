@@ -157,6 +157,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
     const char *template =  "subl $4, %%esp\n"
                             "movl %s, -%d(%%ebp)\n";
 
+    // TODO Add to stack function for initializer lists
     char *left = asm_str_from_node(as, node);
 
     size_t len = strlen(left) + MAX_INT_LEN + strlen(template);

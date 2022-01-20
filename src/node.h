@@ -20,7 +20,8 @@ struct Node
         NODE_PARAMETER,
         NODE_ASSIGNMENT,
         NODE_STRUCT,
-        NODE_STRUCT_MEMBER
+        NODE_STRUCT_MEMBER,
+        NODE_INIT_LIST
     } type;
 
     // Compound
@@ -75,6 +76,11 @@ struct Node
     // Struct member
     char *member_name;
     int member_type;
+
+    // Initializer list
+    struct Node **init_list_values;
+    size_t init_list_len;
+    char *init_list_struct_type;
 
     // Error values
     size_t error_line;

@@ -3,7 +3,9 @@
 
 #include "token.h"
 #include "node.h"
+
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct Parser
 {
@@ -12,6 +14,9 @@ struct Parser
 
     struct Token *curr_tok;
     size_t curr_idx;
+
+    char **struct_types;
+    size_t struct_types_size;
 };
 
 struct Parser *parser_alloc(struct Token **tokens, size_t ntokens);
@@ -38,6 +43,10 @@ struct Node *parser_parse_function_call(struct Parser *parser);
 struct Node *parser_parse_assignment(struct Parser *parser);
 
 struct Node *parser_parse_struct(struct Parser *parser);
+
+struct Node *parser_parse_init_list(struct Parser *parser);
+
+bool parser_find_struct(struct Parser *parser, char *name);
 
 #endif
 
