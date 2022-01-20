@@ -42,6 +42,13 @@ struct Node *node_alloc(int type)
     node->assignment_dst = 0;
     node->assignment_src = 0;
 
+    node->struct_members = 0;
+    node->struct_members_size = 0;
+    node->struct_name = 0;
+
+    node->member_name = 0;
+    node->member_type = 0;
+
     node->error_line = 0;
 
     return node;
@@ -74,6 +81,14 @@ void node_free(struct Node *node)
         free(node->function_def_params);
     }
 
+    if (node->struct_members)
+    {
+        for (size_t i = 0; i < node->struct_members_size; ++i)
+            node_free(node->struct_members[i]);
+
+        free(node->struct_members);
+    }
+
     if (node->function_def_body) node_free(node->function_def_body);
     if (node->return_value) node_free(node->return_value);
     if (node->variable_def_value) node_free(node->variable_def_value);
@@ -87,6 +102,8 @@ void node_free(struct Node *node)
     if (node->variable_name) free(node->variable_name);
     if (node->function_call_name) free(node->function_call_name);
     if (node->param_name) free(node->param_name);
+    if (node->struct_name) free(node->struct_name);
+    if (node->member_name) free(node->member_name);
 
     free(node);
 }
@@ -126,7 +143,7 @@ int node_type_from_str(char *str)
     if (strcmp(str, "str") == 0)
         return NODE_STRING;
 
-    return -1;
+    return NODE_STRUCT;
 }
 
 
@@ -149,6 +166,10 @@ int node_type_from_node(struct Node *node, struct Scope *scope)
         return node->function_def_return_type;
     case NODE_FUNCTION_CALL:
         return scope_find_function(scope, node->function_call_name)->function_def_return_type;
+    case NODE_STRUCT_MEMBER:
+        return node->member_type;
+    case NODE_STRUCT:
+        return NODE_STRUCT;
     default: return -1;
     }
 }

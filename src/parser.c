@@ -108,6 +108,8 @@ struct Node *parser_parse_id(struct Parser *parser)
         return parser_parse_return(parser);
     else if (strcmp(parser->curr_tok->value, "let") == 0)
         return parser_parse_variable_def(parser);
+    else if (strcmp(parser->curr_tok->value, "struct") == 0)
+        return parser_parse_struct(parser);
     else
         return parser_parse_variable(parser);
 }
@@ -282,6 +284,39 @@ struct Node *parser_parse_assignment(struct Parser *parser)
 
     node->assignment_src = parser_parse_expr(parser);
 
+    return node;
+}
+
+
+struct Node *parser_parse_struct(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_STRUCT);
+    parser_eat(parser, TOKEN_ID);
+
+    node->struct_name = util_strcpy(parser->curr_tok->value);
+    parser_eat(parser, TOKEN_ID);
+    parser_eat(parser, TOKEN_LBRACE);
+
+    while (parser->curr_tok->type != TOKEN_RBRACE)
+    {
+        struct Node *member = node_alloc(NODE_STRUCT_MEMBER);
+        member->member_name = util_strcpy(parser->curr_tok->value);
+
+        parser_eat(parser, TOKEN_ID);
+        parser_eat(parser, TOKEN_COLON);
+
+        member->member_type = node_type_from_str(parser->curr_tok->value);
+        parser_eat(parser, TOKEN_ID);
+
+        node->struct_members = realloc(node->struct_members,
+                        sizeof(struct Node*) * ++node->struct_members_size);
+        node->struct_members[node->struct_members_size - 1] = member;
+
+        if (parser->curr_tok->type == TOKEN_COMMA)
+            parser_eat(parser, TOKEN_COMMA);
+    }
+
+    parser_eat(parser, TOKEN_RBRACE);
     return node;
 }
 

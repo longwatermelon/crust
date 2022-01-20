@@ -18,7 +18,9 @@ struct Node
         NODE_VARIABLE,
         NODE_FUNCTION_CALL,
         NODE_PARAMETER,
-        NODE_ASSIGNMENT
+        NODE_ASSIGNMENT,
+        NODE_STRUCT,
+        NODE_STRUCT_MEMBER
     } type;
 
     // Compound
@@ -64,6 +66,15 @@ struct Node
 
     // Assignment
     struct Node *assignment_dst, *assignment_src;
+
+    // Struct
+    char *struct_name;
+    struct Node **struct_members;
+    size_t struct_members_size;
+
+    // Struct member
+    char *member_name;
+    int member_type;
 
     // Error values
     size_t error_line;
