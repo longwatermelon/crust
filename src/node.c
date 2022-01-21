@@ -1,5 +1,6 @@
 #include "node.h"
 #include "scope.h"
+#include "util.h"
 #include <string.h>
 
 
@@ -15,7 +16,7 @@ struct Node *node_alloc(int type)
     node->function_def_name = 0;
     node->function_def_params = 0;
     node->function_def_params_size = 0;
-    node->function_def_return_type = 0;
+    node->function_def_return_type = (NodeDType){ 0, 0 };
 
     node->int_value = 0;
 
@@ -26,7 +27,7 @@ struct Node *node_alloc(int type)
 
     node->variable_def_value = 0;
     node->variable_def_name = 0;
-    node->variable_def_type = 0;
+    node->variable_def_type = (NodeDType){ 0, 0 };
     node->variable_def_stack_offset = 0;
 
     node->variable_name = 0;
@@ -37,7 +38,7 @@ struct Node *node_alloc(int type)
     node->function_call_args_size = 0;
 
     node->param_name = 0;
-    node->param_type = 0;
+    node->param_type = (NodeDType){ 0, 0 };
     node->param_stack_offset = 0;
 
     node->assignment_dst = 0;
@@ -48,11 +49,11 @@ struct Node *node_alloc(int type)
     node->struct_name = 0;
 
     node->member_name = 0;
-    node->member_type = 0;
+    node->member_type = (NodeDType){ 0, 0 };
 
     node->init_list_values = 0;
     node->init_list_len = 0;
-    node->init_list_struct_type = 0;
+    node->init_list_type = (NodeDType){ 0, 0 };
 
     node->error_line = 0;
 
@@ -139,35 +140,35 @@ struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope)
 }
 
 
-char *node_str_from_type(int type)
+char *node_str_from_type(NodeDType type)
 {
-    switch (type)
+    switch (type.type)
     {
     case NODE_INT: return "int";
     case NODE_STRING: return "str";
-    default: return 0;
+    default: return type.struct_type;
     }
 }
 
 
-int node_type_from_str(char *str)
+NodeDType node_type_from_str(char *str)
 {
     if (strcmp(str, "int") == 0)
-        return NODE_INT;
+        return (NodeDType){ NODE_INT, 0 };
     if (strcmp(str, "str") == 0)
-        return NODE_STRING;
+        return (NodeDType){ NODE_STRING, 0 };
 
-    return NODE_STRUCT;
+    return (NodeDType){ NODE_STRUCT, str };
 }
 
 
-int node_type_from_node(struct Node *node, struct Scope *scope)
+NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
 {
     switch (node->type)
     {
     case NODE_INT:
     case NODE_STRING:
-        return node->type;
+        return (NodeDType){ node->type, 0 };
     case NODE_RETURN:
         return node_type_from_node(node->return_value, scope);
     case NODE_VARIABLE:
@@ -186,23 +187,24 @@ int node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_STRUCT_MEMBER:
         return node->member_type;
     case NODE_STRUCT:
-        return NODE_STRUCT;
+        return (NodeDType){ NODE_STRUCT, node->struct_name };
     case NODE_INIT_LIST:
-        return NODE_STRUCT;
-    default: return -1;
+        return node->init_list_type;
+    default: return (NodeDType){ 0, 0 };
     }
 }
 
 
-char *node_struct_type_from_node(struct Node *node)
+bool node_dtype_cmp(NodeDType d1, NodeDType d2)
 {
-    switch (node->type)
+    if (d1.type == d2.type)
     {
-    case NODE_STRUCT:
-        return node->struct_name;
-    case NODE_INIT_LIST:
-        return node->init_list_struct_type;
-    default: return 0;
+        if (d1.struct_type && d2.struct_type)
+            return strcmp(d1.struct_type, d2.struct_type) == 0;
+
+        return true;
     }
+
+    return false;
 }
 

@@ -104,7 +104,7 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var)
                 if (var->variable_struct_member)
                 {
                     struct Node *struct_def = scope_find_struct(scope,
-                                node_struct_type_from_node(def->variable_def_value));
+                        node_type_from_node(def->variable_def_value, scope).struct_type);
 
                     for (size_t i = 0; i < struct_def->struct_members_size; ++i)
                     {

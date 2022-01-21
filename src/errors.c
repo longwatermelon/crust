@@ -28,9 +28,9 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Asm 
 
     for (size_t i = 0; i < call->function_call_args_size; ++i)
     {
-        int type = node_type_from_node(call->function_call_args[i], as->scope);
+        NodeDType type = node_type_from_node(call->function_call_args[i], as->scope);
 
-        if (type != def->function_def_params[i]->param_type)
+        if (!node_dtype_cmp(type, def->function_def_params[i]->param_type))
         {
             fprintf(stderr, ERROR ON_LINE "Parameter %lu of function '%s' is of type %s but "
                             "data of type %s was passed.\n", call->error_line, i,
@@ -55,9 +55,9 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
         if (node->type == NODE_RETURN)
         {
             found_return = true;
-            int type = node_type_from_node(node->return_value, as->scope);
+            NodeDType type = node_type_from_node(node->return_value, as->scope);
 
-            if (type != def->function_def_return_type)
+            if (!node_dtype_cmp(type, def->function_def_return_type))
             {
                 fprintf(stderr, ERROR ON_LINE "Mismatched return types; Function "
                                 "'%s' has a return type of %s, but returns type %s.\n",
@@ -81,11 +81,11 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
 
 void errors_check_variable_def(struct Node *def, struct Asm *as)
 {
-    if (def->variable_def_type != node_type_from_node(def->variable_def_value, as->scope))
+    if (!node_dtype_cmp(def->variable_def_type, node_type_from_node(def->variable_def_value, as->scope)))
     {
         fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
                         "'%s' of type %s.\n", def->error_line,
-                        node_str_from_type(node_strip_to_literal(def->variable_def_value, as->scope)->type),
+                        node_str_from_type(node_type_from_node(def->variable_def_value, as->scope)),
                         def->variable_def_name, node_str_from_type(def->variable_def_type));
         errors_print_lines(as, def->error_line, ERROR_RANGE);
         exit(EXIT_FAILURE);
@@ -123,10 +123,10 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
 
 void errors_check_assignment(struct Node *assignment, struct Asm *as)
 {
-    int src_type = node_type_from_node(assignment->assignment_src, as->scope);
-    int dst_type = node_type_from_node(assignment->assignment_dst, as->scope);
+    NodeDType src_type = node_type_from_node(assignment->assignment_src, as->scope);
+    NodeDType dst_type = node_type_from_node(assignment->assignment_dst, as->scope);
 
-    if (src_type != dst_type)
+    if (!node_dtype_cmp(src_type, dst_type))
     {
         fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
                         "'%s' of type %s.\n", assignment->error_line,

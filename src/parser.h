@@ -47,6 +47,7 @@ struct Node *parser_parse_struct(struct Parser *parser);
 struct Node *parser_parse_init_list(struct Parser *parser);
 
 bool parser_find_struct(struct Parser *parser, char *name);
+NodeDType parser_parse_dtype(struct Parser *parser);
 
 #endif
 

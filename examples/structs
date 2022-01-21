@@ -3,15 +3,9 @@ struct example {
     b: str
 };
 
-fn test() -> example {
-    let e: example = example{ 100, "test" };
-    return e;
-};
-
 fn main() -> int {
-    let a: example = example{ 1, "string" };
-    let b: example = test();
-    pront(b.b);
-    return 0;
+    let a: example = example{ 100, "string" };
+    pront(a.b);
+    return a.a;
 };
 

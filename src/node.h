@@ -2,8 +2,15 @@
 #define NODE_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct Scope;
+
+typedef struct
+{
+    int type;
+    char *struct_type;
+} NodeDType;
 
 struct Node
 {
@@ -38,7 +45,7 @@ struct Node
     // Function def
     char *function_def_name;
     struct Node *function_def_body;
-    int function_def_return_type;
+    NodeDType function_def_return_type;
 
     struct Node **function_def_params;
     size_t function_def_params_size;
@@ -49,7 +56,7 @@ struct Node
     // Variable def
     struct Node *variable_def_value;
     char *variable_def_name;
-    int variable_def_type;
+    NodeDType variable_def_type;
     int variable_def_stack_offset;
 
     // Variable
@@ -63,7 +70,7 @@ struct Node
 
     // Parameter
     char *param_name;
-    int param_type;
+    NodeDType param_type;
     int param_stack_offset;
 
     // Assignment
@@ -76,12 +83,12 @@ struct Node
 
     // Struct member
     char *member_name;
-    int member_type;
+    NodeDType member_type;
 
     // Initializer list
     struct Node **init_list_values;
     size_t init_list_len;
-    char *init_list_struct_type;
+    NodeDType init_list_type;
 
     // Error values
     size_t error_line;
@@ -92,12 +99,12 @@ void node_free(struct Node *node);
 
 struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope);
 
-char *node_str_from_type(int type);
-int node_type_from_str(char *str);
+char *node_str_from_type(NodeDType type);
+NodeDType node_type_from_str(char *str);
 
-char *node_struct_type_from_node(struct Node *node);
+NodeDType node_type_from_node(struct Node *node, struct Scope *scope);
 
-int node_type_from_node(struct Node *node, struct Scope *scope);
+bool node_dtype_cmp(NodeDType d1, NodeDType d2);
 
 #endif
 

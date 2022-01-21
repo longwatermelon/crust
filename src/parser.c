@@ -133,15 +133,8 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     parser_eat(parser, TOKEN_ARROW);
 
-    node->function_def_return_type = node_type_from_str(parser->curr_tok->value);
+    node->function_def_return_type = parser_parse_dtype(parser);
 
-    if (node->function_def_return_type == -1)
-    {
-        fprintf(stderr, "Parser error: Unrecognized return type '%s'\n", parser->curr_tok->value);
-        exit(EXIT_FAILURE);
-    }
-
-    parser_eat(parser, TOKEN_ID);
     parser_eat(parser, TOKEN_LBRACE);
 
     node->function_def_body = parser_parse(parser);
@@ -171,8 +164,7 @@ struct Node **parser_parse_function_def_params(struct Parser *parser, size_t *np
         param->param_name = util_strcpy(parser->curr_tok->value);
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_COLON);
-        param->param_type = node_type_from_str(parser->curr_tok->value);
-        parser_eat(parser, TOKEN_ID);
+        param->param_type = parser_parse_dtype(parser);
 
         params = realloc(params, sizeof(struct Node*) * ++*nparams);
         params[*nparams - 1] = param;
@@ -210,15 +202,7 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
     parser_eat(parser, TOKEN_ID);
 
     parser_eat(parser, TOKEN_COLON);
-    node->variable_def_type = node_type_from_str(parser->curr_tok->value);
-
-    if (node->variable_def_type == -1)
-    {
-        fprintf(stderr, "Parser error: Unrecognized type annotation '%s'\n", parser->curr_tok->value);
-        exit(EXIT_FAILURE);
-    }
-
-    parser_eat(parser, TOKEN_ID);
+    node->variable_def_type = parser_parse_dtype(parser);
 
     parser_eat(parser, TOKEN_EQUALS);
 
@@ -330,8 +314,7 @@ struct Node *parser_parse_struct(struct Parser *parser)
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_COLON);
 
-        member->member_type = node_type_from_str(parser->curr_tok->value);
-        parser_eat(parser, TOKEN_ID);
+        member->member_type = parser_parse_dtype(parser);
 
         node->struct_members = realloc(node->struct_members,
                         sizeof(struct Node*) * ++node->struct_members_size);
@@ -349,9 +332,8 @@ struct Node *parser_parse_struct(struct Parser *parser)
 struct Node *parser_parse_init_list(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_INIT_LIST);
-    node->init_list_struct_type = util_strcpy(parser->curr_tok->value);
+    node->init_list_type = parser_parse_dtype(parser);
 
-    parser_eat(parser, TOKEN_ID);
     parser_eat(parser, TOKEN_LBRACE);
 
     while (parser->curr_tok->type != TOKEN_RBRACE)
@@ -380,5 +362,19 @@ bool parser_find_struct(struct Parser *parser, char *name)
     }
 
     return false;
+}
+
+
+NodeDType parser_parse_dtype(struct Parser *parser)
+{
+    char *name = util_strcpy(parser->curr_tok->value);
+    NodeDType type = node_type_from_str(name);
+
+    if (type.type != NODE_STRUCT)
+        free(type.struct_type);
+
+    parser_eat(parser, TOKEN_ID);
+
+    return type;
 }
 
