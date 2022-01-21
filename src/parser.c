@@ -371,7 +371,7 @@ NodeDType parser_parse_dtype(struct Parser *parser)
     NodeDType type = node_type_from_str(name);
 
     if (type.type != NODE_STRUCT)
-        free(type.struct_type);
+        free(name);
 
     parser_eat(parser, TOKEN_ID);
 

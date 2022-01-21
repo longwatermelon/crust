@@ -120,6 +120,12 @@ void node_free(struct Node *node)
     if (node->struct_name) free(node->struct_name);
     if (node->member_name) free(node->member_name);
 
+    if (node->function_def_return_type.struct_type) free(node->function_def_return_type.struct_type);
+    if (node->variable_def_type.struct_type) free(node->variable_def_type.struct_type);
+    if (node->param_type.struct_type) free(node->param_type.struct_type);
+    if (node->member_type.struct_type) free(node->member_type.struct_type);
+    if (node->init_list_type.struct_type) free(node->init_list_type.struct_type);
+
     free(node);
 }
 
