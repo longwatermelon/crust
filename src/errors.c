@@ -10,7 +10,6 @@
 #define RED_BOLD "\x1b[1;31m"
 
 #define ERROR RED_BOLD "Error: " RESET
-#define ON_LINE "Line %lu: "
 
 #define ERROR_RANGE 1
 
@@ -18,8 +17,8 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Asm 
 {
     if (def->function_def_params_size != call->function_call_args_size)
     {
-        fprintf(stderr, ERROR ON_LINE "Function '%s' takes "
-                        "%lu arguments but %lu were provided.\n", call->error_line,
+        fprintf(stderr, ERROR "Function '%s' takes "
+                        "%lu arguments but %lu were provided.\n",
                         def->function_def_name, def->function_def_params_size,
                         call->function_call_args_size);
         errors_print_lines(as, call->error_line, ERROR_RANGE);
@@ -32,8 +31,8 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Asm 
 
         if (!node_dtype_cmp(type, def->function_def_params[i]->param_type))
         {
-            fprintf(stderr, ERROR ON_LINE "Parameter %lu of function '%s' is of type %s but "
-                            "data of type %s was passed.\n", call->error_line, i,
+            fprintf(stderr, ERROR "Parameter %lu of function '%s' is of type %s but "
+                            "data of type %s was passed.\n", i,
                             def->function_def_name, node_str_from_type(def->function_def_params[i]->param_type),
                             node_str_from_type(type));
             errors_print_lines(as, call->error_line, ERROR_RANGE);
@@ -59,9 +58,9 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
 
             if (!node_dtype_cmp(type, def->function_def_return_type))
             {
-                fprintf(stderr, ERROR ON_LINE "Mismatched return types; Function "
+                fprintf(stderr, ERROR "Mismatched return types; Function "
                                 "'%s' has a return type of %s, but returns type %s.\n",
-                                node->error_line, def->function_def_name,
+                                def->function_def_name,
                                 node_str_from_type(def->function_def_return_type),
                                 node_str_from_type(type));
                 errors_print_lines(as, node->error_line, ERROR_RANGE);
@@ -83,8 +82,8 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
 {
     if (!node_dtype_cmp(def->variable_def_type, node_type_from_node(def->variable_def_value, as->scope)))
     {
-        fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
-                        "'%s' of type %s.\n", def->error_line,
+        fprintf(stderr, ERROR "Attempting to assign value of type %s to variable "
+                        "'%s' of type %s.\n",
                         node_str_from_type(node_type_from_node(def->variable_def_value, as->scope)),
                         def->variable_def_name, node_str_from_type(def->variable_def_type));
         errors_print_lines(as, def->error_line, ERROR_RANGE);
@@ -110,8 +109,8 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
 
     if (duplicate)
     {
-        fprintf(stderr, ERROR ON_LINE "Attempting to redefine variable '%s'.\n",
-                        def->error_line, def->variable_def_name);
+        fprintf(stderr, ERROR "Attempting to redefine variable '%s'.\n",
+                        def->variable_def_name);
         errors_print_lines(as, def->error_line, ERROR_RANGE);
 
         fprintf(stderr, "First defined here:\n");
@@ -128,9 +127,8 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as)
 
     if (!node_dtype_cmp(src_type, dst_type))
     {
-        fprintf(stderr, ERROR ON_LINE "Attempting to assign value of type %s to variable "
-                        "'%s' of type %s.\n", assignment->error_line,
-                        node_str_from_type(src_type),
+        fprintf(stderr, ERROR "Attempting to assign value of type %s to variable "
+                        "'%s' of type %s.\n", node_str_from_type(src_type),
                         assignment->assignment_dst->variable_name,
                         node_str_from_type(dst_type));
         errors_print_lines(as, assignment->error_line, ERROR_RANGE);
