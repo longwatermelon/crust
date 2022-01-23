@@ -31,7 +31,7 @@ struct Asm *asm_alloc(const char *fp)
     scope_push_layer(as->scope);
 
     as->lc = 0;
-    as->stack_size = 0;
+    as->stack_size = 4;
 
     as->source = util_read_file_lines(fp, &as->source_size);
 
@@ -147,8 +147,14 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
     if (literal->type == NODE_STRING)
         asm_gen_store_string(as, literal);
 
-    asm_gen_add_to_stack(as, literal);
     node->variable_def_stack_offset = -as->stack_size;
+
+    if (node->variable_def_type.type == NODE_STRUCT)
+        as->stack_size += node->variable_def_value->struct_members_size * 4;
+    else
+        as->stack_size += 4;
+
+    asm_gen_add_to_stack(as, literal);
 
     errors_check_variable_def(node, as);
 }
@@ -164,7 +170,6 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
         return;
     }
 
-    as->stack_size += 4;
     const char *template =  "subl $4, %%esp\n"
                             "movl %s, -%d(%%ebp)\n";
 
