@@ -3,6 +3,10 @@ struct example {
     b: str
 };
 
+fn test() -> int {
+    return 0;
+};
+
 fn main() -> int {
     let a: example = example{ 100, "string" };
     pront(a.b);

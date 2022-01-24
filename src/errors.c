@@ -78,6 +78,19 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
 }
 
 
+void errors_check_function_def(struct Node *def, struct Asm *as)
+{
+    struct Node *existing = scope_find_function(as->scope, def->function_def_name);
+
+    if (existing)
+    {
+        fprintf(stderr, ERROR "Redefining function '%s'.\n", def->function_def_name);
+        errors_print_lines(as, def->error_line, ERROR_RANGE);
+        exit(EXIT_FAILURE);
+    }
+}
+
+
 void errors_check_variable_def(struct Node *def, struct Asm *as)
 {
     if (!node_dtype_cmp(def->variable_def_type, node_type_from_node(def->variable_def_value, as->scope)))

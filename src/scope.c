@@ -128,8 +128,7 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var)
             return param;
     }
 
-    fprintf(stderr, "No variable named '%s'\n", var->variable_name);
-    exit(EXIT_FAILURE);
+    return 0;
 }
 
 
@@ -141,8 +140,7 @@ struct Node *scope_find_function(struct Scope *scope, char *name)
             return scope->function_defs[i];
     }
 
-    fprintf(stderr, "No function named '%s'\n", name);
-    exit(EXIT_FAILURE);
+    return 0;
 }
 
 
@@ -154,8 +152,7 @@ struct Node *scope_find_struct(struct Scope *scope, char *name)
             return scope->struct_defs[i];
     }
 
-    fprintf(stderr, "No struct named '%s'\n", name);
-    exit(EXIT_FAILURE);
+    return 0;
 }
 
 

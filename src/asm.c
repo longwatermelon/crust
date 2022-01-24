@@ -63,6 +63,7 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
     if (node->type == NODE_FUNCTION_DEF)
     {
+        errors_check_function_def(node, as);
         scope_add_function_def(as->scope, node);
         asm_gen_function_def(as, node);
     }
