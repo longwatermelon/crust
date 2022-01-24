@@ -15,7 +15,7 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as);
 
 void errors_error_nonexistent_variable(struct Asm *as, struct Node *var);
 
-void errors_print_lines(struct Asm *as, size_t line, size_t range);
+void errors_print_lines(struct Asm *as, size_t line);
 void errors_print_line(struct Asm *as, size_t line);
 
 #endif

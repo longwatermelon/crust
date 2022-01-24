@@ -11,8 +11,8 @@ char *util_read_file(const char *fp)
 
     if (!file)
     {
-        fprintf(stderr, "Couldn't open file %s\n", fp);
-        return 0;
+        fprintf(stderr, "Error: Unable to open file '%s'.\n", fp);
+        exit(EXIT_FAILURE);
     }
 
     char* contents = malloc(sizeof(char));

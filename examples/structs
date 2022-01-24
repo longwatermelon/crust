@@ -14,6 +14,6 @@ fn ex() -> void {
 fn main() -> int {
     let a: example = example{ 100, "string" };
     pront(a.b);
-    return b;
+    return a.a;
 };
 

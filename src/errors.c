@@ -21,7 +21,7 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Asm 
                         "%lu arguments but %lu were provided.\n",
                         def->function_def_name, def->function_def_params_size,
                         call->function_call_args_size);
-        errors_print_lines(as, call->error_line, ERROR_RANGE);
+        errors_print_lines(as, call->error_line);
         exit(EXIT_FAILURE);
     }
 
@@ -35,7 +35,7 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Asm 
                             "data of type %s was passed.\n", i,
                             def->function_def_name, node_str_from_type(def->function_def_params[i]->param_type),
                             node_str_from_type(type));
-            errors_print_lines(as, call->error_line, ERROR_RANGE);
+            errors_print_lines(as, call->error_line);
             exit(EXIT_FAILURE);
         }
     }
@@ -63,7 +63,7 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
                                 def->function_def_name,
                                 node_str_from_type(def->function_def_return_type),
                                 node_str_from_type(type));
-                errors_print_lines(as, node->error_line, ERROR_RANGE);
+                errors_print_lines(as, node->error_line);
                 exit(EXIT_FAILURE);
             }
         }
@@ -73,7 +73,7 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
     {
         fprintf(stderr, ERROR "Non-void function '%s' should return '%s' but returns nothing.\n",
                         def->function_def_name, node_str_from_type(def->function_def_return_type));
-        errors_print_lines(as, def->error_line, ERROR_RANGE);
+        errors_print_lines(as, def->error_line);
         exit(EXIT_FAILURE);
     }
 }
@@ -86,7 +86,7 @@ void errors_check_function_def(struct Node *def, struct Asm *as)
     if (existing)
     {
         fprintf(stderr, ERROR "Redefining function '%s'.\n", def->function_def_name);
-        errors_print_lines(as, def->error_line, ERROR_RANGE);
+        errors_print_lines(as, def->error_line);
         exit(EXIT_FAILURE);
     }
 }
@@ -100,7 +100,7 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
                         "'%s' of type %s.\n",
                         node_str_from_type(node_type_from_node(def->variable_def_value, as->scope)),
                         def->variable_def_name, node_str_from_type(def->variable_def_type));
-        errors_print_lines(as, def->error_line, ERROR_RANGE);
+        errors_print_lines(as, def->error_line);
         exit(EXIT_FAILURE);
     }
 
@@ -125,10 +125,10 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
     {
         fprintf(stderr, ERROR "Attempting to redefine variable '%s'.\n",
                         def->variable_def_name);
-        errors_print_lines(as, def->error_line, ERROR_RANGE);
+        errors_print_lines(as, def->error_line);
 
         fprintf(stderr, "\nFirst defined here:\n");
-        errors_print_lines(as, orig->error_line, ERROR_RANGE);
+        errors_print_lines(as, orig->error_line);
         exit(EXIT_FAILURE);
     }
 }
@@ -145,7 +145,7 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as)
                         "'%s' of type %s.\n", node_str_from_type(src_type),
                         assignment->assignment_dst->variable_name,
                         node_str_from_type(dst_type));
-        errors_print_lines(as, assignment->error_line, ERROR_RANGE);
+        errors_print_lines(as, assignment->error_line);
         exit(EXIT_FAILURE);
     }
 }
@@ -154,14 +154,14 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as)
 void errors_error_nonexistent_variable(struct Asm *as, struct Node *var)
 {
     fprintf(stderr, ERROR "Variable '%s' referenced but not defined.\n", var->variable_name);
-    errors_print_lines(as, var->error_line, ERROR_RANGE);
+    errors_print_lines(as, var->error_line);
     exit(EXIT_FAILURE);
 }
 
 
-void errors_print_lines(struct Asm *as, size_t line, size_t range)
+void errors_print_lines(struct Asm *as, size_t line)
 {
-    for (size_t i = line - range; i <= line + range; ++i)
+    for (size_t i = line - ERROR_RANGE; i <= line + ERROR_RANGE; ++i)
     {
         if (i == line)
             printf("\x1b[1;37m");
