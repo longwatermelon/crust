@@ -126,7 +126,7 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
                         def->variable_def_name);
         errors_print_lines(as, def->error_line, ERROR_RANGE);
 
-        fprintf(stderr, "First defined here:\n");
+        fprintf(stderr, "\nFirst defined here:\n");
         errors_print_lines(as, orig->error_line, ERROR_RANGE);
         exit(EXIT_FAILURE);
     }
@@ -157,6 +157,7 @@ void errors_print_lines(struct Asm *as, size_t line, size_t range)
         if (i == line)
             printf("\x1b[1;37m");
 
+        printf("  ");
         errors_print_line(as, i);
 
         if (i == line)
