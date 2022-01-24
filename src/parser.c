@@ -137,7 +137,15 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     parser_eat(parser, TOKEN_LBRACE);
 
-    node->function_def_body = parser_parse(parser);
+    if (parser->curr_tok->type != TOKEN_RBRACE)
+        node->function_def_body = parser_parse(parser);
+    else
+    {
+        node->function_def_body = node_alloc(NODE_COMPOUND);
+        node->function_def_body->compound_nodes = malloc(sizeof(struct Node*));
+        node->function_def_body->compound_nodes[0] = node_alloc(NODE_NOOP);
+        node->function_def_body->compound_size = 1;
+    }
 
     parser_eat(parser, TOKEN_RBRACE);
 

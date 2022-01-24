@@ -5,6 +5,10 @@ struct example {
 
 fn test() -> int {
     let a: int = 5;
+    return a;
+};
+
+fn ex() -> int {
 };
 
 fn main() -> int {

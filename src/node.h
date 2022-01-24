@@ -28,7 +28,8 @@ struct Node
         NODE_ASSIGNMENT,
         NODE_STRUCT,
         NODE_STRUCT_MEMBER,
-        NODE_INIT_LIST
+        NODE_INIT_LIST,
+        NODE_NOOP
     } type;
 
     // Compound
