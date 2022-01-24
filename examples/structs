@@ -5,8 +5,6 @@ struct example {
 
 fn test() -> int {
     let a: int = 5;
-    let a: int  =9;
-    return 0;
 };
 
 fn main() -> int {

@@ -71,8 +71,9 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
 
     if (!found_return)
     {
-        fprintf(stderr, ERROR "Non-void function '%s' does not return a value.\n",
-                        def->function_def_name);
+        fprintf(stderr, ERROR "Non-void function '%s' should return '%s' but returns nothing.\n",
+                        def->function_def_name, node_str_from_type(def->function_def_return_type));
+        errors_print_lines(as, def->error_line, ERROR_RANGE);
         exit(EXIT_FAILURE);
     }
 }
