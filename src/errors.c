@@ -151,6 +151,14 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as)
 }
 
 
+void errors_error_nonexistent_variable(struct Asm *as, struct Node *var)
+{
+    fprintf(stderr, ERROR "Variable '%s' referenced but not defined.\n", var->variable_name);
+    errors_print_lines(as, var->error_line, ERROR_RANGE);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_print_lines(struct Asm *as, size_t line, size_t range)
 {
     for (size_t i = line - range; i <= line + range; ++i)

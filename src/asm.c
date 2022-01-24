@@ -368,6 +368,9 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 {
     struct Node *var = scope_find_variable(as->scope, node);
 
+    if (!var)
+        errors_error_nonexistent_variable(as, node);
+
     if (var->type == NODE_PARAMETER)
     {
         return asm_str_from_param(as, var);
