@@ -8,7 +8,7 @@ fn test() -> int {
     return a;
 };
 
-fn ex() -> int {
+fn ex() -> void {
 };
 
 fn main() -> int {

@@ -152,6 +152,7 @@ char *node_str_from_type(NodeDType type)
     {
     case NODE_INT: return "int";
     case NODE_STRING: return "str";
+    case NODE_NOOP: return "void";
     default: return type.struct_type;
     }
 }
@@ -163,6 +164,8 @@ NodeDType node_type_from_str(char *str)
         return (NodeDType){ NODE_INT, 0 };
     if (strcmp(str, "str") == 0)
         return (NodeDType){ NODE_STRING, 0 };
+    if (strcmp(str, "void") == 0)
+        return (NodeDType){ NODE_NOOP, 0 };
 
     return (NodeDType){ NODE_STRUCT, str };
 }

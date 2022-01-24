@@ -69,7 +69,7 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
         }
     }
 
-    if (!found_return)
+    if (def->function_def_return_type.type != NODE_NOOP && !found_return)
     {
         fprintf(stderr, ERROR "Non-void function '%s' should return '%s' but returns nothing.\n",
                         def->function_def_name, node_str_from_type(def->function_def_return_type));
