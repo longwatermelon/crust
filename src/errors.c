@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define RESET "\x1b[0m"
 #define RED_BOLD "\x1b[1;31m"
@@ -151,6 +152,39 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as)
 }
 
 
+void errors_check_init_list(struct Node *list, struct Asm *as)
+{
+    struct Node *struct_node = scope_find_struct(as->scope, list->init_list_type.struct_type);
+
+    if (list->init_list_len != struct_node->struct_members_size)
+    {
+        fprintf(stderr, ERROR "Struct '%s' has %lu members but %lu member(s) were passed.\n",
+                        struct_node->struct_name, struct_node->struct_members_size,
+                        list->init_list_len);
+        errors_print_lines(as, list->error_line);
+        exit(EXIT_FAILURE);
+    }
+
+    for (size_t i = 0; i < list->init_list_len; ++i)
+    {
+        if (list->init_list_values[i]->type != struct_node->struct_members[i]->member_type.type)
+        {
+            fprintf(stderr, ERROR "Attempting to initialize member '%s' of type '%s' from struct '%s'"
+                                  "with type '%s'.\n", struct_node->struct_members[i]->member_name,
+                                  node_str_from_type(struct_node->struct_members[i]->member_type),
+                                  struct_node->struct_name,
+                                  node_str_from_type((NodeDType){ list->init_list_values[i]->type }));
+            errors_print_lines(as, list->error_line);
+
+            fprintf(stderr, "\nStruct first defined here:\n");
+            errors_print_lines(as, struct_node->error_line);
+
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+
 void errors_error_nonexistent_variable(struct Asm *as, struct Node *var)
 {
     fprintf(stderr, ERROR "Variable '%s' referenced but not defined.\n", var->variable_name);
@@ -161,7 +195,17 @@ void errors_error_nonexistent_variable(struct Asm *as, struct Node *var)
 
 void errors_print_lines(struct Asm *as, size_t line)
 {
-    for (size_t i = line - ERROR_RANGE; i <= line + ERROR_RANGE; ++i)
+    int begin = line - ERROR_RANGE;
+
+    if (begin <= 0)
+        begin = 1;
+
+    int end = begin + 2 * ERROR_RANGE;
+
+    if (end >= as->source_size)
+        end = as->source_size;
+
+    for (int i = begin; i <= end; ++i)
     {
         if (i == line)
             printf("\x1b[1;37m");

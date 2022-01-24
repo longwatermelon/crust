@@ -305,6 +305,8 @@ struct Node *parser_parse_struct(struct Parser *parser)
     struct Node *node = node_alloc(NODE_STRUCT);
     parser_eat(parser, TOKEN_ID);
 
+    node->error_line = parser->curr_tok->line_num;
+
     node->struct_name = util_strcpy(parser->curr_tok->value);
 
     parser->struct_types = realloc(parser->struct_types,
@@ -341,6 +343,7 @@ struct Node *parser_parse_init_list(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_INIT_LIST);
     node->init_list_type = parser_parse_dtype(parser);
+    node->error_line = parser->curr_tok->line_num;
 
     parser_eat(parser, TOKEN_LBRACE);
 

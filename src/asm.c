@@ -165,6 +165,8 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 {
     if (node->type == NODE_INIT_LIST)
     {
+        errors_check_init_list(node, as);
+
         for (size_t i = 0; i < node->init_list_len; ++i)
             asm_gen_add_to_stack(as, node->init_list_values[i]);
 
