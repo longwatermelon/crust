@@ -17,6 +17,9 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
     parser->struct_types = 0;
     parser->struct_types_size = 0;
 
+    parser->function_defs = 0;
+    parser->function_defs_size = 0;
+
     return parser;
 }
 
@@ -24,6 +27,7 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
 void parser_free(struct Parser *parser)
 {
     free(parser->struct_types);
+    free(parser->function_defs);
     free(parser);
 }
 
@@ -370,6 +374,18 @@ struct Node *parser_find_struct(struct Parser *parser, char *name)
     {
         if (strcmp(parser->struct_types[i]->struct_name, name) == 0)
             return parser->struct_types[i];
+    }
+
+    return 0;
+}
+
+
+struct Node *parser_find_function(struct Parser *parser, char *name)
+{
+    for (size_t i = 0; i < parser->function_defs_size; ++i)
+    {
+        if (strcmp(parser->function_defs[i]->function_def_name, name) == 0)
+            return parser->function_defs[i];
     }
 
     return 0;

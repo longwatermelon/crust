@@ -1,0 +1,10 @@
+fn test(a: int) -> int {
+    pront("a   \n");
+    return a;
+};
+
+fn main() -> int {
+    let b: int = test(1);
+    let b2: int = b;
+    return 0;
+};

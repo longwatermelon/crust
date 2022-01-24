@@ -17,6 +17,9 @@ struct Parser
 
     struct Node **struct_types;
     size_t struct_types_size;
+
+    struct Node **function_defs;
+    size_t function_defs_size;
 };
 
 struct Parser *parser_alloc(struct Token **tokens, size_t ntokens);
@@ -47,6 +50,7 @@ struct Node *parser_parse_struct(struct Parser *parser);
 struct Node *parser_parse_init_list(struct Parser *parser);
 
 struct Node *parser_find_struct(struct Parser *parser, char *name);
+struct Node *parser_find_function(struct Parser *parser, char *name);
 NodeDType parser_parse_dtype(struct Parser *parser);
 
 #endif
