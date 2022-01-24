@@ -311,7 +311,7 @@ struct Node *parser_parse_struct(struct Parser *parser)
 
     parser->struct_types = realloc(parser->struct_types,
                             sizeof(char*) * ++parser->struct_types_size);
-    parser->struct_types[parser->struct_types_size - 1] = node->struct_name;
+    parser->struct_types[parser->struct_types_size - 1] = node;
 
     parser_eat(parser, TOKEN_ID);
     parser_eat(parser, TOKEN_LBRACE);
@@ -364,15 +364,15 @@ struct Node *parser_parse_init_list(struct Parser *parser)
 }
 
 
-bool parser_find_struct(struct Parser *parser, char *name)
+struct Node *parser_find_struct(struct Parser *parser, char *name)
 {
     for (size_t i = 0; i < parser->struct_types_size; ++i)
     {
-        if (strcmp(parser->struct_types[i], name) == 0)
-            return true;
+        if (strcmp(parser->struct_types[i]->struct_name, name) == 0)
+            return parser->struct_types[i];
     }
 
-    return false;
+    return 0;
 }
 
 

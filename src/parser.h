@@ -15,7 +15,7 @@ struct Parser
     struct Token *curr_tok;
     size_t curr_idx;
 
-    char **struct_types;
+    struct Node **struct_types;
     size_t struct_types_size;
 };
 
@@ -46,7 +46,7 @@ struct Node *parser_parse_struct(struct Parser *parser);
 
 struct Node *parser_parse_init_list(struct Parser *parser);
 
-bool parser_find_struct(struct Parser *parser, char *name);
+struct Node *parser_find_struct(struct Parser *parser, char *name);
 NodeDType parser_parse_dtype(struct Parser *parser);
 
 #endif
