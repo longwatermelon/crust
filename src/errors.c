@@ -14,7 +14,7 @@
 
 #define ERROR_RANGE 1
 
-void errors_check_function_call(struct Node *def, struct Node *call, struct Asm *as)
+void errors_asm_check_function_call(struct Node *def, struct Node *call, struct Asm *as)
 {
     if (def->function_def_params_size != call->function_call_args_size)
     {
@@ -43,7 +43,7 @@ void errors_check_function_call(struct Node *def, struct Node *call, struct Asm 
 }
 
 
-void errors_check_function_return(struct Node *def, struct Asm *as)
+void errors_asm_check_function_return(struct Node *def, struct Asm *as)
 {
     struct Node *comp = def->function_def_body;
     bool found_return = false;
@@ -80,7 +80,7 @@ void errors_check_function_return(struct Node *def, struct Asm *as)
 }
 
 
-void errors_check_function_def(struct Node *def, struct Asm *as)
+void errors_asm_check_function_def(struct Node *def, struct Asm *as)
 {
     struct Node *existing = scope_find_function(as->scope, def->function_def_name);
 
@@ -93,7 +93,7 @@ void errors_check_function_def(struct Node *def, struct Asm *as)
 }
 
 
-void errors_check_variable_def(struct Node *def, struct Asm *as)
+void errors_asm_check_variable_def(struct Node *def, struct Asm *as)
 {
     if (!node_dtype_cmp(def->variable_def_type, node_type_from_node(def->variable_def_value, as->scope)))
     {
@@ -135,7 +135,7 @@ void errors_check_variable_def(struct Node *def, struct Asm *as)
 }
 
 
-void errors_check_assignment(struct Node *assignment, struct Asm *as)
+void errors_asm_check_assignment(struct Node *assignment, struct Asm *as)
 {
     NodeDType src_type = node_type_from_node(assignment->assignment_src, as->scope);
     NodeDType dst_type = node_type_from_node(assignment->assignment_dst, as->scope);
@@ -152,7 +152,7 @@ void errors_check_assignment(struct Node *assignment, struct Asm *as)
 }
 
 
-void errors_check_init_list(struct Node *list, struct Asm *as)
+void errors_asm_check_init_list(struct Node *list, struct Asm *as)
 {
     struct Node *struct_node = scope_find_struct(as->scope, list->init_list_type.struct_type);
 
@@ -185,7 +185,7 @@ void errors_check_init_list(struct Node *list, struct Asm *as)
 }
 
 
-void errors_error_nonexistent_variable(struct Asm *as, struct Node *var)
+void errors_asm_nonexistent_variable(struct Asm *as, struct Node *var)
 {
     fprintf(stderr, ERROR "Variable '%s' referenced but not defined.\n", var->variable_name);
     errors_print_lines(as, var->error_line);
