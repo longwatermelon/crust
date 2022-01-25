@@ -18,13 +18,14 @@ fn main() -> int {
     let a: str = "aaaaa";
     let b: str = "bbbbb";
     let c: int = 9;
+    let d: str = "aaaaa";
 
     func(a, "bbbbb", 0);
     func(b, "bbbbb", 0);
 
     let b2: str = b;
     pront(b2, "    \n");
-    b = a;
+    b = d;
     b2 = func(a, b, 0);
 
     pront(b2);
