@@ -11,10 +11,12 @@
 #define RED_BOLD "\x1b[1;31m"
 #define YELLOW_BOLD "\x1b[1;33m"
 #define WHITE_BOLD "\x1b[1;37m"
+#define MAGENTA_BOLD "\x1b[1;35m"
 
 #define ERROR RED_BOLD "Error: " RESET
 #define INTERNAL_ERROR RED_BOLD "Internal compiler error: " RESET
 #define WARNING YELLOW_BOLD "Warning: " RESET
+#define WARNING_FLAG(x) "[" MAGENTA_BOLD x RESET "]"
 
 #define ERROR_RANGE 1
 
@@ -244,7 +246,8 @@ void errors_warn_dead_code(struct Node *func_def)
     if (func_def->function_def_body->compound_size == 1 &&
         func_def->function_def_body->compound_nodes[0]->type == NODE_NOOP)
     {
-        fprintf(stderr, WARNING "'%s' is a useless function. [-Wno-dead-code]\n",
+        fprintf(stderr, WARNING "'%s' is a useless function. "
+                        WARNING_FLAG("-Wno-dead-code") "\n",
                         func_def->function_def_name);
         errors_print_lines(func_def->error_line);
         printf("\n");
@@ -258,7 +261,8 @@ void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
     {
         if (!node_check_variable_used(func_def, scope->curr_layer->variable_defs[i]))
         {
-            fprintf(stderr, WARNING "Variable '%s' is unused. [-Wno-unused-variable]\n",
+            fprintf(stderr, WARNING "Variable '%s' is unused."
+                            WARNING_FLAG("-Wno-unused-variable") "\n",
                             scope->curr_layer->variable_defs[i]->variable_def_name);
             printf("Variable was first declared here:\n");
             errors_print_lines(scope->curr_layer->variable_defs[i]->error_line);

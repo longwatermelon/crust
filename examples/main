@@ -8,6 +8,9 @@ fn func(a: str, b: str, c: int) -> str {
     return b;
 };
 
+fn test() -> void {
+
+};
 
 fn main() -> int {
     let z: example = example { 1, "string" };
