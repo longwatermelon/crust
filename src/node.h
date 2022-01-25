@@ -109,7 +109,7 @@ bool node_dtype_cmp(NodeDType d1, NodeDType d2);
 // Only compares two nodes of the same type
 bool node_cmp(struct Node *n1, struct Node *n2);
 
-bool node_find_node(struct Node *node, struct Node *target, int ignored);
+bool node_find_node(struct Node *node, struct Node *target);
 
 #endif
 

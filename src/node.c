@@ -232,43 +232,40 @@ bool node_cmp(struct Node *n1, struct Node *n2)
 }
 
 
-bool node_find_node(struct Node *node, struct Node *target, int ignored)
+bool node_find_node(struct Node *node, struct Node *target)
 {
     if (node->type == target->type && node_cmp(node, target))
         return true;
-
-    if (node->type == ignored)
-        return false;
 
     switch (node->type)
     {
     case NODE_COMPOUND:
         for (size_t i = 0; i < node->compound_size; ++i)
         {
-            if (node_find_node(node->compound_nodes[i], target, ignored))
+            if (node_find_node(node->compound_nodes[i], target))
                 return true;
         }
         break;
     case NODE_FUNCTION_DEF:
-        return node_find_node(node->function_def_body, target, ignored);
+        return node_find_node(node->function_def_body, target);
         break;
     case NODE_ASSIGNMENT:
-        if (node->assignment_dst == target || node_find_node(node->assignment_src, target, ignored))
+        if (node->assignment_dst == target || node_find_node(node->assignment_src, target))
             return true;
         break;
     case NODE_INIT_LIST:
         for (size_t i = 0; i < node->init_list_len; ++i)
         {
-            if (node_find_node(node->init_list_values[i], target, ignored))
+            if (node_find_node(node->init_list_values[i], target))
                 return true;
         }
         break;
     case NODE_RETURN:
-        return node_find_node(node->return_value, target, ignored);
+        return node_find_node(node->return_value, target);
     case NODE_FUNCTION_CALL:
         for (size_t i = 0; i < node->function_call_args_size; ++i)
         {
-            if (node_find_node(node->function_call_args[i], target, ignored))
+            if (node_find_node(node->function_call_args[i], target))
                 return true;
         }
         break;

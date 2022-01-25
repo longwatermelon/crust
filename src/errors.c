@@ -264,7 +264,7 @@ void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
         struct Node *var = node_alloc(NODE_VARIABLE);
         var->variable_name = util_strcpy(def->variable_def_name);
 
-        if (!node_find_node(func_def, var, -1))
+        if (!node_find_node(func_def, var))
             errors_warn_print_unused_variable(def->error_line, def->variable_def_name);
 
         node_free(var);
@@ -277,7 +277,7 @@ void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
         struct Node *var = node_alloc(NODE_VARIABLE);
         var->variable_name = util_strcpy(param->param_name);
 
-        if (!node_find_node(func_def, var, -1))
+        if (!node_find_node(func_def, var))
             errors_warn_print_unused_variable(param->error_line, param->param_name);
 
         node_free(var);
