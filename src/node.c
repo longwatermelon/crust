@@ -227,6 +227,7 @@ bool node_cmp(struct Node *n1, struct Node *n2)
     case NODE_STRING: return strcmp(n1->string_value, n2->string_value) == 0;
     // FIX Won't work with accessing struct members
     case NODE_VARIABLE: return strcmp(n1->variable_name, n2->variable_name) == 0;
+    case NODE_FUNCTION_CALL: return strcmp(n1->function_call_name, n2->function_call_name) == 0;
     default: return false;
     }
 }
