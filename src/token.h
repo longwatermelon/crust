@@ -30,5 +30,7 @@ struct Token
 struct Token *token_alloc(int type, char *value, size_t line_num);
 void token_free(struct Token *token);
 
+char *token_str_from_type(int type);
+
 #endif
 

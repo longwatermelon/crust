@@ -18,3 +18,27 @@ void token_free(struct Token *token)
     free(token);
 }
 
+
+char *token_str_from_type(int type)
+{
+    switch (type)
+    {
+    case TOKEN_ID: return "identifier";
+    case TOKEN_LPAREN: return "(";
+    case TOKEN_RPAREN: return ")";
+    case TOKEN_ARROW: return "->";
+    case TOKEN_LBRACE: return "{";
+    case TOKEN_RBRACE: return "}";
+    case TOKEN_SEMI: return ";";
+    case TOKEN_INT: return "integer";
+    case TOKEN_EQUALS: return "=";
+    case TOKEN_COMMA: return ",";
+    case TOKEN_COLON: return ":";
+    case TOKEN_STRING: return "string";
+    case TOKEN_PERIOD: return ".";
+    case TOKEN_EOF: return "EOF";
+    }
+
+    return 0;
+}
+
