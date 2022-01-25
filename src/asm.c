@@ -10,7 +10,7 @@
 
 #define MAX_INT_LEN 10
 
-struct Asm *asm_alloc(const char *fp)
+struct Asm *asm_alloc()
 {
     struct Asm *as = malloc(sizeof(struct Asm));
 
@@ -34,19 +34,12 @@ struct Asm *asm_alloc(const char *fp)
     as->lc = 0;
     as->stack_size = 4;
 
-    as->source = util_read_file_lines(fp, &as->source_size);
-
     return as;
 }
 
 
 void asm_free(struct Asm *as)
 {
-    for (size_t i = 0; i < as->source_size; ++i)
-        free(as->source[i]);
-
-    free(as->source);
-
     free(as->data);
     free(as->root);
     scope_free(as->scope);

@@ -13,12 +13,9 @@ struct Asm
 
     size_t lc;
     size_t stack_size;
-
-    char **source;
-    size_t source_size;
 };
 
-struct Asm *asm_alloc(const char *fp);
+struct Asm *asm_alloc();
 void asm_free(struct Asm *as);
 
 void asm_gen_expr(struct Asm *as, struct Node *node);
