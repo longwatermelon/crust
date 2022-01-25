@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "util.h"
+#include "errors.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -36,9 +37,7 @@ void parser_eat(struct Parser *parser, int type)
 {
     if (parser->curr_tok->type != type)
     {
-        fprintf(stderr, "Parser error: Unexpected token '%s' of type %d, expected type %d\n",
-                        parser->curr_tok->value, parser->curr_tok->type, type);
-        exit(EXIT_FAILURE);
+        errors_parser_unexpected_token(type, parser->curr_tok);
     }
     else
     {

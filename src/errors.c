@@ -203,6 +203,15 @@ void errors_asm_nonexistent_variable(struct Node *var)
 }
 
 
+void errors_parser_unexpected_token(int expected, struct Token *found)
+{
+    fprintf(stderr, ERROR "Unexpected token '%s'; expected token of type %d.\n",
+                    found->value, expected);
+    errors_print_lines(found->line_num);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_print_lines(size_t line)
 {
     int begin = line - ERROR_RANGE;
