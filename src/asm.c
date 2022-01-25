@@ -96,7 +96,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     sprintf(s, template, node->function_def_name, node->function_def_name);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    asm_append_str(&as->root, s);
+    util_strcat(&as->root, s);
     free(s);
 
     size_t prev_size = as->stack_size;
@@ -135,7 +135,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
     sprintf(s, template, ret);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    asm_append_str(&as->root, s);
+    util_strcat(&as->root, s);
 
     free(s);
     free(ret);
@@ -187,7 +187,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 
     free(left);
 
-    asm_append_str(&as->root, s);
+    util_strcat(&as->root, s);
     free(s);
 }
 
@@ -205,7 +205,7 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, as->lc, node->string_value);
 
-    asm_append_str(&as->data, s);
+    util_strcat(&as->data, s);
 
     size_t id_len = strlen(".LC") + MAX_INT_LEN;
     node->string_asm_id = calloc(id_len + 1, sizeof(char));
@@ -241,7 +241,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
         char *s = calloc(len + 1, sizeof(char));
         sprintf(s, template, value);
 
-        asm_append_str(&as->root, s);
+        util_strcat(&as->root, s);
         free(s);
         free(value);
     }
@@ -252,7 +252,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
     sprintf(s, template, node->function_call_name);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    asm_append_str(&as->root, s);
+    util_strcat(&as->root, s);
     free(s);
 }
 
@@ -278,7 +278,7 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
     sprintf(s, template, src, dst);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
-    asm_append_str(&as->root, s);
+    util_strcat(&as->root, s);
 
     free(src);
     free(dst);
@@ -314,17 +314,10 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
         char *s = calloc(len + 1, sizeof(char));
         sprintf(s, template, 5, value);
 
-        asm_append_str(&as->root, s);
+        util_strcat(&as->root, s);
         free(s);
         free(value);
     }
-}
-
-
-void asm_append_str(char **dst, char *src)
-{
-    *dst = realloc(*dst, sizeof(char) * (strlen(*dst) + strlen(src) + 1));
-    strcat(*dst, src);
 }
 
 

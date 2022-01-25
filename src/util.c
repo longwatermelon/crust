@@ -92,3 +92,10 @@ char *util_strcpy(char *str)
     return s;
 }
 
+
+void util_strcat(char **dst, char *src)
+{
+    *dst = realloc(*dst, sizeof(char) * (strlen(*dst) + strlen(src) + 1));
+    strcat(*dst, src);
+}
+

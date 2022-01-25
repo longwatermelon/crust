@@ -38,8 +38,6 @@ void asm_gen_assignment(struct Asm *as, struct Node *node);
 
 void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 
-void asm_append_str(char **dst, char *src);
-
 // Get assembly representation of a node (x(%ebp), $.LCx, $x, %ebx, etc.)
 char *asm_str_from_node(struct Asm *as, struct Node *node);
 char *asm_str_from_int(struct Asm *as, struct Node *node);
