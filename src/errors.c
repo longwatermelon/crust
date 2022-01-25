@@ -200,7 +200,7 @@ void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
     {
         if (list->init_list_values[i]->type != struct_node->struct_members[i]->member_type.type)
         {
-            fprintf(stderr, ERROR "Attempting to initialize member '%s' of type '%s' from struct '%s'"
+            fprintf(stderr, ERROR "Attempting to initialize member '%s' of type '%s' from struct '%s' "
                                   "with type '%s'.\n", struct_node->struct_members[i]->member_name,
                                   node_str_from_type(struct_node->struct_members[i]->member_type),
                                   struct_node->struct_name,
