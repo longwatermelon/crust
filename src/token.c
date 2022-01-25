@@ -1,4 +1,5 @@
 #include "token.h"
+
 #include <stdlib.h>
 
 struct Token *token_alloc(int type, char *value, size_t line_num)

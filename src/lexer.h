@@ -2,6 +2,7 @@
 #define LEXER_H
 
 #include "token.h"
+
 #include <stdlib.h>
 
 struct Lexer
