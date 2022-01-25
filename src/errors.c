@@ -261,14 +261,33 @@ void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
     {
         if (!node_check_variable_used(func_def, scope->curr_layer->variable_defs[i]))
         {
-            fprintf(stderr, WARNING "Variable '%s' is unused."
-                            WARNING_FLAG("-Wno-unused-variable") "\n",
-                            scope->curr_layer->variable_defs[i]->variable_def_name);
-            printf("Variable was first declared here:\n");
-            errors_print_lines(scope->curr_layer->variable_defs[i]->error_line);
-            printf("\n");
+            errors_warn_print_unused_variable(
+                scope->curr_layer->variable_defs[i]->error_line,
+                scope->curr_layer->variable_defs[i]->variable_def_name
+            );
         }
     }
+
+    for (size_t i = 0; i < func_def->function_def_params_size; ++i)
+    {
+        if (!node_check_variable_used(func_def, func_def->function_def_params[i]))
+        {
+            errors_warn_print_unused_variable(
+                func_def->function_def_params[i]->error_line,
+                func_def->function_def_params[i]->param_name
+            );
+        }
+    }
+}
+
+
+void errors_warn_print_unused_variable(size_t line, char *var_name)
+{
+    fprintf(stderr, WARNING "Variable '%s' is unused. "
+                    WARNING_FLAG("-Wno-unused-variable") "\n", var_name);
+    printf("Variable was first declared here:\n");
+    errors_print_lines(line);
+    printf("\n");
 }
 
 

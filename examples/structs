@@ -3,7 +3,7 @@ struct example {
     b: str
 };
 
-fn test() -> int {
+fn test(b: int) -> int {
     let a: int = 5;
     return a;
 };

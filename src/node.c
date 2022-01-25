@@ -221,7 +221,16 @@ bool node_dtype_cmp(NodeDType d1, NodeDType d2)
 
 bool node_check_variable_used(struct Node *node, struct Node *var)
 {
-    if (node->type == NODE_VARIABLE && strcmp(node->variable_name, var->variable_def_name) == 0)
+    char *var_name;
+
+    switch (var->type)
+    {
+    case NODE_VARIABLE_DEF: var_name = var->variable_def_name; break;
+    case NODE_PARAMETER: var_name = var->param_name; break;
+    default: var_name = 0; break;
+    }
+
+    if (node->type == NODE_VARIABLE && strcmp(node->variable_name, var_name) == 0)
         return true;
 
     switch (node->type)
