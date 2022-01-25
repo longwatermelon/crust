@@ -259,24 +259,28 @@ void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
 {
     for (size_t i = 0; i < scope->curr_layer->variable_defs_size; ++i)
     {
-        if (!node_check_variable_used(func_def, scope->curr_layer->variable_defs[i]))
-        {
-            errors_warn_print_unused_variable(
-                scope->curr_layer->variable_defs[i]->error_line,
-                scope->curr_layer->variable_defs[i]->variable_def_name
-            );
-        }
+        struct Node *def = scope->curr_layer->variable_defs[i];
+
+        struct Node *var = node_alloc(NODE_VARIABLE);
+        var->variable_name = util_strcpy(def->variable_def_name);
+
+        if (!node_find_node(func_def, var, -1))
+            errors_warn_print_unused_variable(def->error_line, def->variable_def_name);
+
+        node_free(var);
     }
 
     for (size_t i = 0; i < func_def->function_def_params_size; ++i)
     {
-        if (!node_check_variable_used(func_def, func_def->function_def_params[i]))
-        {
-            errors_warn_print_unused_variable(
-                func_def->function_def_params[i]->error_line,
-                func_def->function_def_params[i]->param_name
-            );
-        }
+        struct Node *param = func_def->function_def_params[i];
+
+        struct Node *var = node_alloc(NODE_VARIABLE);
+        var->variable_name = util_strcpy(param->param_name);
+
+        if (!node_find_node(func_def, var, -1))
+            errors_warn_print_unused_variable(param->error_line, param->param_name);
+
+        node_free(var);
     }
 }
 

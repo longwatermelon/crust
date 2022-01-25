@@ -219,6 +219,19 @@ bool node_dtype_cmp(NodeDType d1, NodeDType d2)
 }
 
 
+bool node_cmp(struct Node *n1, struct Node *n2)
+{
+    switch (n1->type)
+    {
+    case NODE_INT: return n1->int_value == n2->int_value;
+    case NODE_STRING: return strcmp(n1->string_value, n2->string_value) == 0;
+    // FIX Won't work with accessing struct members
+    case NODE_VARIABLE: return strcmp(n1->variable_name, n2->variable_name) == 0;
+    default: return false;
+    }
+}
+
+
 bool node_check_variable_used(struct Node *node, struct Node *var)
 {
     char *var_name;
@@ -262,6 +275,53 @@ bool node_check_variable_used(struct Node *node, struct Node *var)
         for (size_t i = 0; i < node->function_call_args_size; ++i)
         {
             if (node_check_variable_used(node->function_call_args[i], var))
+                return true;
+        }
+        break;
+    default: return false;
+    }
+
+    return false;
+}
+
+
+bool node_find_node(struct Node *node, struct Node *target, int ignored)
+{
+    if (node->type == target->type && node_cmp(node, target))
+        return true;
+
+    if (node->type == ignored)
+        return false;
+
+    switch (node->type)
+    {
+    case NODE_COMPOUND:
+        for (size_t i = 0; i < node->compound_size; ++i)
+        {
+            if (node_find_node(node->compound_nodes[i], target, ignored))
+                return true;
+        }
+        break;
+    case NODE_FUNCTION_DEF:
+        return node_find_node(node->function_def_body, target, ignored);
+        break;
+    case NODE_ASSIGNMENT:
+        if (node->assignment_dst == target || node_find_node(node->assignment_src, target, ignored))
+            return true;
+        break;
+    case NODE_INIT_LIST:
+        for (size_t i = 0; i < node->init_list_len; ++i)
+        {
+            if (node_find_node(node->init_list_values[i], target, ignored))
+                return true;
+        }
+        break;
+    case NODE_RETURN:
+        return node_find_node(node->return_value, target, ignored);
+    case NODE_FUNCTION_CALL:
+        for (size_t i = 0; i < node->function_call_args_size; ++i)
+        {
+            if (node_find_node(node->function_call_args[i], target, ignored))
                 return true;
         }
         break;
