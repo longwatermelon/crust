@@ -31,6 +31,7 @@ void errors_args_nonexistent_warning(char *warning);
 
 /* Warnings */
 void errors_warn_dead_code(struct Node *func_def);
+void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def);
 
 void errors_print_lines(size_t line);
 void errors_print_line(size_t line);

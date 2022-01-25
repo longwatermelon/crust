@@ -252,6 +252,22 @@ void errors_warn_dead_code(struct Node *func_def)
 }
 
 
+void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
+{
+    for (size_t i = 0; i < scope->curr_layer->variable_defs_size; ++i)
+    {
+        if (!node_find_node(func_def, scope->curr_layer->variable_defs[i]))
+        {
+            fprintf(stderr, WARNING "Variable '%s' is unused. [-Wno-unused-variable]\n",
+                            scope->curr_layer->variable_defs[i]->variable_def_name);
+            printf("Variable was first declared here:\n");
+            errors_print_lines(scope->curr_layer->variable_defs[i]->error_line);
+            printf("\n");
+        }
+    }
+}
+
+
 void errors_print_lines(size_t line)
 {
     int begin = line - ERROR_RANGE;

@@ -111,6 +111,9 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
 
     errors_asm_check_function_return(as->scope, node);
 
+    if (as->args->warnings[WARNING_UNUSED_VARIABLE])
+        errors_warn_unused_variable(as->scope, node);
+
     as->stack_size = prev_size;
     scope_pop_layer(as->scope);
 

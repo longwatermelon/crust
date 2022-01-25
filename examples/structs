@@ -12,6 +12,7 @@ fn ex() -> void {
 };
 
 fn main() -> int {
-    let a: example = example{ "s", "string" };
-    return b;
+    let a: example = example{ 100, "string" };
+    let b: int = 1;
+    return 1;
 };

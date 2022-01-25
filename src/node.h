@@ -107,5 +107,7 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope);
 
 bool node_dtype_cmp(NodeDType d1, NodeDType d2);
 
+bool node_find_node(struct Node *node, struct Node *target);
+
 #endif
 

@@ -13,6 +13,7 @@ struct Args *args_parse(int argc, char **argv)
     args->keep_assembly = false;
 
     args->warnings[WARNING_DEAD_CODE] = true;
+    args->warnings[WARNING_UNUSED_VARIABLE] = true;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -68,7 +69,15 @@ void args_free(struct Args *args)
 
 int args_index_from_warning(char *warning, bool *enabled)
 {
+    *enabled = true;
+
+    if (strcmp(warning, "dead-code") == 0) return WARNING_DEAD_CODE;
+    if (strcmp(warning, "unused-variable") == 0) return WARNING_UNUSED_VARIABLE;
+
+    *enabled = false;
+
     if (strcmp(warning, "no-dead-code") == 0) return WARNING_DEAD_CODE;
+    if (strcmp(warning, "no-unused-variable") == 0) return WARNING_UNUSED_VARIABLE;
 
     return -1;
 }

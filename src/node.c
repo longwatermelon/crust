@@ -218,3 +218,44 @@ bool node_dtype_cmp(NodeDType d1, NodeDType d2)
     return false;
 }
 
+
+bool node_find_node(struct Node *node, struct Node *target)
+{
+    if (node->type == NODE_VARIABLE && strcmp(node->variable_name, target->variable_def_name) == 0)
+        return true;
+
+    switch (node->type)
+    {
+    case NODE_COMPOUND:
+    {
+        for (size_t i = 0; i < node->compound_size; ++i)
+        {
+            if (node_find_node(node->compound_nodes[i], target))
+                return true;
+        }
+    } break;
+    case NODE_FUNCTION_DEF:
+    {
+        return node_find_node(node->function_def_body, target);
+    } break;
+    case NODE_ASSIGNMENT:
+    {
+        if (node->assignment_dst == target || node_find_node(node->assignment_src, target))
+            return true;
+    } break;
+    case NODE_INIT_LIST:
+    {
+        for (size_t i = 0; i < node->init_list_len; ++i)
+        {
+            if (node_find_node(node->init_list_values[i], target))
+                return true;
+        }
+    } break;
+    case NODE_RETURN:
+        return node_find_node(node->return_value, target);
+    default: return false;
+    }
+
+    return false;
+}
+

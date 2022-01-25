@@ -6,7 +6,8 @@
 
 enum
 {
-    WARNING_DEAD_CODE
+    WARNING_DEAD_CODE,
+    WARNING_UNUSED_VARIABLE
 };
 
 struct Args
@@ -17,7 +18,7 @@ struct Args
 
     bool keep_assembly;
 
-    bool warnings[1];
+    bool warnings[2];
 };
 
 struct Args *args_parse(int argc, char **argv);
