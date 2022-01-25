@@ -232,59 +232,6 @@ bool node_cmp(struct Node *n1, struct Node *n2)
 }
 
 
-bool node_check_variable_used(struct Node *node, struct Node *var)
-{
-    char *var_name;
-
-    switch (var->type)
-    {
-    case NODE_VARIABLE_DEF: var_name = var->variable_def_name; break;
-    case NODE_PARAMETER: var_name = var->param_name; break;
-    default: var_name = 0; break;
-    }
-
-    if (node->type == NODE_VARIABLE && strcmp(node->variable_name, var_name) == 0)
-        return true;
-
-    switch (node->type)
-    {
-    case NODE_COMPOUND:
-        for (size_t i = 0; i < node->compound_size; ++i)
-        {
-            if (node_check_variable_used(node->compound_nodes[i], var))
-                return true;
-        }
-        break;
-    case NODE_FUNCTION_DEF:
-        return node_check_variable_used(node->function_def_body, var);
-        break;
-    case NODE_ASSIGNMENT:
-        if (node->assignment_dst == var || node_check_variable_used(node->assignment_src, var))
-            return true;
-        break;
-    case NODE_INIT_LIST:
-        for (size_t i = 0; i < node->init_list_len; ++i)
-        {
-            if (node_check_variable_used(node->init_list_values[i], var))
-                return true;
-        }
-        break;
-    case NODE_RETURN:
-        return node_check_variable_used(node->return_value, var);
-    case NODE_FUNCTION_CALL:
-        for (size_t i = 0; i < node->function_call_args_size; ++i)
-        {
-            if (node_check_variable_used(node->function_call_args[i], var))
-                return true;
-        }
-        break;
-    default: return false;
-    }
-
-    return false;
-}
-
-
 bool node_find_node(struct Node *node, struct Node *target, int ignored)
 {
     if (node->type == target->type && node_cmp(node, target))
