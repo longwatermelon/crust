@@ -212,6 +212,14 @@ void errors_parser_unexpected_token(int expected, struct Token *found)
 }
 
 
+void errors_lexer_unrecognized_char(char c, size_t line)
+{
+    fprintf(stderr, ERROR "Unrecognized character '%c'.\n", c);
+    errors_print_lines(line);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_print_lines(size_t line)
 {
     int begin = line - ERROR_RANGE;

@@ -22,6 +22,8 @@ void errors_asm_nonexistent_variable(struct Node *var);
 
 void errors_parser_unexpected_token(int expected, struct Token *found);
 
+void errors_lexer_unrecognized_char(char c, size_t line);
+
 void errors_print_lines(size_t line);
 void errors_print_line(size_t line);
 

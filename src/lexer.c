@@ -1,5 +1,7 @@
 #include "lexer.h"
 #include "token.h"
+#include "errors.h"
+
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -118,10 +120,7 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             ++lexer->line_num;
             break;
         default:
-            fprintf(stderr, "Lexer error: unrecognized character '%c' at line %lu\n",
-                            lexer->current_c, lexer->line_num);
-            exit(EXIT_FAILURE);
-            break;
+            errors_lexer_unrecognized_char(lexer->current_c, lexer->line_num);
         }
     }
 
