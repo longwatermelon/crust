@@ -11,6 +11,7 @@
 #define RED_BOLD "\x1b[1;31m"
 
 #define ERROR RED_BOLD "Error: " RESET
+#define INTERNAL_ERROR RED_BOLD "Internal compiler error: " RESET
 
 #define ERROR_RANGE 1
 
@@ -21,6 +22,23 @@ void errors_load_source(char **source, size_t nlines)
 {
     g_source = source;
     g_source_len = nlines;
+}
+
+
+void errors_lexer_unrecognized_char(char c, size_t line)
+{
+    fprintf(stderr, ERROR "Unrecognized character '%c'.\n", c);
+    errors_print_lines(line);
+    exit(EXIT_FAILURE);
+}
+
+
+void errors_parser_unexpected_token(int expected, struct Token *found)
+{
+    fprintf(stderr, ERROR "Unexpected token '%s'; expected '%s'\n",
+                    found->value, token_str_from_type(expected));
+    errors_print_lines(found->line_num);
+    exit(EXIT_FAILURE);
 }
 
 
@@ -203,19 +221,10 @@ void errors_asm_nonexistent_variable(struct Node *var)
 }
 
 
-void errors_parser_unexpected_token(int expected, struct Token *found)
+void errors_asm_str_from_node(struct Node *node)
 {
-    fprintf(stderr, ERROR "Unexpected token '%s'; expected '%s'\n",
-                    found->value, token_str_from_type(expected));
-    errors_print_lines(found->line_num);
-    exit(EXIT_FAILURE);
-}
-
-
-void errors_lexer_unrecognized_char(char c, size_t line)
-{
-    fprintf(stderr, ERROR "Unrecognized character '%c'.\n", c);
-    errors_print_lines(line);
+    fprintf(stderr, INTERNAL_ERROR "Unable to extract value from data of type %d.\n", node->type);
+    errors_print_lines(node->error_line);
     exit(EXIT_FAILURE);
 }
 

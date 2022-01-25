@@ -337,8 +337,7 @@ char *asm_str_from_node(struct Asm *as, struct Node *node)
     case NODE_PARAMETER: return asm_str_from_param(as, node);
     case NODE_FUNCTION_CALL: return asm_str_from_function_call(as, node);
     default:
-        fprintf(stderr, "Cannot extract value from data of type %d\n", node->type);
-        exit(EXIT_FAILURE);
+        errors_asm_str_from_node(node);
         break;
     }
 
