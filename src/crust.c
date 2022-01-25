@@ -62,7 +62,7 @@ struct Node *crust_gen_ast(struct Args *args)
 
 char *crust_gen_asm(struct Node *root, struct Args *args)
 {
-    struct Asm *as = asm_alloc(args->source);
+    struct Asm *as = asm_alloc(args);
     asm_gen_expr(as, root);
 
     size_t len = strlen(as->data) + strlen(as->root);

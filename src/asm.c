@@ -10,7 +10,7 @@
 
 #define MAX_INT_LEN 10
 
-struct Asm *asm_alloc()
+struct Asm *asm_alloc(struct Args *args)
 {
     struct Asm *as = malloc(sizeof(struct Asm));
 
@@ -33,6 +33,8 @@ struct Asm *asm_alloc()
 
     as->lc = 0;
     as->stack_size = 4;
+
+    as->args = args;
 
     return as;
 }
@@ -112,7 +114,8 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     as->stack_size = prev_size;
     scope_pop_layer(as->scope);
 
-    errors_warn_dead_code(node);
+    if (as->args->warnings[WARNING_DEAD_CODE])
+        errors_warn_dead_code(node);
 }
 
 

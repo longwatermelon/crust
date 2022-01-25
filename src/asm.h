@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "scope.h"
+#include "args.h"
 
 struct Asm
 {
@@ -13,9 +14,11 @@ struct Asm
 
     size_t lc;
     size_t stack_size;
+
+    struct Args *args;
 };
 
-struct Asm *asm_alloc();
+struct Asm *asm_alloc(struct Args *args);
 void asm_free(struct Asm *as);
 
 void asm_gen_expr(struct Asm *as, struct Node *node);
