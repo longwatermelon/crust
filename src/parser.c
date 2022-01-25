@@ -15,11 +15,8 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
     parser->curr_idx = 0;
     parser->curr_tok = parser->tokens[parser->curr_idx];
 
-    parser->struct_types = 0;
-    parser->struct_types_size = 0;
-
-    parser->function_defs = 0;
-    parser->function_defs_size = 0;
+    parser->scope = scope_alloc();
+    scope_push_layer(parser->scope);
 
     return parser;
 }
@@ -27,8 +24,7 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
 
 void parser_free(struct Parser *parser)
 {
-    free(parser->struct_types);
-    free(parser->function_defs);
+    scope_free(parser->scope);
     free(parser);
 }
 
@@ -140,6 +136,8 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     parser_eat(parser, TOKEN_LBRACE);
 
+    scope_push_layer(parser->scope);
+
     if (parser->curr_tok->type != TOKEN_RBRACE)
         node->function_def_body = parser_parse(parser);
     else
@@ -151,6 +149,8 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     }
 
     parser_eat(parser, TOKEN_RBRACE);
+
+    scope_pop_layer(parser->scope);
 
     return node;
 }
@@ -228,7 +228,8 @@ struct Node *parser_parse_variable(struct Parser *parser)
 {
     char *variable_name = parser->curr_tok->value;
 
-    if (parser_find_struct(parser, variable_name) && parser->tokens[parser->curr_idx + 1]->type == TOKEN_LBRACE)
+    if (scope_find_struct(parser->scope, variable_name) &&
+        parser->tokens[parser->curr_idx + 1]->type == TOKEN_LBRACE)
         return parser_parse_init_list(parser);
 
     parser_eat(parser, TOKEN_ID);
@@ -312,9 +313,7 @@ struct Node *parser_parse_struct(struct Parser *parser)
 
     node->struct_name = util_strcpy(parser->curr_tok->value);
 
-    parser->struct_types = realloc(parser->struct_types,
-                            sizeof(char*) * ++parser->struct_types_size);
-    parser->struct_types[parser->struct_types_size - 1] = node;
+    scope_add_struct_def(parser->scope, node);
 
     parser_eat(parser, TOKEN_ID);
     parser_eat(parser, TOKEN_LBRACE);
@@ -364,30 +363,6 @@ struct Node *parser_parse_init_list(struct Parser *parser)
 
     parser_eat(parser, TOKEN_RBRACE);
     return node;
-}
-
-
-struct Node *parser_find_struct(struct Parser *parser, char *name)
-{
-    for (size_t i = 0; i < parser->struct_types_size; ++i)
-    {
-        if (strcmp(parser->struct_types[i]->struct_name, name) == 0)
-            return parser->struct_types[i];
-    }
-
-    return 0;
-}
-
-
-struct Node *parser_find_function(struct Parser *parser, char *name)
-{
-    for (size_t i = 0; i < parser->function_defs_size; ++i)
-    {
-        if (strcmp(parser->function_defs[i]->function_def_name, name) == 0)
-            return parser->function_defs[i];
-    }
-
-    return 0;
 }
 
 
