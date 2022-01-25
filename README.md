@@ -15,7 +15,12 @@ cd crust
 make
 ```
 
-# Bugs
-* Builtin function pront can only print strings 5 characters in length. Less is UB, more will cut off extra characters.
-* Structs crash the compiler often when being passed between functions, a massive refactor may be necessary
+# Todo
+* Determine variable stack offsets in parsing instead of code generation
+* Move all possible errors to functions in errors.c
+* Rewrite builtin function pront to print variable length strings
+* Implement returning structs from functions and passing structs to functions
+* Binary operators
+* Import
+* Fix function being called when a variable assigned to the function call is referenced (should be fixed alongside with parser determining stack offsets instead of code generation)
 
