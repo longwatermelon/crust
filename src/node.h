@@ -106,9 +106,12 @@ NodeDType node_type_from_str(char *str);
 NodeDType node_type_from_node(struct Node *node, struct Scope *scope);
 
 bool node_dtype_cmp(NodeDType d1, NodeDType d2);
-// Only compares two nodes of the same type
+// Only compares two nodes of the same type; supports int, string, variable.
+// Types other than int, str, variable shouldn't have duplicates existing in their scope,
+// so false will automatically be returned.
 bool node_cmp(struct Node *n1, struct Node *n2);
 
+// Check if target exists under a subnode of parameter node.
 bool node_find_node(struct Node *node, struct Node *target);
 
 #endif
