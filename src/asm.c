@@ -118,6 +118,8 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
 
     as->stack_size = prev_size;
     scope_pop_layer(as->scope);
+
+    errors_warn_dead_code(node);
 }
 
 

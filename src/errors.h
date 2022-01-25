@@ -8,6 +8,7 @@
 
 void errors_load_source(char **source, size_t nlines);
 
+/* Errors */
 void errors_lexer_unrecognized_char(char c, size_t line);
 
 void errors_parser_unexpected_token(int expected, struct Token *found);
@@ -25,6 +26,11 @@ void errors_asm_check_init_list(struct Scope *scope, struct Node *list);
 void errors_asm_nonexistent_variable(struct Node *var);
 
 void errors_asm_str_from_node(struct Node *node);
+
+void errors_args_nonexistent_warning(char *warning);
+
+/* Warnings */
+void errors_warn_dead_code(struct Node *func_def);
 
 void errors_print_lines(size_t line);
 void errors_print_line(size_t line);

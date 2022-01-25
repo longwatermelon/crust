@@ -9,9 +9,12 @@
 
 #define RESET "\x1b[0m"
 #define RED_BOLD "\x1b[1;31m"
+#define YELLOW_BOLD "\x1b[1;33m"
+#define WHITE_BOLD "\x1b[1;37m"
 
 #define ERROR RED_BOLD "Error: " RESET
 #define INTERNAL_ERROR RED_BOLD "Internal compiler error: " RESET
+#define WARNING YELLOW_BOLD "Warning: " RESET
 
 #define ERROR_RANGE 1
 
@@ -229,6 +232,26 @@ void errors_asm_str_from_node(struct Node *node)
 }
 
 
+void errors_args_nonexistent_warning(char *warning)
+{
+    fprintf(stderr, ERROR "'%s' is not a valid warning option.\n", warning);
+    exit(EXIT_FAILURE);
+}
+
+
+void errors_warn_dead_code(struct Node *func_def)
+{
+    if (func_def->function_def_body->compound_size == 1 &&
+        func_def->function_def_body->compound_nodes[0]->type == NODE_NOOP)
+    {
+        fprintf(stderr, WARNING "'%s' is a useless function. [-Wno-dead-code]\n",
+                        func_def->function_def_name);
+        errors_print_lines(func_def->error_line);
+        printf("\n");
+    }
+}
+
+
 void errors_print_lines(size_t line)
 {
     int begin = line - ERROR_RANGE;
@@ -244,7 +267,7 @@ void errors_print_lines(size_t line)
     for (int i = begin; i <= end; ++i)
     {
         if (i == line)
-            printf("\x1b[1;37m");
+            printf(WHITE_BOLD);
 
         printf("  ");
         errors_print_line(i);
