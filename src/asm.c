@@ -1,6 +1,7 @@
 #include "asm.h"
 #include "util.h"
 #include "errors.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,7 +64,7 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
     if (node->type == NODE_FUNCTION_DEF)
     {
-        errors_asm_check_function_def(node, as);
+        errors_asm_check_function_def(as->scope, node);
         scope_add_function_def(as->scope, node);
         asm_gen_function_def(as, node);
     }
@@ -113,7 +114,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
         asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
 
-    errors_asm_check_function_return(node, as);
+    errors_asm_check_function_return(as->scope, node);
 
     as->stack_size = prev_size;
     scope_pop_layer(as->scope);
@@ -157,7 +158,7 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 
     asm_gen_add_to_stack(as, literal);
 
-    errors_asm_check_variable_def(node, as);
+    errors_asm_check_variable_def(as->scope, node);
 }
 
 
@@ -165,7 +166,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 {
     if (node->type == NODE_INIT_LIST)
     {
-        errors_asm_check_init_list(node, as);
+        errors_asm_check_init_list(as->scope, node);
 
         for (size_t i = 0; i < node->init_list_len; ++i)
             asm_gen_add_to_stack(as, node->init_list_values[i]);
@@ -226,7 +227,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
-    errors_asm_check_function_call(func, node, as);
+    errors_asm_check_function_call(as->scope, func, node);
 
     // Push args on stack backwards so they're in order
     for (int i = node->function_call_args_size - 1; i >= 0; --i)
@@ -257,7 +258,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_assignment(struct Asm *as, struct Node *node)
 {
-    errors_asm_check_assignment(node, as);
+    errors_asm_check_assignment(as->scope, node);
 
     char *src = asm_str_from_node(as, node->assignment_src);
     char *dst = asm_str_from_node(as, node->assignment_dst);
@@ -371,7 +372,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     struct Node *var = scope_find_variable(as->scope, node);
 
     if (!var)
-        errors_asm_nonexistent_variable(as, node);
+        errors_asm_nonexistent_variable(node);
 
     if (var->type == NODE_PARAMETER)
     {

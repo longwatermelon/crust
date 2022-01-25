@@ -4,17 +4,28 @@
 #include "asm.h"
 #include "scope.h"
 #include "util.h"
+#include "errors.h"
+
 #include <string.h>
 
 
 void crust_compile(struct Args *args)
 {
+    size_t nlines;
+    char **source = util_read_file_lines(args->source, &nlines);
+    errors_load_source(source, nlines);
+
     struct Node *root = crust_gen_ast(args);
     char *as = crust_gen_asm(root, args);
     crust_assemble(as, args);
 
     node_free(root);
     free(as);
+
+    for (size_t i = 0; i < nlines; ++i)
+        free(source[i]);
+
+    free(source);
 }
 
 

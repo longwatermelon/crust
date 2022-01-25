@@ -14,7 +14,17 @@
 
 #define ERROR_RANGE 1
 
-void errors_asm_check_function_call(struct Node *def, struct Node *call, struct Asm *as)
+char **g_source = 0;
+size_t g_source_len = 0;
+
+void errors_load_source(char **source, size_t nlines)
+{
+    g_source = source;
+    g_source_len = nlines;
+}
+
+
+void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struct Node *call)
 {
     if (def->function_def_params_size != call->function_call_args_size)
     {
@@ -22,13 +32,13 @@ void errors_asm_check_function_call(struct Node *def, struct Node *call, struct 
                         "%lu arguments but %lu were provided.\n",
                         def->function_def_name, def->function_def_params_size,
                         call->function_call_args_size);
-        errors_print_lines(as, call->error_line);
+        errors_print_lines(call->error_line);
         exit(EXIT_FAILURE);
     }
 
     for (size_t i = 0; i < call->function_call_args_size; ++i)
     {
-        NodeDType type = node_type_from_node(call->function_call_args[i], as->scope);
+        NodeDType type = node_type_from_node(call->function_call_args[i], scope);
 
         if (!node_dtype_cmp(type, def->function_def_params[i]->param_type))
         {
@@ -36,14 +46,14 @@ void errors_asm_check_function_call(struct Node *def, struct Node *call, struct 
                             "data of type %s was passed.\n", i,
                             def->function_def_name, node_str_from_type(def->function_def_params[i]->param_type),
                             node_str_from_type(type));
-            errors_print_lines(as, call->error_line);
+            errors_print_lines(call->error_line);
             exit(EXIT_FAILURE);
         }
     }
 }
 
 
-void errors_asm_check_function_return(struct Node *def, struct Asm *as)
+void errors_asm_check_function_return(struct Scope *scope, struct Node *def)
 {
     struct Node *comp = def->function_def_body;
     bool found_return = false;
@@ -55,7 +65,7 @@ void errors_asm_check_function_return(struct Node *def, struct Asm *as)
         if (node->type == NODE_RETURN)
         {
             found_return = true;
-            NodeDType type = node_type_from_node(node->return_value, as->scope);
+            NodeDType type = node_type_from_node(node->return_value, scope);
 
             if (!node_dtype_cmp(type, def->function_def_return_type))
             {
@@ -64,7 +74,7 @@ void errors_asm_check_function_return(struct Node *def, struct Asm *as)
                                 def->function_def_name,
                                 node_str_from_type(def->function_def_return_type),
                                 node_str_from_type(type));
-                errors_print_lines(as, node->error_line);
+                errors_print_lines(node->error_line);
                 exit(EXIT_FAILURE);
             }
         }
@@ -74,43 +84,43 @@ void errors_asm_check_function_return(struct Node *def, struct Asm *as)
     {
         fprintf(stderr, ERROR "Non-void function '%s' should return '%s' but returns nothing.\n",
                         def->function_def_name, node_str_from_type(def->function_def_return_type));
-        errors_print_lines(as, def->error_line);
+        errors_print_lines(def->error_line);
         exit(EXIT_FAILURE);
     }
 }
 
 
-void errors_asm_check_function_def(struct Node *def, struct Asm *as)
+void errors_asm_check_function_def(struct Scope *scope, struct Node *def)
 {
-    struct Node *existing = scope_find_function(as->scope, def->function_def_name);
+    struct Node *existing = scope_find_function(scope, def->function_def_name);
 
     if (existing)
     {
         fprintf(stderr, ERROR "Redefining function '%s'.\n", def->function_def_name);
-        errors_print_lines(as, def->error_line);
+        errors_print_lines(def->error_line);
         exit(EXIT_FAILURE);
     }
 }
 
 
-void errors_asm_check_variable_def(struct Node *def, struct Asm *as)
+void errors_asm_check_variable_def(struct Scope *scope, struct Node *def)
 {
-    if (!node_dtype_cmp(def->variable_def_type, node_type_from_node(def->variable_def_value, as->scope)))
+    if (!node_dtype_cmp(def->variable_def_type, node_type_from_node(def->variable_def_value, scope)))
     {
         fprintf(stderr, ERROR "Attempting to assign value of type %s to variable "
                         "'%s' of type %s.\n",
-                        node_str_from_type(node_type_from_node(def->variable_def_value, as->scope)),
+                        node_str_from_type(node_type_from_node(def->variable_def_value, scope)),
                         def->variable_def_name, node_str_from_type(def->variable_def_type));
-        errors_print_lines(as, def->error_line);
+        errors_print_lines(def->error_line);
         exit(EXIT_FAILURE);
     }
 
     struct Node *orig = 0;
     bool duplicate = false;
 
-    for (size_t i = 0; i < as->scope->curr_layer->variable_defs_size; ++i)
+    for (size_t i = 0; i < scope->curr_layer->variable_defs_size; ++i)
     {
-        if (strcmp(as->scope->curr_layer->variable_defs[i]->variable_def_name, def->variable_def_name) == 0)
+        if (strcmp(scope->curr_layer->variable_defs[i]->variable_def_name, def->variable_def_name) == 0)
         {
             if (orig)
             {
@@ -118,7 +128,7 @@ void errors_asm_check_variable_def(struct Node *def, struct Asm *as)
                 break;
             }
 
-            orig = as->scope->curr_layer->variable_defs[i];
+            orig = scope->curr_layer->variable_defs[i];
         }
     }
 
@@ -126,19 +136,19 @@ void errors_asm_check_variable_def(struct Node *def, struct Asm *as)
     {
         fprintf(stderr, ERROR "Attempting to redefine variable '%s'.\n",
                         def->variable_def_name);
-        errors_print_lines(as, def->error_line);
+        errors_print_lines(def->error_line);
 
         fprintf(stderr, "\nFirst defined here:\n");
-        errors_print_lines(as, orig->error_line);
+        errors_print_lines(orig->error_line);
         exit(EXIT_FAILURE);
     }
 }
 
 
-void errors_asm_check_assignment(struct Node *assignment, struct Asm *as)
+void errors_asm_check_assignment(struct Scope *scope, struct Node *assignment)
 {
-    NodeDType src_type = node_type_from_node(assignment->assignment_src, as->scope);
-    NodeDType dst_type = node_type_from_node(assignment->assignment_dst, as->scope);
+    NodeDType src_type = node_type_from_node(assignment->assignment_src, scope);
+    NodeDType dst_type = node_type_from_node(assignment->assignment_dst, scope);
 
     if (!node_dtype_cmp(src_type, dst_type))
     {
@@ -146,22 +156,22 @@ void errors_asm_check_assignment(struct Node *assignment, struct Asm *as)
                         "'%s' of type %s.\n", node_str_from_type(src_type),
                         assignment->assignment_dst->variable_name,
                         node_str_from_type(dst_type));
-        errors_print_lines(as, assignment->error_line);
+        errors_print_lines(assignment->error_line);
         exit(EXIT_FAILURE);
     }
 }
 
 
-void errors_asm_check_init_list(struct Node *list, struct Asm *as)
+void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
 {
-    struct Node *struct_node = scope_find_struct(as->scope, list->init_list_type.struct_type);
+    struct Node *struct_node = scope_find_struct(scope, list->init_list_type.struct_type);
 
     if (list->init_list_len != struct_node->struct_members_size)
     {
         fprintf(stderr, ERROR "Struct '%s' has %lu members but %lu member(s) were passed.\n",
                         struct_node->struct_name, struct_node->struct_members_size,
                         list->init_list_len);
-        errors_print_lines(as, list->error_line);
+        errors_print_lines(list->error_line);
         exit(EXIT_FAILURE);
     }
 
@@ -174,10 +184,10 @@ void errors_asm_check_init_list(struct Node *list, struct Asm *as)
                                   node_str_from_type(struct_node->struct_members[i]->member_type),
                                   struct_node->struct_name,
                                   node_str_from_type((NodeDType){ list->init_list_values[i]->type }));
-            errors_print_lines(as, list->error_line);
+            errors_print_lines(list->error_line);
 
             fprintf(stderr, "\nStruct first defined here:\n");
-            errors_print_lines(as, struct_node->error_line);
+            errors_print_lines(struct_node->error_line);
 
             exit(EXIT_FAILURE);
         }
@@ -185,15 +195,15 @@ void errors_asm_check_init_list(struct Node *list, struct Asm *as)
 }
 
 
-void errors_asm_nonexistent_variable(struct Asm *as, struct Node *var)
+void errors_asm_nonexistent_variable(struct Node *var)
 {
     fprintf(stderr, ERROR "Variable '%s' referenced but not defined.\n", var->variable_name);
-    errors_print_lines(as, var->error_line);
+    errors_print_lines(var->error_line);
     exit(EXIT_FAILURE);
 }
 
 
-void errors_print_lines(struct Asm *as, size_t line)
+void errors_print_lines(size_t line)
 {
     int begin = line - ERROR_RANGE;
 
@@ -202,8 +212,8 @@ void errors_print_lines(struct Asm *as, size_t line)
 
     int end = begin + 2 * ERROR_RANGE;
 
-    if (end >= as->source_size)
-        end = as->source_size;
+    if (end >= g_source_len)
+        end = g_source_len;
 
     for (int i = begin; i <= end; ++i)
     {
@@ -211,7 +221,7 @@ void errors_print_lines(struct Asm *as, size_t line)
             printf("\x1b[1;37m");
 
         printf("  ");
-        errors_print_line(as, i);
+        errors_print_line(i);
 
         if (i == line)
             printf(RESET);
@@ -219,14 +229,14 @@ void errors_print_lines(struct Asm *as, size_t line)
 }
 
 
-void errors_print_line(struct Asm *as, size_t line)
+void errors_print_line(size_t line)
 {
     char *line_num = util_int_to_str(line);
     const char *tmp = "%s | %s";
 
-    size_t len = strlen(tmp) + strlen(as->source[line - 1]) + strlen(line_num);
+    size_t len = strlen(tmp) + strlen(g_source[line - 1]) + strlen(line_num);
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, tmp, line_num, as->source[line - 1]);
+    sprintf(s, tmp, line_num, g_source[line - 1]);
     printf("%s", s);
 
     free(s);
