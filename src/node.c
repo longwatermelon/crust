@@ -227,36 +227,35 @@ bool node_check_variable_used(struct Node *node, struct Node *var)
     switch (node->type)
     {
     case NODE_COMPOUND:
-    {
         for (size_t i = 0; i < node->compound_size; ++i)
         {
             if (node_check_variable_used(node->compound_nodes[i], var))
                 return true;
         }
-    } break;
+        break;
     case NODE_FUNCTION_DEF:
-    {
         return node_check_variable_used(node->function_def_body, var);
-    } break;
+        break;
     case NODE_ASSIGNMENT:
-    {
         if (node->assignment_dst == var || node_check_variable_used(node->assignment_src, var))
             return true;
-    } break;
+        break;
     case NODE_INIT_LIST:
-    {
         for (size_t i = 0; i < node->init_list_len; ++i)
         {
             if (node_check_variable_used(node->init_list_values[i], var))
                 return true;
         }
-    } break;
+        break;
     case NODE_RETURN:
         return node_check_variable_used(node->return_value, var);
     case NODE_FUNCTION_CALL:
         for (size_t i = 0; i < node->function_call_args_size; ++i)
+        {
             if (node_check_variable_used(node->function_call_args[i], var))
                 return true;
+        }
+        break;
     default: return false;
     }
 
