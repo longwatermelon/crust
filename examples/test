@@ -4,6 +4,8 @@ fn test(b: str) -> str {
     return b;
 };
 
+fn empty() -> void {};
+
 fn main() -> int {
     let b: str = test("test\n");
     pront(b);
@@ -12,6 +14,8 @@ fn main() -> int {
     pront("    \n");
     let c: str = test(a);
     pront(c);
+
+    empty();
 
     return 0;
 };
