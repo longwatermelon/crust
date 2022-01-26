@@ -15,7 +15,7 @@ struct Asm
     struct Args *args;
 };
 
-struct Asm *asm_alloc(struct Args *args);
+struct Asm *asm_alloc(struct Args *args, bool main);
 void asm_free(struct Asm *as);
 
 void asm_gen_expr(struct Asm *as, struct Node *node);

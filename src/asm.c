@@ -10,7 +10,7 @@
 
 #define MAX_INT_LEN 10
 
-struct Asm *asm_alloc(struct Args *args)
+struct Asm *asm_alloc(struct Args *args, bool main)
 {
     struct Asm *as = malloc(sizeof(struct Asm));
 
@@ -18,14 +18,21 @@ struct Asm *asm_alloc(struct Args *args)
     as->data = calloc(strlen(data_template) + 1, sizeof(char));
     strcpy(as->data, data_template);
 
-    const char *begin = ".globl _start\n"
-                        "_start:\n"
-                        "call main\n"
-                        "mov $1, %eax\n"
-                        "int $0x80\n";
+    if (main)
+    {
+        const char *begin = ".globl _start\n"
+                            "_start:\n"
+                            "call main\n"
+                            "mov $1, %eax\n"
+                            "int $0x80\n";
 
-    as->root = calloc(strlen(begin) + 1, sizeof(char));
-    strcpy(as->root, begin);
+        as->root = calloc(strlen(begin) + 1, sizeof(char));
+        strcpy(as->root, begin);
+    }
+    else
+    {
+        as->root = calloc(1, sizeof(char));
+    }
 
     as->scope = scope_alloc();
     // Global scope

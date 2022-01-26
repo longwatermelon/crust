@@ -12,7 +12,8 @@ enum
 
 struct Args
 {
-    char *source;
+    char **sources;
+    size_t nsources;
 
     char *out_filename;
 

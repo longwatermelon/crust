@@ -9,7 +9,8 @@ struct Args *args_parse(int argc, char **argv)
 {
     struct Args *args = malloc(sizeof(struct Args));
     args->out_filename = "a.out";
-    args->source = 0;
+    args->sources = 0;
+    args->nsources = 0;
     args->keep_assembly = false;
 
     args->warnings[WARNING_DEAD_CODE] = true;
@@ -47,13 +48,8 @@ struct Args *args_parse(int argc, char **argv)
         }
         else
         {
-            if (args->source)
-            {
-                fprintf(stderr, "Error: multiple input files specified\n");
-                exit(EXIT_FAILURE);
-            }
-
-            args->source = argv[i];
+            args->sources = realloc(args->sources, sizeof(char*) * ++args->nsources);
+            args->sources[args->nsources - 1] = argv[i];
         }
     }
 
@@ -63,6 +59,7 @@ struct Args *args_parse(int argc, char **argv)
 
 void args_free(struct Args *args)
 {
+    free(args->sources);
     free(args);
 }
 

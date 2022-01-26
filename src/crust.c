@@ -11,13 +11,66 @@
 
 void crust_compile(struct Args *args)
 {
+    char **objs = 0;
+    size_t nobjs = 0;
+
+    for (size_t i = 0; i < args->nsources; ++i)
+    {
+        crust_compile_file(args, args->sources[i]);
+
+        size_t len = strlen(args->sources[i]) + 2;
+        char *s = malloc(sizeof(char) * (len + 1));
+        sprintf(s, "%s.o", args->sources[i]);
+        s[len] = '\0';
+
+        objs = realloc(objs, sizeof(char*) * ++nobjs);
+        objs[nobjs - 1] = s;
+    }
+
+    crust_link(objs, nobjs);
+
+    for (size_t i = 0; i < nobjs; ++i)
+    {
+        remove(objs[i]);
+
+        if (!args->keep_assembly)
+        {
+            objs[i][strlen(objs[i]) - 1] = 's';
+            remove(objs[i]);
+        }
+
+        free(objs[i]);
+    }
+
+    free(objs);
+
+    if (!args->keep_assembly)
+    {
+    }
+}
+
+
+void crust_compile_file(struct Args *args, char *file)
+{
     size_t nlines;
-    char **source = util_read_file_lines(args->source, &nlines);
+    char **source = util_read_file_lines(file, &nlines);
     errors_load_source(source, nlines);
 
-    struct Node *root = crust_gen_ast(args);
-    char *as = crust_gen_asm(root, args);
-    crust_assemble(as, args);
+    struct Node *root = crust_gen_ast(args, file);
+
+    // TODO Figure out a better way to find main function
+    bool main = false;
+    for (size_t i = 0; i < root->compound_size; ++i)
+    {
+        if (root->compound_nodes[i]->type == NODE_FUNCTION_DEF &&
+            strcmp(root->compound_nodes[i]->function_def_name, "main") == 0)
+        {
+            main = true;
+        }
+    }
+
+    char *as = crust_gen_asm(root, args, main);
+    crust_assemble(as, args, file);
 
     node_free(root);
     free(as);
@@ -29,9 +82,9 @@ void crust_compile(struct Args *args)
 }
 
 
-struct Node *crust_gen_ast(struct Args *args)
+struct Node *crust_gen_ast(struct Args *args, char *file)
 {
-    struct Lexer *lexer = lexer_alloc(util_read_file(args->source));
+    struct Lexer *lexer = lexer_alloc(util_read_file(file));
 
     struct Token **tokens = 0;
     size_t ntokens = 0;
@@ -60,9 +113,9 @@ struct Node *crust_gen_ast(struct Args *args)
 }
 
 
-char *crust_gen_asm(struct Node *root, struct Args *args)
+char *crust_gen_asm(struct Node *root, struct Args *args, bool main)
 {
-    struct Asm *as = asm_alloc(args);
+    struct Asm *as = asm_alloc(args, main);
     asm_gen_expr(as, root);
 
     size_t len = strlen(as->data) + strlen(as->root);
@@ -76,24 +129,40 @@ char *crust_gen_asm(struct Node *root, struct Args *args)
 }
 
 
-void crust_assemble(char *as, struct Args *args)
+void crust_assemble(char *as, struct Args *args, char *file)
 {
-    FILE *out = fopen("/tmp/a.s", "w");
+    char *path = calloc(1, sizeof(char));
+    util_strcat(&path, file);
+    util_strcat(&path, ".s");
+
+    FILE *out = fopen(path, "w");
     fprintf(out, "%s\n", as);
     fclose(out);
 
-    system("as --32 /tmp/a.s -o /tmp/a.o");
+    char *cmd = util_strcpy("as --32 ");
+    path[strlen(path) - 1] = 's';
+    util_strcat(&cmd, path);
+    util_strcat(&cmd, " -o ");
+    path[strlen(path) - 1] = 'o';
+    util_strcat(&cmd, path);
 
-    const char *template = "ld /tmp/a.o -o %s -m elf_i386";
-    char *cmd = calloc(strlen(template) + strlen(args->out_filename) + 1, sizeof(char));
-    sprintf(cmd, template, args->out_filename);
     system(cmd);
     free(cmd);
+    free(path);
+}
 
-    if (args->keep_assembly)
-        system("cp /tmp/a.s .");
 
-    remove("/tmp/a.s");
-    remove("/tmp/a.o");
+void crust_link(char **files, size_t nfiles)
+{
+    char *s = util_strcpy("ld -m elf_i386");
+
+    for (size_t i = 0; i < nfiles; ++i)
+    {
+        util_strcat(&s, " ");
+        util_strcat(&s, files[i]);
+    }
+
+    system(s);
+    free(s);
 }
 
