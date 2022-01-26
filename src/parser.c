@@ -144,27 +144,50 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     node->function_def_return_type = parser_parse_dtype(parser);
 
-    parser_eat(parser, TOKEN_LBRACE);
+    struct Node *def = scope_find_function(parser->scope, node->function_def_name);
 
-    size_t prev_size = parser->stack_size;
-    parser->stack_size = 4;
-    scope_push_layer(parser->scope);
-
-    if (parser->curr_tok->type != TOKEN_RBRACE)
-        node->function_def_body = parser_parse(parser);
+    if (def)
+    {
+        node_free(node);
+        node = def;
+    }
     else
     {
-        node->function_def_body = node_alloc(NODE_COMPOUND);
-        node->function_def_body->compound_nodes = 0;
-        node->function_def_body->compound_size = 0;
+        scope_add_function_def(parser->scope, node);
     }
 
-    parser_eat(parser, TOKEN_RBRACE);
+    if (parser->curr_tok->type == TOKEN_SEMI)
+    {
+        node->function_def_is_decl = true;
+        return node;
+    }
+    else
+    {
+        parser_eat(parser, TOKEN_LBRACE);
 
-    scope_pop_layer(parser->scope);
-    parser->stack_size = prev_size;
+        size_t prev_size = parser->stack_size;
+        parser->stack_size = 4;
+        scope_push_layer(parser->scope);
 
-    return node;
+        if (parser->curr_tok->type != TOKEN_RBRACE)
+            node->function_def_body = parser_parse(parser);
+        else
+        {
+            node->function_def_body = node_alloc(NODE_COMPOUND);
+            node->function_def_body->compound_nodes = 0;
+            node->function_def_body->compound_size = 0;
+        }
+
+        parser_eat(parser, TOKEN_RBRACE);
+
+        scope_pop_layer(parser->scope);
+        parser->stack_size = prev_size;
+
+        if (def)
+            return node_alloc(NODE_NOOP);
+        else
+            return node;
+    }
 }
 
 

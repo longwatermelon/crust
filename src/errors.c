@@ -117,7 +117,7 @@ void errors_asm_check_function_def(struct Scope *scope, struct Node *def)
 {
     struct Node *existing = scope_find_function(scope, def->function_def_name);
 
-    if (existing)
+    if (existing && !existing->function_def_is_decl)
     {
         fprintf(stderr, ERROR "Redefining function '%s'.\n", def->function_def_name);
         errors_print_lines(def->error_line);
@@ -243,7 +243,8 @@ void errors_args_nonexistent_warning(char *warning)
 
 void errors_warn_dead_code(struct Node *func_def)
 {
-    if (func_def->function_def_body->compound_size == 0)
+    if (!func_def->function_def_is_decl &&
+        func_def->function_def_body->compound_size == 0)
     {
         fprintf(stderr, WARNING "'%s' is a useless function. "
                         WARNING_FLAG("-Wno-dead-code") "\n",

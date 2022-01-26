@@ -18,6 +18,7 @@ struct Node *node_alloc(int type)
     node->function_def_params = 0;
     node->function_def_params_size = 0;
     node->function_def_return_type = (NodeDType){ 0, 0 };
+    node->function_def_is_decl = false;
 
     node->int_value = 0;
 

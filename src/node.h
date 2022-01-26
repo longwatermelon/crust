@@ -51,6 +51,8 @@ struct Node
     struct Node **function_def_params;
     size_t function_def_params_size;
 
+    bool function_def_is_decl;
+
     // Return
     struct Node *return_value;
 

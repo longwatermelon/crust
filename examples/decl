@@ -1,0 +1,16 @@
+fn test() -> str;
+
+
+fn main() -> int {
+    let a: str = test();
+    pront(a);
+    return 0;
+};
+
+fn test() -> str {
+    return "string";
+};
+
+fn ex() -> str {
+    return "string";
+};
