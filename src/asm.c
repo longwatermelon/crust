@@ -31,9 +31,6 @@ struct Asm *asm_alloc(struct Args *args)
     // Global scope
     scope_push_layer(as->scope);
 
-    as->lc = 0;
-    as->stack_size = 4;
-
     as->args = args;
 
     return as;
@@ -99,8 +96,6 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     util_strcat(&as->root, s);
     free(s);
 
-    size_t prev_size = as->stack_size;
-    as->stack_size = 0;
     scope_push_layer(as->scope);
 
     as->scope->curr_layer->params = node->function_def_params;
@@ -114,7 +109,6 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     if (as->args->warnings[WARNING_UNUSED_VARIABLE])
         errors_warn_unused_variable(as->scope, node);
 
-    as->stack_size = prev_size;
     scope_pop_layer(as->scope);
 
     if (as->args->warnings[WARNING_DEAD_CODE])
@@ -146,43 +140,34 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
     struct Node *literal = node_strip_to_literal(node, as->scope);
 
-    // Creating a new label is only necessary for strings
-    if (literal->type == NODE_STRING)
-        asm_gen_store_string(as, literal);
-
-    node->variable_def_stack_offset = -as->stack_size;
-
-    if (node->variable_def_type.type == NODE_STRUCT)
-        as->stack_size += node->variable_def_value->struct_members_size * 4;
-    else
-        as->stack_size += 4;
-
-    asm_gen_add_to_stack(as, literal);
-
+    asm_gen_add_to_stack(as, literal, node->variable_def_stack_offset);
     errors_asm_check_variable_def(as->scope, node);
 }
 
 
-void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
+void asm_gen_add_to_stack(struct Asm *as, struct Node *node, size_t stack_offset)
 {
     if (node->type == NODE_INIT_LIST)
     {
         errors_asm_check_init_list(as->scope, node);
 
         for (size_t i = 0; i < node->init_list_len; ++i)
-            asm_gen_add_to_stack(as, node->init_list_values[i]);
+            asm_gen_add_to_stack(as, node->init_list_values[i], stack_offset + 4 * i);
 
         return;
     }
 
+    if (node->type == NODE_STRING)
+        asm_gen_store_string(as, node);
+
     const char *template =  "subl $4, %%esp\n"
-                            "movl %s, -%d(%%ebp)\n";
+                            "movl %s, %d(%%ebp)\n";
 
     char *left = asm_str_from_node(as, node);
 
     size_t len = strlen(left) + MAX_INT_LEN + strlen(template);
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, left, as->stack_size);
+    sprintf(s, template, left, stack_offset);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
     free(left);
@@ -194,27 +179,18 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node)
 
 void asm_gen_store_string(struct Asm *as, struct Node *node)
 {
-    node = node_strip_to_literal(node, as->scope);
-
-    if (node->string_asm_id)
+    if (asm_check_lc_defined(as, node->string_asm_id))
         return;
 
-    const char *template = ".LC%d: .asciz \"%s\"\n";
+    const char *template = "%s: .asciz \"%s\"\n";
 
     size_t len = strlen(template) + strlen(node->string_value) + MAX_INT_LEN;
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, as->lc, node->string_value);
+    sprintf(s, template, node->string_asm_id, node->string_value);
 
     util_strcat(&as->data, s);
 
-    size_t id_len = strlen(".LC") + MAX_INT_LEN;
-    node->string_asm_id = calloc(id_len + 1, sizeof(char));
-    sprintf(node->string_asm_id, ".LC%lu", as->lc);
-    node->string_asm_id = realloc(node->string_asm_id, sizeof(char) * (strlen(node->string_asm_id) + 1));
-
     free(s);
-
-    ++as->lc;
 }
 
 
@@ -405,5 +381,26 @@ char *asm_str_from_function_call(struct Asm *as, struct Node *node)
     char *s = malloc(sizeof(char) * (strlen(tmp) + 1));
     strcpy(s, tmp);
     return s;
+}
+
+
+bool asm_check_lc_defined(struct Asm *as, char *string_asm_id)
+{
+    for (int i = 0; i < strlen(as->data); ++i)
+    {
+        if (as->data[i] == '\n')
+        {
+            int prev = i;
+            char buf[MAX_INT_LEN + 3] = { 0 };
+
+            while (as->data[i] != '\0' && as->data[++i] != ':')
+                buf[i - prev - 1] = as->data[i];
+
+            if (strcmp(string_asm_id, buf) == 0)
+                return true;
+        }
+    }
+
+    return false;
 }
 

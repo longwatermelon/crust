@@ -276,3 +276,18 @@ bool node_find_node(struct Node *node, struct Node *target)
     return false;
 }
 
+
+size_t node_sizeof_dtype(struct Node *node)
+{
+    switch (node->type)
+    {
+    case NODE_INT:
+    case NODE_STRING:
+    case NODE_NOOP:
+        return 4;
+    case NODE_STRUCT:
+        return node->struct_members_size * 4;
+    default: return 0;
+    }
+}
+

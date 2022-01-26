@@ -114,5 +114,7 @@ bool node_cmp(struct Node *n1, struct Node *n2);
 // Check if target exists under a subnode of parameter node.
 bool node_find_node(struct Node *node, struct Node *target);
 
+size_t node_sizeof_dtype(struct Node *node);
+
 #endif
 

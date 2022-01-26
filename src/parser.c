@@ -18,6 +18,9 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
     parser->scope = scope_alloc();
     scope_push_layer(parser->scope);
 
+    parser->stack_size = 4;
+    parser->lc = 0;
+
     return parser;
 }
 
@@ -99,6 +102,13 @@ struct Node *parser_parse_str(struct Parser *parser)
     node->string_value = util_strcpy(parser->curr_tok->value);
     node->error_line = parser->curr_tok->line_num;
 
+    char *label = util_int_to_str(parser->lc);
+    node->string_asm_id = calloc(strlen(label) + strlen(".LC") + 1, sizeof(char));
+    sprintf(node->string_asm_id, ".LC%s", label);
+
+    ++parser->lc;
+    free(label);
+
     parser_eat(parser, TOKEN_STRING);
     return node;
 }
@@ -136,6 +146,8 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     parser_eat(parser, TOKEN_LBRACE);
 
+    size_t prev_size = parser->stack_size;
+    parser->stack_size = 4;
     scope_push_layer(parser->scope);
 
     if (parser->curr_tok->type != TOKEN_RBRACE)
@@ -151,6 +163,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     parser_eat(parser, TOKEN_RBRACE);
 
     scope_pop_layer(parser->scope);
+    parser->stack_size = prev_size;
 
     return node;
 }
@@ -219,6 +232,11 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
 
     node->variable_def_name = name;
     node->variable_def_value = parser_parse_expr(parser);
+
+    node->variable_def_stack_offset = -parser->stack_size;
+    parser->stack_size += node_sizeof_dtype(node_strip_to_literal(node->variable_def_value, parser->scope));
+
+    scope_add_variable_def(parser->scope, node);
 
     return node;
 }

@@ -16,6 +16,9 @@ struct Parser
     size_t curr_idx;
 
     struct Scope *scope;
+
+    size_t stack_size;
+    size_t lc;
 };
 
 struct Parser *parser_alloc(struct Token **tokens, size_t ntokens);

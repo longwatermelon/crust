@@ -12,9 +12,6 @@ struct Asm
 
     struct Scope *scope;
 
-    size_t lc;
-    size_t stack_size;
-
     struct Args *args;
 };
 
@@ -29,8 +26,8 @@ void asm_gen_return(struct Asm *as, struct Node *node);
 void asm_gen_variable_def(struct Asm *as, struct Node *node);
 // Add a string label to the data section.
 void asm_gen_store_string(struct Asm *as, struct Node *node);
-// Add data to stack
-void asm_gen_add_to_stack(struct Asm *as, struct Node *node);
+// Add data to stack; node must be a literal
+void asm_gen_add_to_stack(struct Asm *as, struct Node *node, size_t stack_offset);
 
 void asm_gen_function_call(struct Asm *as, struct Node *node);
 
@@ -45,6 +42,8 @@ char *asm_str_from_str(struct Asm *as, struct Node *node);
 char *asm_str_from_var(struct Asm *as, struct Node *node);
 char *asm_str_from_param(struct Asm *as, struct Node *node);
 char *asm_str_from_function_call(struct Asm *as, struct Node *node);
+
+bool asm_check_lc_defined(struct Asm *as, char *string_asm_id);
 
 #endif
 
