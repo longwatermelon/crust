@@ -9,5 +9,9 @@ fn main() -> int {
     pront(b);
     let a: str = b;
 
+    pront("    \n");
+    let c: str = test(a);
+    pront(c);
+
     return 0;
 };
