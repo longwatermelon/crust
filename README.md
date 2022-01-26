@@ -16,6 +16,7 @@ make
 ```
 
 # Todo
+* Inline asm
 * Rewrite builtin function pront to print variable length strings
 * Implement returning structs from functions and passing structs to functions
 * Binary operators
