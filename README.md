@@ -20,5 +20,4 @@ make
 * Implement returning structs from functions and passing structs to functions
 * Binary operators
 * Import
-* Fix function being called when a variable assigned to the function call is referenced (should be fixed alongside with parser determining stack offsets instead of code generation)
 
