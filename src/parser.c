@@ -155,9 +155,8 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     else
     {
         node->function_def_body = node_alloc(NODE_COMPOUND);
-        node->function_def_body->compound_nodes = malloc(sizeof(struct Node*));
-        node->function_def_body->compound_nodes[0] = node_alloc(NODE_NOOP);
-        node->function_def_body->compound_size = 1;
+        node->function_def_body->compound_nodes = 0;
+        node->function_def_body->compound_size = 0;
     }
 
     parser_eat(parser, TOKEN_RBRACE);

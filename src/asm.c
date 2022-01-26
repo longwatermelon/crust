@@ -101,8 +101,15 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     as->scope->curr_layer->params = node->function_def_params;
     as->scope->curr_layer->nparams = node->function_def_params_size;
 
-    for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
-        asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
+    if (node->function_def_body->compound_size > 0)
+    {
+        for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
+            asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
+    }
+    else
+    {
+        util_strcat(&as->root, "leave\nret\n");
+    }
 
     errors_asm_check_function_return(as->scope, node);
 

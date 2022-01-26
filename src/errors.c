@@ -243,8 +243,7 @@ void errors_args_nonexistent_warning(char *warning)
 
 void errors_warn_dead_code(struct Node *func_def)
 {
-    if (func_def->function_def_body->compound_size == 1 &&
-        func_def->function_def_body->compound_nodes[0]->type == NODE_NOOP)
+    if (func_def->function_def_body->compound_size == 0)
     {
         fprintf(stderr, WARNING "'%s' is a useless function. "
                         WARNING_FLAG("-Wno-dead-code") "\n",
