@@ -37,6 +37,7 @@ struct Node *node_alloc(int type)
     node->function_call_name = 0;
     node->function_call_args = 0;
     node->function_call_args_size = 0;
+    node->function_call_return_stack_offset = 0;
 
     node->param_name = 0;
     node->param_type = (NodeDType){ 0, 0 };

@@ -33,7 +33,7 @@ fn main() -> int {
 
     pront(b2);
 
-    pront("    \n");
+    pront(" k  \n");
     return 0;
 };
 

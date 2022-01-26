@@ -1,10 +1,13 @@
-fn test(a: int) -> int {
-    pront("a   \n");
-    return a;
+fn test(b: str) -> str {
+    let a: str = "strr\n";
+    pront(a);
+    return b;
 };
 
 fn main() -> int {
-    let b: int = test(1);
-    let b2: int = b;
+    let b: str = test("test\n");
+    pront(b);
+    let a: str = b;
+
     return 0;
 };

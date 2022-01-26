@@ -139,6 +139,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
 void asm_gen_variable_def(struct Asm *as, struct Node *node)
 {
     struct Node *literal = node_strip_to_literal(node, as->scope);
+    asm_gen_expr(as, node->variable_def_value);
 
     asm_gen_add_to_stack(as, literal, node->variable_def_stack_offset);
     errors_asm_check_variable_def(as->scope, node);
@@ -222,10 +223,13 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
         free(value);
     }
 
-    const char *template = "call %s\n";
-    size_t len = strlen(template) + strlen(node->function_call_name);
+    const char *template = "call %s\n"
+                           "subl $4, %%esp\n"
+                           "movl %%ebx, %d(%%ebp)\n";
+
+    size_t len = strlen(template) + strlen(node->function_call_name) + MAX_INT_LEN;
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, node->function_call_name);
+    sprintf(s, template, node->function_call_name, node->function_call_return_stack_offset);
     s = realloc(s, sizeof(char) * (strlen(s) + 1));
 
     util_strcat(&as->root, s);
@@ -235,6 +239,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
 void asm_gen_assignment(struct Asm *as, struct Node *node)
 {
+    asm_gen_expr(as, node->assignment_src);
     errors_asm_check_assignment(as->scope, node);
 
     char *src = asm_str_from_node(as, node->assignment_src);
@@ -242,7 +247,7 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
     char *template;
 
-     // Gas complains about code that looks like movl 4(%ebp), 8(%ebp)
+    // Avoid too many memory references in one mov instruction
     if (isdigit(src[src[0] == '-' ? 1 : 0]) && isdigit(dst[dst[0] == '-' ? 1 : 0]))
         template =  "movl %s, %%ecx\n"
                     "movl %%ecx, %s\n";
@@ -276,9 +281,9 @@ void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
     // TODO Replace with custom print written in asm
     const char *template =  "movl $%d, %%edx\n"
-                            "movl %s, %%ecx\n"
                             "movl $1, %%ebx\n"
                             "movl $4, %%eax\n"
+                            "movl %s, %%ecx\n"
                             "int $0x80\n";
 
     for (size_t i = 0; i < node->function_call_args_size; ++i)
@@ -376,11 +381,14 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
 
 char *asm_str_from_function_call(struct Asm *as, struct Node *node)
 {
-    asm_gen_function_call(as, node);
-    const char *tmp = "%ebx";
-    char *s = malloc(sizeof(char) * (strlen(tmp) + 1));
-    strcpy(s, tmp);
-    return s;
+    // Redundant moving because gas complains about too many memory references
+    const char *template = "movl %d(%%ebp), %%ecx\n";
+    char *s = calloc(strlen(template) + MAX_INT_LEN + 1, sizeof(char));
+    sprintf(s, template, node->function_call_return_stack_offset);
+    util_strcat(&as->root, s);
+    free(s);
+
+    return util_strcpy("%ecx");
 }
 
 

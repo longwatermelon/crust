@@ -304,6 +304,22 @@ struct Node *parser_parse_function_call(struct Parser *parser)
     }
 
     parser_eat(parser, TOKEN_RPAREN);
+
+    node->function_call_return_stack_offset = -parser->stack_size;
+
+    struct Node *func_def = scope_find_function(parser->scope, node->function_call_name);
+    size_t size = 4;
+
+    // FIX func_def is 0 for builtin language functions; any language functions that might return structs will have issues with this
+    if (func_def && func_def->function_def_return_type.struct_type)
+    {
+        size = node_sizeof_dtype(
+            scope_find_struct(parser->scope, func_def->function_def_return_type.struct_type)
+        );
+    }
+
+    parser->stack_size += size;
+
     return node;
 }
 
