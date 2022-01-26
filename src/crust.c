@@ -43,10 +43,6 @@ void crust_compile(struct Args *args)
     }
 
     free(objs);
-
-    if (!args->keep_assembly)
-    {
-    }
 }
 
 
