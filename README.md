@@ -20,4 +20,5 @@ make
 * Implement returning structs from functions and passing structs to functions
 * Binary operators
 * Import
+* Custom operator overloads?
 
