@@ -425,7 +425,10 @@ struct Node *node_copy(struct Node *src)
     {
         struct Node *ret = node_alloc(NODE_VARIABLE);
         ret->variable_name = util_strcpy(src->variable_name);
-        ret->variable_struct_member = node_copy(src->variable_struct_member);
+
+        if (src->variable_struct_member)
+            ret->variable_struct_member = node_copy(src->variable_struct_member);
+
         return ret;
     } break;
     case NODE_VARIABLE_DEF:
