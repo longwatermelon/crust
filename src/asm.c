@@ -292,11 +292,6 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 }
 
 
-void asm_include(struct Asm *as, struct Node *node)
-{
-}
-
-
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
     // TODO Replace with custom print written in asm
