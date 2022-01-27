@@ -297,13 +297,11 @@ void asm_include(struct Asm *as, struct Node *node)
     size_t ntokens;
     struct Token **tokens = crust_tokenize(node->include_path, &ntokens);
     struct Parser *p = parser_alloc(tokens, ntokens, as->args);
-    struct Node *root = parser_parse(p);
+    node->include_root = parser_parse(p);
 
-    // FIX Memory leak because scope doesn't free defs
     scope_combine(as->scope, p->scope);
 
     parser_free(p);
-    node_free(root);
 
     for (size_t i = 0; i < ntokens; ++i)
         token_free(tokens[i]);

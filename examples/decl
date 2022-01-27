@@ -1,6 +1,5 @@
 fn test() -> str;
 
-
 fn main() -> int {
     let a: str = test();
     pront(a);
