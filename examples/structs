@@ -1,18 +1,16 @@
-struct example {
+struct test {
     a: int,
     b: str
 };
 
-fn test(b: int) -> int {
-    let a: int = 5;
+fn func() -> test {
+    let a: test = test{ 1, "test\n" };
     return a;
 };
 
-fn ex() -> void {
+fn main() -> int {
+    let a: test = func();
+    pront(a.b);
+    return 0;
 };
 
-fn main() -> int {
-    let a: example = example{ 100, "string" };
-    let b: int = 1;
-    return 1;
-};

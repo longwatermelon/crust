@@ -1,6 +1,7 @@
 include "examples/test_header";
 
+fn ex() -> str { return "test\n"; };
 fn main() -> int {
-    print("string");
+    print(ex());
     return 0;
 };
