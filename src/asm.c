@@ -299,6 +299,7 @@ void asm_include(struct Asm *as, struct Node *node)
     struct Parser *p = parser_alloc(tokens, ntokens, as->args);
     struct Node *root = parser_parse(p);
 
+    // FIX Memory leak because scope doesn't free defs
     scope_combine(as->scope, p->scope);
 
     parser_free(p);
