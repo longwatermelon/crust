@@ -1,6 +1,8 @@
 #include "asm.h"
 #include "util.h"
 #include "errors.h"
+#include "crust.h"
+#include "parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,6 +87,9 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
     if (node->type == NODE_STRUCT)
         scope_add_struct_def(as->scope, node);
+
+    if (node->type == NODE_INCLUDE)
+        asm_include(as, node);
 }
 
 
@@ -108,15 +113,11 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     as->scope->curr_layer->params = node->function_def_params;
     as->scope->curr_layer->nparams = node->function_def_params_size;
 
-    if (node->function_def_body->compound_size > 0)
-    {
-        for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
-            asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
-    }
-    else
-    {
-        util_strcat(&as->root, "leave\nret\n");
-    }
+    for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
+        asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
+
+    if (node->function_def_return_type.type == NODE_NOOP)
+        util_strcat(&as->root, "movl $0, %ebx\nleave\nret\n");
 
     errors_asm_check_function_return(as->scope, node);
 
@@ -288,6 +289,19 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
         node_dst->string_asm_id = malloc(sizeof(char) * (strlen(node_src->string_asm_id) + 1));
         strcpy(node_dst->string_asm_id, node_src->string_asm_id);
     }
+}
+
+
+void asm_include(struct Asm *as, struct Node *node)
+{
+    size_t ntokens;
+    struct Token **tokens = crust_tokenize(node->include_path, &ntokens);
+    struct Parser *p = parser_alloc(tokens, ntokens, as->args);
+    parser_parse(p);
+
+    scope_combine(as->scope, p->scope);
+
+    parser_free(p);
 }
 
 

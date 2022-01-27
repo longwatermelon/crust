@@ -3,6 +3,7 @@
 
 #include "token.h"
 #include "node.h"
+#include "args.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -19,9 +20,11 @@ struct Parser
 
     size_t stack_size;
     size_t lc;
+
+    struct Args *args;
 };
 
-struct Parser *parser_alloc(struct Token **tokens, size_t ntokens);
+struct Parser *parser_alloc(struct Token **tokens, size_t ntokens, struct Args *args);
 void parser_free(struct Parser *parser);
 
 void parser_eat(struct Parser *parser, int type);
@@ -47,6 +50,8 @@ struct Node *parser_parse_assignment(struct Parser *parser);
 struct Node *parser_parse_struct(struct Parser *parser);
 
 struct Node *parser_parse_init_list(struct Parser *parser);
+
+struct Node *parser_parse_include(struct Parser *parser);
 
 NodeDType parser_parse_dtype(struct Parser *parser);
 

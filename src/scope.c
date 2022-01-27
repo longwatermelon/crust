@@ -174,3 +174,23 @@ void scope_push_layer(struct Scope *scope)
     scope->curr_layer = scope->layers[scope->nlayers - 1];
 }
 
+
+void scope_combine(struct Scope *s1, struct Scope *s2)
+{
+    s1->function_defs = realloc(s1->function_defs,
+        sizeof(struct Node*) * (s1->function_defs_size + s2->function_defs_size));
+
+    for (size_t i = 0; i < s2->function_defs_size; ++i)
+        s1->function_defs[s1->function_defs_size + i] = s2->function_defs[i];
+
+    s1->function_defs_size += s2->function_defs_size;
+
+    s1->struct_defs = realloc(s1->struct_defs,
+        sizeof(struct Node*) * (s1->struct_defs_size + s2->struct_defs_size));
+
+    for (size_t i = 0; i < s2->struct_defs_size; ++i)
+        s1->struct_defs[s1->struct_defs_size + i] = s2->struct_defs[i];
+
+    s1->struct_defs_size += s2->struct_defs_size;
+}
+

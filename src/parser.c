@@ -1,12 +1,13 @@
 #include "parser.h"
 #include "util.h"
 #include "errors.h"
+#include "crust.h"
 
 #include <stdio.h>
 #include <string.h>
 
 
-struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
+struct Parser *parser_alloc(struct Token **tokens, size_t ntokens, struct Args *args)
 {
     struct Parser *parser = malloc(sizeof(struct Parser));
     parser->tokens = tokens;
@@ -20,6 +21,8 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens)
 
     parser->stack_size = 4;
     parser->lc = 0;
+
+    parser->args = args;
 
     return parser;
 }
@@ -124,6 +127,8 @@ struct Node *parser_parse_id(struct Parser *parser)
         return parser_parse_variable_def(parser);
     else if (strcmp(parser->curr_tok->value, "struct") == 0)
         return parser_parse_struct(parser);
+    else if (strcmp(parser->curr_tok->value, "include") == 0)
+        return parser_parse_include(parser);
     else
         return parser_parse_variable(parser);
 }
@@ -418,6 +423,17 @@ struct Node *parser_parse_init_list(struct Parser *parser)
     }
 
     parser_eat(parser, TOKEN_RBRACE);
+    return node;
+}
+
+
+struct Node *parser_parse_include(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_INCLUDE);
+    parser_eat(parser, TOKEN_ID);
+    node->include_path = util_strcpy(parser->curr_tok->value);
+    parser_eat(parser, TOKEN_STRING);
+
     return node;
 }
 

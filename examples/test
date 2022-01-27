@@ -1,1 +1,5 @@
-fn empty() -> void {};
+include "examples/test_header";
+
+fn print(arg: str) -> void {
+    pront(arg);
+};

@@ -58,6 +58,8 @@ struct Node *node_alloc(int type)
     node->init_list_len = 0;
     node->init_list_type = (NodeDType){ 0, 0 };
 
+    node->include_path = 0;
+
     node->error_line = 0;
 
     return node;
@@ -122,6 +124,7 @@ void node_free(struct Node *node)
     if (node->param_name) free(node->param_name);
     if (node->struct_name) free(node->struct_name);
     if (node->member_name) free(node->member_name);
+    if (node->include_path) free(node->include_path);
 
     if (node->function_def_return_type.struct_type) free(node->function_def_return_type.struct_type);
     if (node->variable_def_type.struct_type) free(node->variable_def_type.struct_type);

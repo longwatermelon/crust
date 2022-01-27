@@ -80,25 +80,13 @@ void crust_compile_file(struct Args *args, char *file)
 
 struct Node *crust_gen_ast(struct Args *args, char *file)
 {
-    struct Lexer *lexer = lexer_alloc(util_read_file(file));
+    size_t ntokens;
+    struct Token **tokens = crust_tokenize(file, &ntokens);
 
-    struct Token **tokens = 0;
-    size_t ntokens = 0;
-    struct Token *t = 0;
-
-    while ((t = lexer_get_next_token(lexer))->type != TOKEN_EOF)
-    {
-        tokens = realloc(tokens, sizeof(struct Token*) * ++ntokens);
-        tokens[ntokens - 1] = t;
-    }
-
-    token_free(t);
-
-    struct Parser *parser = parser_alloc(tokens, ntokens);
+    struct Parser *parser = parser_alloc(tokens, ntokens, args);
     struct Node *root = parser_parse(parser);
 
     parser_free(parser);
-    lexer_free(lexer);
 
     for (size_t i = 0; i < ntokens; ++i)
         token_free(tokens[i]);
@@ -106,6 +94,27 @@ struct Node *crust_gen_ast(struct Args *args, char *file)
     free(tokens);
 
     return root;
+}
+
+
+struct Token **crust_tokenize(char *file, size_t *ntokens)
+{
+    struct Lexer *lexer = lexer_alloc(util_read_file(file));
+
+    struct Token **tokens = 0;
+    *ntokens = 0;
+    struct Token *t = 0;
+
+    while ((t = lexer_get_next_token(lexer))->type != TOKEN_EOF)
+    {
+        tokens = realloc(tokens, sizeof(struct Token*) * ++*ntokens);
+        tokens[*ntokens - 1] = t;
+    }
+
+    token_free(t);
+    lexer_free(lexer);
+
+    return tokens;
 }
 
 

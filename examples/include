@@ -1,0 +1,6 @@
+include "examples/test_header";
+
+fn main() -> int {
+    print("string");
+    return 0;
+};

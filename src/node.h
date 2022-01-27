@@ -29,7 +29,8 @@ struct Node
         NODE_STRUCT,
         NODE_STRUCT_MEMBER,
         NODE_INIT_LIST,
-        NODE_NOOP
+        NODE_NOOP,
+        NODE_INCLUDE
     } type;
 
     // Compound
@@ -93,6 +94,9 @@ struct Node
     struct Node **init_list_values;
     size_t init_list_len;
     NodeDType init_list_type;
+
+    // Include
+    char *include_path;
 
     // Error values
     size_t error_line;
