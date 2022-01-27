@@ -97,7 +97,8 @@ struct Node
 
     // Include
     char *include_path;
-    struct Node *include_root; // WARNING Populated during assembly generation not parsing
+    struct Node *include_root;
+    struct Scope *include_scope;
 
     // Error values
     size_t error_line;

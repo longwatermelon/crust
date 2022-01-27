@@ -434,6 +434,25 @@ struct Node *parser_parse_include(struct Parser *parser)
     node->include_path = util_strcpy(parser->curr_tok->value);
     parser_eat(parser, TOKEN_STRING);
 
+    size_t ntokens;
+    struct Token **tokens = crust_tokenize(node->include_path, &ntokens);
+    struct Parser *p = parser_alloc(tokens, ntokens, parser->args);
+    node->include_root = parser_parse(p);
+
+    if (!node->include_scope)
+    {
+        node->include_scope = scope_alloc();
+        scope_push_layer(node->include_scope);
+    }
+
+    scope_combine(node->include_scope, p->scope);
+
+    for (size_t i = 0; i < ntokens; ++i)
+        token_free(tokens[i]);
+
+    free(tokens);
+    parser_free(p);
+
     return node;
 }
 

@@ -89,7 +89,7 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
         scope_add_struct_def(as->scope, node);
 
     if (node->type == NODE_INCLUDE)
-        asm_include(as, node);
+        scope_combine(as->scope, node->include_scope);
 }
 
 
@@ -294,19 +294,6 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
 void asm_include(struct Asm *as, struct Node *node)
 {
-    size_t ntokens;
-    struct Token **tokens = crust_tokenize(node->include_path, &ntokens);
-    struct Parser *p = parser_alloc(tokens, ntokens, as->args);
-    node->include_root = parser_parse(p);
-
-    scope_combine(as->scope, p->scope);
-
-    parser_free(p);
-
-    for (size_t i = 0; i < ntokens; ++i)
-        token_free(tokens[i]);
-
-    free(tokens);
 }
 
 

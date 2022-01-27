@@ -60,6 +60,7 @@ struct Node *node_alloc(int type)
 
     node->include_path = 0;
     node->include_root = 0;
+    node->include_scope = 0;
 
     node->error_line = 0;
 
@@ -116,6 +117,7 @@ void node_free(struct Node *node)
     if (node->assignment_src) node_free(node->assignment_src);
     if (node->variable_struct_member) node_free(node->variable_struct_member);
     if (node->include_root) node_free(node->include_root);
+    if (node->include_scope) scope_free(node->include_scope);
 
     if (node->string_value) free(node->string_value);
     if (node->string_asm_id) free(node->string_asm_id);
