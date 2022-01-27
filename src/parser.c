@@ -149,17 +149,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
 
     node->function_def_return_type = parser_parse_dtype(parser);
 
-    struct Node *def = scope_find_function(parser->scope, node->function_def_name);
-
-    if (def)
-    {
-        node_free(node);
-        node = def;
-    }
-    else
-    {
-        scope_add_function_def(parser->scope, node);
-    }
+    scope_add_function_def(parser->scope, node);
 
     if (parser->curr_tok->type == TOKEN_SEMI)
     {
@@ -168,6 +158,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     }
     else
     {
+        node->function_def_is_decl = false;
         parser_eat(parser, TOKEN_LBRACE);
 
         size_t prev_size = parser->stack_size;
@@ -188,10 +179,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
         scope_pop_layer(parser->scope);
         parser->stack_size = prev_size;
 
-        if (def)
-            return node_alloc(NODE_NOOP);
-        else
-            return node;
+        return node;
     }
 }
 
@@ -438,6 +426,7 @@ struct Node *parser_parse_include(struct Parser *parser)
     struct Token **tokens = crust_tokenize(node->include_path, &ntokens);
     struct Parser *p = parser_alloc(tokens, ntokens, parser->args);
     node->include_root = parser_parse(p);
+    scope_combine(parser->scope, p->scope);
 
     if (!node->include_scope)
     {

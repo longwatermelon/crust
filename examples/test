@@ -3,3 +3,7 @@ include "examples/test_header";
 fn print(arg: str) -> void {
     pront(arg);
 };
+
+fn other() -> void {
+    pront("other", "    \n");
+};

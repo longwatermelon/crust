@@ -1,1 +1,3 @@
+include "examples/other";
+
 fn print(arg: str) -> void;

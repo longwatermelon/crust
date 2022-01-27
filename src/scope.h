@@ -34,6 +34,8 @@ void scope_add_struct_def(struct Scope *scope, struct Node *node);
 
 struct Node *scope_find_variable(struct Scope *scope, struct Node *var);
 struct Node *scope_find_function(struct Scope *scope, char *name);
+struct Node *scope_find_function_def(struct Scope *scope, char *name);
+struct Node *scope_find_function_decl(struct Scope *scope, char *name);
 struct Node *scope_find_struct(struct Scope *scope, char *name);
 
 void scope_pop_layer(struct Scope *scope);

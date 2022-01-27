@@ -115,9 +115,9 @@ void errors_asm_check_function_return(struct Scope *scope, struct Node *def)
 
 void errors_asm_check_function_def(struct Scope *scope, struct Node *def)
 {
-    struct Node *existing = scope_find_function(scope, def->function_def_name);
+    struct Node *existing = scope_find_function_def(scope, def->function_def_name);
 
-    if (existing && !existing->function_def_is_decl)
+    if (existing)
     {
         fprintf(stderr, ERROR "Redefining function '%s'.\n", def->function_def_name);
         errors_print_lines(def->error_line);

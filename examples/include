@@ -3,5 +3,6 @@ include "examples/test_header";
 fn ex() -> str { return "test\n"; };
 fn main() -> int {
     print(ex());
+    other();
     return 0;
 };

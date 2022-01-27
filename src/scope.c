@@ -145,6 +145,32 @@ struct Node *scope_find_function(struct Scope *scope, char *name)
 }
 
 
+struct Node *scope_find_function_def(struct Scope *scope, char *name)
+{
+    for (size_t i = 0; i < scope->function_defs_size; ++i)
+    {
+        if (strcmp(scope->function_defs[i]->function_def_name, name) == 0 &&
+            !scope->function_defs[i]->function_def_is_decl)
+            return scope->function_defs[i];
+    }
+
+    return 0;
+}
+
+
+struct Node *scope_find_function_decl(struct Scope *scope, char *name)
+{
+    for (size_t i = 0; i < scope->function_defs_size; ++i)
+    {
+        if (strcmp(scope->function_defs[i]->function_def_name, name) == 0 &&
+            scope->function_defs[i]->function_def_is_decl)
+            return scope->function_defs[i];
+    }
+
+    return 0;
+}
+
+
 struct Node *scope_find_struct(struct Scope *scope, char *name)
 {
     for (size_t i = 0; i < scope->struct_defs_size; ++i)
