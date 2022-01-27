@@ -181,7 +181,7 @@ void scope_combine(struct Scope *s1, struct Scope *s2)
         sizeof(struct Node*) * (s1->function_defs_size + s2->function_defs_size));
 
     for (size_t i = 0; i < s2->function_defs_size; ++i)
-        s1->function_defs[s1->function_defs_size + i] = s2->function_defs[i];
+        s1->function_defs[s1->function_defs_size + i] = node_copy(s2->function_defs[i]);
 
     s1->function_defs_size += s2->function_defs_size;
 
@@ -189,7 +189,7 @@ void scope_combine(struct Scope *s1, struct Scope *s2)
         sizeof(struct Node*) * (s1->struct_defs_size + s2->struct_defs_size));
 
     for (size_t i = 0; i < s2->struct_defs_size; ++i)
-        s1->struct_defs[s1->struct_defs_size + i] = s2->struct_defs[i];
+        s1->struct_defs[s1->struct_defs_size + i] = node_copy(s2->struct_defs[i]);
 
     s1->struct_defs_size += s2->struct_defs_size;
 }

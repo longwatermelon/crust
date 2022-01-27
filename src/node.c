@@ -296,3 +296,150 @@ size_t node_sizeof_dtype(struct Node *node)
     }
 }
 
+
+struct Node *node_copy(struct Node *src)
+{
+    switch (src->type)
+    {
+    case NODE_ASSIGNMENT:
+    {
+        struct Node *ret = node_alloc(NODE_ASSIGNMENT);
+        ret->assignment_dst = node_copy(src->assignment_dst);
+        ret->assignment_src = node_copy(src->assignment_src);
+        return ret;
+    } break;
+    case NODE_COMPOUND:
+    {
+        struct Node *ret = node_alloc(NODE_COMPOUND);
+        ret->compound_nodes = malloc(sizeof(struct Node*) * src->compound_size);
+        ret->compound_size = src->compound_size;
+
+        for (size_t i = 0; i < src->compound_size; ++i)
+            ret->compound_nodes[i] = node_copy(src->compound_nodes[i]);
+
+        return ret;
+    } break;
+    case NODE_FUNCTION_CALL:
+    {
+        struct Node *ret = node_alloc(NODE_FUNCTION_CALL);
+        ret->function_call_name = util_strcpy(src->function_call_name);
+        ret->function_call_return_stack_offset = src->function_call_return_stack_offset;
+        ret->function_call_args = malloc(sizeof(struct Node*) * src->function_call_args_size);
+        ret->function_call_args_size = src->function_call_args_size;
+
+        for (size_t i = 0; i < src->function_call_args_size; ++i)
+            ret->function_call_args[i] = node_copy(src->function_call_args[i]);
+
+        return ret;
+    } break;
+    case NODE_FUNCTION_DEF:
+    {
+        struct Node *ret = node_alloc(NODE_FUNCTION_DEF);
+        ret->function_def_is_decl = src->function_def_is_decl;
+        ret->function_def_name = util_strcpy(src->function_def_name);
+
+        if (!src->function_def_is_decl)
+            ret->function_def_body = node_copy(src->function_def_body);
+
+        ret->function_def_return_type = src->function_def_return_type;
+
+        ret->function_def_params = malloc(sizeof(struct Node*) * src->function_def_params_size);
+        ret->function_def_params_size = src->function_def_params_size;
+
+        for (size_t i = 0; i < src->function_def_params_size; ++i)
+            ret->function_def_params[i] = node_copy(src->function_def_params[i]);
+
+        return ret;
+    } break;
+    case NODE_INCLUDE:
+    {
+        struct Node *ret = node_alloc(NODE_INCLUDE);
+        ret->include_path = util_strcpy(src->include_path);
+        return ret;
+    } break;
+    case NODE_INIT_LIST:
+    {
+        struct Node *ret = node_alloc(NODE_INIT_LIST);
+        ret->init_list_type = src->init_list_type;
+
+        ret->init_list_values = malloc(sizeof(struct Node*) * src->init_list_len);
+        ret->init_list_len = src->init_list_len;
+
+        for (size_t i = 0; i < src->init_list_len; ++i)
+            ret->init_list_values[i] = node_copy(src->init_list_values[i]);
+
+        return ret;
+    } break;
+    case NODE_INT:
+    {
+        struct Node *ret = node_alloc(NODE_INT);
+        ret->int_value = src->int_value;
+        return ret;
+    } break;
+    case NODE_NOOP:
+    {
+        return node_alloc(NODE_NOOP);
+    } break;
+    case NODE_PARAMETER:
+    {
+        struct Node *ret = node_alloc(NODE_PARAMETER);
+        ret->param_name = util_strcpy(src->param_name);
+        ret->param_type = src->param_type;
+        ret->param_stack_offset = src->param_stack_offset;
+        return ret;
+    } break;
+    case NODE_RETURN:
+    {
+        struct Node *ret = node_alloc(NODE_RETURN);
+        ret->return_value = node_copy(src->return_value);
+        return ret;
+    } break;
+    case NODE_STRING:
+    {
+        struct Node *ret = node_alloc(NODE_STRING);
+        ret->string_value = util_strcpy(src->string_value);
+        ret->string_asm_id = util_strcpy(src->string_asm_id);
+        return ret;
+    } break;
+    case NODE_STRUCT:
+    {
+        struct Node *ret = node_alloc(NODE_STRUCT);
+        ret->struct_name = util_strcpy(src->struct_name);
+
+        ret->struct_members = malloc(sizeof(struct Node*) * src->struct_members_size);
+        ret->struct_members_size = src->struct_members_size;
+
+        for (size_t i = 0; i < src->struct_members_size; ++i)
+            ret->struct_members[i] = node_copy(src->struct_members[i]);
+
+        return ret;
+    } break;
+    case NODE_STRUCT_MEMBER:
+    {
+        struct Node *ret = node_alloc(NODE_STRUCT_MEMBER);
+        ret->member_name = util_strcpy(src->member_name);
+        ret->member_type = src->member_type;
+        return ret;
+    } break;
+    case NODE_VARIABLE:
+    {
+        struct Node *ret = node_alloc(NODE_VARIABLE);
+        ret->variable_name = util_strcpy(src->variable_name);
+        ret->variable_struct_member = node_copy(src->variable_struct_member);
+        return ret;
+    } break;
+    case NODE_VARIABLE_DEF:
+    {
+        struct Node *ret = node_alloc(NODE_VARIABLE_DEF);
+        ret->variable_def_name = util_strcpy(src->variable_def_name);
+        ret->variable_def_stack_offset = src->variable_def_stack_offset;
+        ret->variable_def_type = src->variable_def_type;
+        ret->variable_def_value = node_copy(src->variable_def_value);
+
+        return ret;
+    } break;
+    }
+
+    return 0;
+}
+
