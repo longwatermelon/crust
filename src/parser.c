@@ -315,24 +315,18 @@ struct Node *parser_parse_function_call(struct Parser *parser)
     node->function_call_name = util_strcpy(parser->tokens[parser->curr_idx - 1]->value);
 
     parser_eat(parser, TOKEN_LPAREN);
-    struct Node *expr = parser_parse_expr(parser);
 
-    if (expr)
+    while (parser->curr_tok->type != TOKEN_RPAREN)
     {
-        node->function_call_args = realloc(node->function_call_args,
-                    sizeof(struct Node*) * ++node->function_call_args_size);
-        node->function_call_args[node->function_call_args_size - 1] = expr;
-    }
-
-    while (parser->curr_tok->type == TOKEN_COMMA)
-    {
-        parser_eat(parser, TOKEN_COMMA);
-        expr = parser_parse_expr(parser);
+        struct Node *expr = parser_parse_expr(parser);
 
         node->function_call_args = realloc(node->function_call_args,
-                                sizeof(struct Node*) * ++node->function_call_args_size);
+            sizeof(struct Node*) * ++node->function_call_args_size);
 
         node->function_call_args[node->function_call_args_size - 1] = expr;
+
+        if (parser->curr_tok->type != TOKEN_RPAREN)
+            parser_eat(parser, TOKEN_COMMA);
     }
 
     parser_eat(parser, TOKEN_RPAREN);

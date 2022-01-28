@@ -302,8 +302,8 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
 void asm_gen_binop(struct Asm *as, struct Node *node)
 {
-    const char *p1 = "movl %s, %%eax\n";
-    const char *p2 = "movl %s, %%ecx\n";
+    const char *p1 = "# Move left operand into eax\nmovl %s, %%eax\n";
+    const char *p2 = "# Move right operand into ecx\nmovl %s, %%ecx\n";
 
     char *left, *right;
 
