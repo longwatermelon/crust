@@ -302,18 +302,9 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
 void asm_gen_binop(struct Asm *as, struct Node *node)
 {
-    switch (node->op_type)
-    {
-    case OP_PLUS: asm_gen_binop_add(as, node); break;
-    }
-}
-
-
-void asm_gen_binop_add(struct Asm *as, struct Node *node)
-{
     const char *template = "movl %s, %%eax\n"
                            "movl %s, %%ebx\n"
-                           "addl %%eax, %%ebx\n"
+                           "%s %%eax, %%ebx\n"
                            "movl %%ebx, %%ecx\n";
 
     char *left, *right;
@@ -330,9 +321,23 @@ void asm_gen_binop_add(struct Asm *as, struct Node *node)
 
     right = asm_str_from_node(as, node->op_r);
 
-    size_t len = strlen(template) + strlen(left) + strlen(right);
+    char *op;
+
+    switch (node->op_type)
+    {
+    case OP_PLUS: op = "addl"; break;
+    case OP_MINUS:
+    {
+        op = "subl";
+        char *tmp = right;
+        right = left;
+        left = tmp;
+    } break;
+    }
+
+    size_t len = strlen(template) + strlen(left) + strlen(right) + strlen(op);
     char *s = malloc(sizeof(char) * (len + 1));
-    sprintf(s, template, left, right);
+    sprintf(s, template, left, right, op);
     s[len] = '\0';
 
     util_strcat(&as->root, s);

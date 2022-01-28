@@ -34,7 +34,6 @@ void asm_gen_function_call(struct Asm *as, struct Node *node);
 void asm_gen_assignment(struct Asm *as, struct Node *node);
 
 void asm_gen_binop(struct Asm *as, struct Node *node);
-void asm_gen_binop_add(struct Asm *as, struct Node *node);
 
 void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 

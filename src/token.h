@@ -29,7 +29,8 @@ struct Token
 
     enum
     {
-        TOKEN_OP_PLUS
+        TOKEN_OP_PLUS,
+        TOKEN_OP_MINUS
     } binop_type;
 };
 

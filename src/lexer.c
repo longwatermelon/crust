@@ -121,6 +121,13 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
                 lexer_advance(lexer);
                 return token_alloc(TOKEN_ARROW, make_dyn_str("->"), lexer->line_num);
             }
+            else
+            {
+                struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("+"), lexer->line_num);
+                t->binop_type = TOKEN_OP_MINUS;
+                return t;
+            }
+
             break;
         case '\n':
             lexer_advance(lexer);
