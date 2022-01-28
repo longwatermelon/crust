@@ -167,7 +167,7 @@ void asm_gen_variable_def(struct Asm *as, struct Node *node)
 }
 
 
-void asm_gen_add_to_stack(struct Asm *as, struct Node *node, size_t stack_offset)
+void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset)
 {
     if (node->type == NODE_INIT_LIST)
     {
