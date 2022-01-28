@@ -108,10 +108,17 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
         case ':': lexer_advance(lexer); return token_alloc(TOKEN_COLON, make_dyn_str(":"), lexer->line_num);
         case '.': lexer_advance(lexer); return token_alloc(TOKEN_PERIOD, make_dyn_str("."), lexer->line_num);
         case '+':
+        case '*':
         {
-            lexer_advance(lexer);
             struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("+"), lexer->line_num);
-            t->binop_type = TOKEN_OP_PLUS;
+
+            switch (lexer->current_c)
+            {
+            case '+': t->binop_type = TOKEN_OP_PLUS;
+            case '*': t->binop_type = TOKEN_OP_MUL;
+            }
+
+            lexer_advance(lexer);
             return t;
         } break;
         case '-':

@@ -333,6 +333,10 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
         right = left;
         left = tmp;
     } break;
+    case OP_MUL:
+    {
+        op = "imull";
+    } break;
     }
 
     size_t len = strlen(template) + strlen(left) + strlen(right) + strlen(op);
