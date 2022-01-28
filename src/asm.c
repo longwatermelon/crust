@@ -302,16 +302,13 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
 void asm_gen_binop(struct Asm *as, struct Node *node)
 {
-    char *template = "movl %s, %%eax\n"
-                     "movl %s, %%ebx\n"
-                     "%s %%eax, %%ebx\n"
-                     "movl %%ebx, %%ecx\n";
+    const char *p1 = "movl %s, %%eax\n";
+    const char *p2 = "movl %s, %%ecx\n";
 
     char *left, *right;
 
     if (node->op_l->type == NODE_BINOP)
     {
-        asm_gen_binop(as, node->op_l);
         left = util_strcpy("%ecx");
     }
     else
@@ -321,43 +318,32 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
 
     right = asm_str_from_node(as, node->op_r);
 
-    char *op;
+    asm_gen_expr(as, node->op_l);
+    char *s1 = calloc(strlen(p1) + strlen(left) + 1, sizeof(char));
+    sprintf(s1, p1, left);
+    util_strcat(&as->root, s1);
+    free(s1);
 
-    switch (node->op_type)
-    {
-    case OP_PLUS: op = "addl"; break;
-    case OP_MINUS:
-    {
-        op = "subl";
-        char *tmp = right;
-        right = left;
-        left = tmp;
-    } break;
-    case OP_MUL:
-    {
-        op = "imull";
-    } break;
-    case OP_DIV:
-    {
-        op = "idivl";
-        template = "movl $0, %%edx\n"
-                   "movl %s, %%eax\n"
-                   "movl %s, %%ecx\n"
-                   "%s %%ecx\n"
-                   "movl %%eax, %%ecx\n";
-    } break;
-    }
-
-    size_t len = strlen(template) + strlen(left) + strlen(right) + strlen(op);
-    char *s = malloc(sizeof(char) * (len + 1));
-    sprintf(s, template, left, right, op);
-    s[len] = '\0';
-
-    util_strcat(&as->root, s);
+    asm_gen_expr(as, node->op_r);
+    char *s2 = calloc(strlen(p2) + strlen(right) + 1, sizeof(char));
+    sprintf(s2, p2, right);
+    util_strcat(&as->root, s2);
+    free(s2);
 
     free(left);
     free(right);
-    free(s);
+
+    switch (node->op_type)
+    {
+    case OP_PLUS:
+        util_strcat(&as->root, "addl %eax, %ecx\n"); break;
+    case OP_MINUS:
+        util_strcat(&as->root, "subl %ecx, %eax\n"); break;
+    case OP_MUL:
+        util_strcat(&as->root, "imull %eax, %ecx\n"); break;
+    case OP_DIV:
+        util_strcat(&as->root, "idivl %ecx\nmovl %eax, %ecx\n"); break;
+    }
 }
 
 

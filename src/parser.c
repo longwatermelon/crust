@@ -480,6 +480,7 @@ struct Node *parser_parse_binop(struct Parser *parser)
         parser_advance(parser, -1);
 
         struct Node *root = parser_parse_binop(parser);
+        node_free(root->op_l);
         root->op_l = node;
         return root;
     }

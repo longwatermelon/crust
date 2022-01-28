@@ -216,7 +216,7 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_INIT_LIST:
         return node->init_list_type;
     case NODE_BINOP:
-        return (NodeDType){ node->op_r->type, 0 };
+        return node_type_from_node(node->op_l, scope);
     default: return (NodeDType){ 0, 0 };
     }
 }
