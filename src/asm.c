@@ -93,6 +93,9 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
     if (node->type == NODE_INCLUDE)
         scope_combine(as->scope, node->include_scope);
+
+    if (node->type == NODE_BINOP)
+        asm_gen_binop(as, node);
 }
 
 
@@ -140,6 +143,7 @@ void asm_gen_return(struct Asm *as, struct Node *node)
                             "leave\n"
                             "ret\n";
 
+    asm_gen_expr(as, node->return_value);
     char *ret = asm_str_from_node(as, node->return_value);
 
     size_t len = strlen(template) + strlen(ret);
@@ -297,6 +301,49 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 }
 
 
+void asm_gen_binop(struct Asm *as, struct Node *node)
+{
+    switch (node->op_type)
+    {
+    case OP_PLUS: asm_gen_binop_add(as, node); break;
+    }
+}
+
+
+void asm_gen_binop_add(struct Asm *as, struct Node *node)
+{
+    const char *template = "movl %s, %%eax\n"
+                           "movl %s, %%ebx\n"
+                           "addl %%eax, %%ebx\n"
+                           "movl %%ebx, %%ecx\n";
+
+    char *left, *right;
+
+    if (node->op_l->type == NODE_BINOP)
+    {
+        asm_gen_binop(as, node->op_l);
+        left = util_strcpy("%ecx");
+    }
+    else
+    {
+        left = asm_str_from_node(as, node->op_l);
+    }
+
+    right = asm_str_from_node(as, node->op_r);
+
+    size_t len = strlen(template) + strlen(left) + strlen(right);
+    char *s = malloc(sizeof(char) * (len + 1));
+    sprintf(s, template, left, right);
+    s[len] = '\0';
+
+    util_strcat(&as->root, s);
+
+    free(left);
+    free(right);
+    free(s);
+}
+
+
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
     // TODO Replace with custom print written in asm
@@ -333,6 +380,7 @@ char *asm_str_from_node(struct Asm *as, struct Node *node)
     case NODE_VARIABLE: return asm_str_from_var(as, node);
     case NODE_PARAMETER: return asm_str_from_param(as, node);
     case NODE_FUNCTION_CALL: return asm_str_from_function_call(as, node);
+    case NODE_BINOP: return asm_str_from_binop(as, node);
     default:
         errors_asm_str_from_node(node);
         break;
@@ -410,6 +458,12 @@ char *asm_str_from_function_call(struct Asm *as, struct Node *node)
     util_strcat(&as->root, s);
     free(s);
 
+    return util_strcpy("%ecx");
+}
+
+
+char *asm_str_from_binop(struct Asm *as, struct Node *node)
+{
     return util_strcpy("%ecx");
 }
 

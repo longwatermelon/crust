@@ -30,7 +30,8 @@ struct Node
         NODE_STRUCT_MEMBER,
         NODE_INIT_LIST,
         NODE_NOOP,
-        NODE_INCLUDE
+        NODE_INCLUDE,
+        NODE_BINOP
     } type;
 
     // Compound
@@ -99,6 +100,10 @@ struct Node
     char *include_path;
     struct Node *include_root;
     struct Scope *include_scope;
+
+    // Binop
+    struct Node *op_l, *op_r;
+    enum { OP_PLUS } op_type;
 
     // Error values
     size_t error_line;

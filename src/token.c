@@ -8,6 +8,7 @@ struct Token *token_alloc(int type, char *value, size_t line_num)
     t->type = type;
     t->value = value;
     t->line_num = line_num;
+    t->binop_type = 0;
 
     return t;
 }
@@ -37,6 +38,7 @@ char *token_str_from_type(int type)
     case TOKEN_COLON: return ":";
     case TOKEN_STRING: return "string";
     case TOKEN_PERIOD: return ".";
+    case TOKEN_BINOP: return "binop";
     case TOKEN_EOF: return "EOF";
     }
 

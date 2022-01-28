@@ -62,6 +62,10 @@ struct Node *node_alloc(int type)
     node->include_root = 0;
     node->include_scope = 0;
 
+    node->op_l = 0;
+    node->op_r = 0;
+    node->op_type = 0;
+
     node->error_line = 0;
 
     return node;
@@ -118,6 +122,8 @@ void node_free(struct Node *node)
     if (node->variable_struct_member) node_free(node->variable_struct_member);
     if (node->include_root) node_free(node->include_root);
     if (node->include_scope) scope_free(node->include_scope);
+    if (node->op_l) node_free(node->op_l);
+    if (node->op_r) node_free(node->op_r);
 
     if (node->string_value) free(node->string_value);
     if (node->string_asm_id) free(node->string_asm_id);
@@ -209,6 +215,8 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
         return (NodeDType){ NODE_STRUCT, node->struct_name };
     case NODE_INIT_LIST:
         return node->init_list_type;
+    case NODE_BINOP:
+        return (NodeDType){ node->op_r->type, 0 };
     default: return (NodeDType){ 0, 0 };
     }
 }
@@ -279,6 +287,9 @@ bool node_find_node(struct Node *node, struct Node *target)
                 return true;
         }
         break;
+    case NODE_BINOP:
+        if (node_find_node(node->op_l, target) || node_find_node(node->op_r, target))
+            return true;
     default: return false;
     }
 
@@ -442,6 +453,15 @@ struct Node *node_copy(struct Node *src)
         ret->variable_def_stack_offset = src->variable_def_stack_offset;
         ret->variable_def_type = src->variable_def_type;
         ret->variable_def_value = node_copy(src->variable_def_value);
+
+        return ret;
+    } break;
+    case NODE_BINOP:
+    {
+        struct Node *ret = node_alloc(NODE_BINOP);
+        ret->op_l = node_copy(src->op_l);
+        ret->op_r = node_copy(src->op_r);
+        ret->op_type = src->op_type;
 
         return ret;
     } break;

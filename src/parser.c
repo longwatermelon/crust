@@ -38,14 +38,16 @@ void parser_free(struct Parser *parser)
 void parser_eat(struct Parser *parser, int type)
 {
     if (parser->curr_tok->type != type)
-    {
         errors_parser_unexpected_token(type, parser->curr_tok);
-    }
     else
-    {
-        if (parser->curr_idx + 1 < parser->ntokens)
-            parser->curr_tok = parser->tokens[++parser->curr_idx];
-    }
+        parser_advance(parser);
+}
+
+
+void parser_advance(struct Parser *parser)
+{
+    if (parser->curr_idx + 1 < parser->ntokens)
+        parser->curr_tok = parser->tokens[++parser->curr_idx];
 }
 
 
@@ -94,7 +96,16 @@ struct Node *parser_parse_int(struct Parser *parser)
     node->int_value = atoi(parser->curr_tok->value);
     node->error_line = parser->curr_tok->line_num;
 
-    parser_eat(parser, TOKEN_INT);
+    if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_BINOP)
+    {
+        node_free(node);
+        return parser_parse_binop(parser);
+    }
+    else
+    {
+        parser_eat(parser, TOKEN_INT);
+    }
+
     return node;
 }
 
@@ -443,6 +454,36 @@ struct Node *parser_parse_include(struct Parser *parser)
     parser_free(p);
 
     return node;
+}
+
+
+struct Node *parser_parse_binop(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_BINOP);
+
+    struct Node *left = node_alloc(NODE_INT);
+    left->int_value = atoi(parser->curr_tok->value);
+    parser_eat(parser, TOKEN_INT);
+
+    node->op_type = parser->curr_tok->binop_type;
+    parser_advance(parser);
+
+    node->op_l = left;
+
+    node->op_r = node_alloc(NODE_INT);
+    node->op_r->int_value = atoi(parser->curr_tok->value);
+
+    if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_BINOP)
+    {
+        struct Node *root = parser_parse_binop(parser);
+        root->op_l = node;
+        return root;
+    }
+    else
+    {
+        parser_eat(parser, TOKEN_INT);
+        return node;
+    }
 }
 
 

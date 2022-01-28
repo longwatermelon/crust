@@ -20,11 +20,17 @@ struct Token
         TOKEN_COLON,
         TOKEN_STRING,
         TOKEN_PERIOD,
+        TOKEN_BINOP,
         TOKEN_EOF
     } type;
 
     char *value;
     size_t line_num;
+
+    enum
+    {
+        TOKEN_OP_PLUS
+    } binop_type;
 };
 
 struct Token *token_alloc(int type, char *value, size_t line_num);

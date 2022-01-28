@@ -33,6 +33,9 @@ void asm_gen_function_call(struct Asm *as, struct Node *node);
 
 void asm_gen_assignment(struct Asm *as, struct Node *node);
 
+void asm_gen_binop(struct Asm *as, struct Node *node);
+void asm_gen_binop_add(struct Asm *as, struct Node *node);
+
 void asm_gen_builtin_print(struct Asm *as, struct Node *node);
 
 // Get assembly representation of a node (x(%ebp), $.LCx, $x, %ebx, etc.)
@@ -42,6 +45,7 @@ char *asm_str_from_str(struct Asm *as, struct Node *node);
 char *asm_str_from_var(struct Asm *as, struct Node *node);
 char *asm_str_from_param(struct Asm *as, struct Node *node);
 char *asm_str_from_function_call(struct Asm *as, struct Node *node);
+char *asm_str_from_binop(struct Asm *as, struct Node *node);
 
 bool asm_check_lc_defined(struct Asm *as, char *string_asm_id);
 

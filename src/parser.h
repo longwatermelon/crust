@@ -28,6 +28,7 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens, struct Args *
 void parser_free(struct Parser *parser);
 
 void parser_eat(struct Parser *parser, int type);
+void parser_advance(struct Parser *parser);
 
 struct Node *parser_parse(struct Parser *parser);
 struct Node *parser_parse_expr(struct Parser *parser);
@@ -52,6 +53,8 @@ struct Node *parser_parse_struct(struct Parser *parser);
 struct Node *parser_parse_init_list(struct Parser *parser);
 
 struct Node *parser_parse_include(struct Parser *parser);
+
+struct Node *parser_parse_binop(struct Parser *parser);
 
 NodeDType parser_parse_dtype(struct Parser *parser);
 
