@@ -110,12 +110,13 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
         case '+':
         case '*':
         {
-            struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("+"), lexer->line_num);
+            char tmp[2] = { lexer->current_c, '\0' };
+            struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str(tmp), lexer->line_num);
 
             switch (lexer->current_c)
             {
-            case '+': t->binop_type = TOKEN_OP_PLUS;
-            case '*': t->binop_type = TOKEN_OP_MUL;
+            case '+': t->binop_type = TOKEN_OP_PLUS; break;
+            case '*': t->binop_type = TOKEN_OP_MUL; break;
             }
 
             lexer_advance(lexer);

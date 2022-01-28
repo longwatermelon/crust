@@ -24,6 +24,8 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens, struct Args *
 
     parser->args = args;
 
+    parser->ignore_ops = false;
+
     return parser;
 }
 
@@ -40,14 +42,18 @@ void parser_eat(struct Parser *parser, int type)
     if (parser->curr_tok->type != type)
         errors_parser_unexpected_token(type, parser->curr_tok);
     else
-        parser_advance(parser);
+        parser_advance(parser, 1);
 }
 
 
-void parser_advance(struct Parser *parser)
+void parser_advance(struct Parser *parser, int i)
 {
-    if (parser->curr_idx + 1 < parser->ntokens)
-        parser->curr_tok = parser->tokens[++parser->curr_idx];
+    if (parser->curr_idx + i < parser->ntokens &&
+        parser->curr_idx + i >= 0)
+    {
+        parser->curr_idx += i;
+        parser->curr_tok = parser->tokens[parser->curr_idx];
+    }
 }
 
 
@@ -80,6 +86,15 @@ struct Node *parser_parse(struct Parser *parser)
 
 struct Node *parser_parse_expr(struct Parser *parser)
 {
+    if (!parser->ignore_ops && parser->curr_idx + 1 < parser->ntokens &&
+        parser->tokens[parser->curr_idx + 1]->type == TOKEN_BINOP)
+    {
+        parser->ignore_ops = true;
+        struct Node *node = parser_parse_binop(parser);
+        parser->ignore_ops = false;
+        return node;
+    }
+
     switch (parser->curr_tok->type)
     {
     case TOKEN_INT: return parser_parse_int(parser);
@@ -96,16 +111,7 @@ struct Node *parser_parse_int(struct Parser *parser)
     node->int_value = atoi(parser->curr_tok->value);
     node->error_line = parser->curr_tok->line_num;
 
-    if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_BINOP)
-    {
-        node_free(node);
-        return parser_parse_binop(parser);
-    }
-    else
-    {
-        parser_eat(parser, TOKEN_INT);
-    }
-
+    parser_eat(parser, TOKEN_INT);
     return node;
 }
 
@@ -461,27 +467,24 @@ struct Node *parser_parse_binop(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_BINOP);
 
-    struct Node *left = node_alloc(NODE_INT);
-    left->int_value = atoi(parser->curr_tok->value);
-    parser_eat(parser, TOKEN_INT);
+    struct Node *left = parser_parse_expr(parser);
 
     node->op_type = parser->curr_tok->binop_type;
-    parser_advance(parser);
+    parser_advance(parser, 1);
 
     node->op_l = left;
+    node->op_r = parser_parse_expr(parser);
 
-    node->op_r = node_alloc(NODE_INT);
-    node->op_r->int_value = atoi(parser->curr_tok->value);
-
-    if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_BINOP)
+    if (parser->curr_tok->type == TOKEN_BINOP)
     {
+        parser_advance(parser, -1);
+
         struct Node *root = parser_parse_binop(parser);
         root->op_l = node;
         return root;
     }
     else
     {
-        parser_eat(parser, TOKEN_INT);
         return node;
     }
 }

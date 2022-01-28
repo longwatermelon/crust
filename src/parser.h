@@ -22,13 +22,15 @@ struct Parser
     size_t lc;
 
     struct Args *args;
+
+    bool ignore_ops;
 };
 
 struct Parser *parser_alloc(struct Token **tokens, size_t ntokens, struct Args *args);
 void parser_free(struct Parser *parser);
 
 void parser_eat(struct Parser *parser, int type);
-void parser_advance(struct Parser *parser);
+void parser_advance(struct Parser *parser, int i);
 
 struct Node *parser_parse(struct Parser *parser);
 struct Node *parser_parse_expr(struct Parser *parser);
