@@ -32,6 +32,7 @@ struct Token
         TOKEN_OP_PLUS,
         TOKEN_OP_MINUS,
         TOKEN_OP_MUL,
+        TOKEN_OP_DIV
     } binop_type;
 };
 

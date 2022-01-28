@@ -302,10 +302,10 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
 void asm_gen_binop(struct Asm *as, struct Node *node)
 {
-    const char *template = "movl %s, %%eax\n"
-                           "movl %s, %%ebx\n"
-                           "%s %%eax, %%ebx\n"
-                           "movl %%ebx, %%ecx\n";
+    char *template = "movl %s, %%eax\n"
+                     "movl %s, %%ebx\n"
+                     "%s %%eax, %%ebx\n"
+                     "movl %%ebx, %%ecx\n";
 
     char *left, *right;
 
@@ -336,6 +336,15 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
     case OP_MUL:
     {
         op = "imull";
+    } break;
+    case OP_DIV:
+    {
+        op = "idivl";
+        template = "movl $0, %%edx\n"
+                   "movl %s, %%eax\n"
+                   "movl %s, %%ecx\n"
+                   "%s %%ecx\n"
+                   "movl %%eax, %%ecx\n";
     } break;
     }
 

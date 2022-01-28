@@ -136,6 +136,14 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             }
 
             break;
+        case '/':
+        {
+            lexer_advance(lexer);
+
+            struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("/"), lexer->line_num);
+            t->binop_type = TOKEN_OP_DIV;
+            return t;
+        } break;
         case '\n':
             lexer_advance(lexer);
             ++lexer->line_num;
