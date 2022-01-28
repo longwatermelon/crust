@@ -52,7 +52,7 @@ void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struc
     if (def->function_def_params_size != call->function_call_args_size)
     {
         fprintf(stderr, ERROR "Function '%s' takes "
-                        "%lu arguments but %lu were provided.\n",
+                        "%zu arguments but %zu were provided.\n",
                         def->function_def_name, def->function_def_params_size,
                         call->function_call_args_size);
         errors_print_lines(call->error_line);
@@ -65,7 +65,7 @@ void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struc
 
         if (!node_dtype_cmp(type, def->function_def_params[i]->param_type))
         {
-            fprintf(stderr, ERROR "Parameter %lu of function '%s' is of type %s but "
+            fprintf(stderr, ERROR "Parameter %zu of function '%s' is of type %s but "
                             "data of type %s was passed.\n", i,
                             def->function_def_name, node_str_from_type(def->function_def_params[i]->param_type),
                             node_str_from_type(type));
@@ -191,7 +191,7 @@ void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
 
     if (list->init_list_len != struct_node->struct_members_size)
     {
-        fprintf(stderr, ERROR "Struct '%s' has %lu members but %lu member(s) were passed.\n",
+        fprintf(stderr, ERROR "Struct '%s' has %zu members but %zu member(s) were passed.\n",
                         struct_node->struct_name, struct_node->struct_members_size,
                         list->init_list_len);
         errors_print_lines(list->error_line);
