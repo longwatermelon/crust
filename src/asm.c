@@ -228,6 +228,8 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     errors_asm_check_function_call(as->scope, func, node);
 
+    util_strcat(&as->root, "# Push function call args\n");
+
     // Push args on stack backwards so they're in order
     for (int i = node->function_call_args_size - 1; i >= 0; --i)
     {
@@ -246,7 +248,8 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
         free(value);
     }
 
-    const char *template = "call %s\n"
+    const char *template = "# Function call\n"
+                           "call %s\n"
                            "subl $4, %%esp\n"
                            "movl %%ebx, %d(%%ebp)\n";
 
@@ -272,10 +275,12 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
     // Avoid too many memory references in one mov instruction
     if (isdigit(src[src[0] == '-' ? 1 : 0]) && isdigit(dst[dst[0] == '-' ? 1 : 0]))
-        template =  "movl %s, %%ecx\n"
+        template =  "# Assignment: Avoid too many memory references\n"
+                    "movl %s, %%ecx\n"
                     "movl %%ecx, %s\n";
     else
-        template = "movl %s, %s\n";
+        template =  "# Assignment"
+                    "movl %s, %s\n";
 
     size_t len = strlen(template) + strlen(src) + strlen(dst);
     char *s = calloc(len + 1, sizeof(char));

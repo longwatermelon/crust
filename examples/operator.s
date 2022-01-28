@@ -22,12 +22,16 @@ ret
 main:
 pushl %ebp
 movl %esp, %ebp
+# Push function call args
+# Function call
 call func
 subl $4, %esp
 movl %ebx, -4(%ebp)
 movl -4(%ebp), %ecx
 subl $4, %esp
 movl %ecx, -8(%ebp)
+# Push function call args
+# Function call
 call other
 subl $4, %esp
 movl %ebx, -8(%ebp)
