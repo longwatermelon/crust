@@ -49,7 +49,7 @@ void parser_eat(struct Parser *parser, int type)
 void parser_advance(struct Parser *parser, int i)
 {
     if (parser->curr_idx + i < parser->ntokens &&
-        parser->curr_idx + i >= 0)
+        (int)parser->curr_idx + i >= 0)
     {
         parser->curr_idx += i;
         parser->curr_tok = parser->tokens[parser->curr_idx];
