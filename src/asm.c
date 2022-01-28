@@ -420,24 +420,28 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 
     if (!var)
         errors_asm_nonexistent_variable(node);
-
-    if (var->type == NODE_PARAMETER)
-    {
-        return asm_str_from_param(as, var);
-    }
-    else if (var->type == NODE_VARIABLE_DEF)
-    {
-        const char *tmp = "%d(%%ebp)";
-        char *s = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
-        sprintf(s, tmp, var->variable_def_stack_offset);
-        s = realloc(s, sizeof(char) * (strlen(s) + 1));
-        return s;
-    }
     else
     {
-        struct Node *literal = node_strip_to_literal(var, as->scope);
-        return asm_str_from_node(as, literal);
+        if (var->type == NODE_PARAMETER)
+        {
+            return asm_str_from_param(as, var);
+        }
+        else if (var->type == NODE_VARIABLE_DEF)
+        {
+            const char *tmp = "%d(%%ebp)";
+            char *s = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
+            sprintf(s, tmp, var->variable_def_stack_offset);
+            s = realloc(s, sizeof(char) * (strlen(s) + 1));
+            return s;
+        }
+        else
+        {
+            struct Node *literal = node_strip_to_literal(var, as->scope);
+            return asm_str_from_node(as, literal);
+        }
     }
+
+    return 0;
 }
 
 
