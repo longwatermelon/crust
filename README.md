@@ -1,6 +1,9 @@
 <div align="center">
 
 # Crust
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8babf4c8e0c141568ee9647f9bccb6ff)](https://app.codacy.com/gh/longwatermelon/crust?utm_source=github.com&utm_medium=referral&utm_content=longwatermelon/crust&utm_campaign=Badge_Grade_Settings)
+
 ![Commits](https://img.shields.io/github/commit-activity/w/longwatermelon/crust)
 ![Code grade](https://api.codiga.io/project/30823/status/svg)
 </div>
