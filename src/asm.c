@@ -57,45 +57,44 @@ void asm_free(struct Asm *as)
 
 void asm_gen_expr(struct Asm *as, struct Node *node)
 {
-    if (node->type == NODE_COMPOUND)
+    switch (node->type)
     {
+    case NODE_COMPOUND:
         for (size_t i = 0; i < node->compound_size; ++i)
             asm_gen_expr(as, node->compound_nodes[i]);
-    }
-
-    if (node->type == NODE_FUNCTION_DEF)
-    {
+        break;
+    case NODE_FUNCTION_DEF:
         if (node->function_def_is_decl)
             return;
 
         errors_asm_check_function_def(as->scope, node);
         scope_add_function_def(as->scope, node);
         asm_gen_function_def(as, node);
-    }
-
-    if (node->type == NODE_RETURN)
+        break;
+    case NODE_RETURN:
         asm_gen_return(as, node);
-
-    if (node->type == NODE_VARIABLE_DEF)
-    {
+        break;
+    case NODE_VARIABLE_DEF:
         scope_add_variable_def(as->scope, node);
         asm_gen_variable_def(as, node);
-    }
-
-    if (node->type == NODE_FUNCTION_CALL)
+        break;
+    case NODE_FUNCTION_CALL:
         asm_gen_function_call(as, node);
-
-    if (node->type == NODE_ASSIGNMENT)
+        break;
+    case NODE_ASSIGNMENT:
         asm_gen_assignment(as, node);
-
-    if (node->type == NODE_STRUCT)
+        break;
+    case NODE_STRUCT:
         scope_add_struct_def(as->scope, node);
-
-    if (node->type == NODE_INCLUDE)
+        break;
+    case NODE_INCLUDE:
         scope_combine(as->scope, node->include_scope);
-
-    if (node->type == NODE_BINOP)
+        break;
+    case NODE_BINOP:
         asm_gen_binop(as, node);
+        break;
+    default: break;
+    }
 }
 
 
