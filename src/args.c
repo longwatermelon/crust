@@ -43,8 +43,8 @@ struct Args *args_parse(int argc, char **argv)
 
             if (idx == -1)
                 errors_args_nonexistent_warning(warning);
-
-            args->warnings[idx] = enabled;
+            else
+                args->warnings[idx] = enabled;
         }
         else
         {

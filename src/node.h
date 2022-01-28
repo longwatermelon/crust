@@ -72,7 +72,7 @@ struct Node
     char *function_call_name;
     struct Node **function_call_args;
     size_t function_call_args_size;
-    size_t function_call_return_stack_offset;
+    int function_call_return_stack_offset;
 
     // Parameter
     char *param_name;
