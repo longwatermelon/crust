@@ -26,4 +26,5 @@ lib/%.o: lib/%.crust
 
 clean:
 	-rm *.o crust
+	-rm lib/*.o lib/libstdcrust.a
 

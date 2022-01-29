@@ -139,7 +139,10 @@ bool util_find_file_dir(char *dir, char *file)
         if (de->d_type == DT_REG)
         {
             if (strcmp(de->d_name, file) == 0)
+            {
+                closedir(d);
                 return true;
+            }
         }
     }
 
