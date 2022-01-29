@@ -246,12 +246,6 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
 
 void asm_gen_function_call(struct Asm *as, struct Node *node)
 {
-    if (strcmp(node->function_call_name, "pront") == 0)
-    {
-        asm_gen_builtin_print(as, node);
-        return;
-    }
-
     struct Node *func = scope_find_function(as->scope, node->function_call_name);
 
     errors_asm_check_function_call(as->scope, func, node);
@@ -389,34 +383,6 @@ void asm_gen_inline_asm(struct Asm *as, struct Node *node)
     }
 
     util_strcat(&as->root, "\n");
-}
-
-
-void asm_gen_builtin_print(struct Asm *as, struct Node *node)
-{
-    // TODO Replace with custom print written in asm
-    const char *template =  "# Builtin print\n"
-                            "movl $%d, %%edx\n"
-                            "movl $1, %%ebx\n"
-                            "movl $4, %%eax\n"
-                            "movl %s, %%ecx\n"
-                            "int $0x80\n";
-
-    for (size_t i = 0; i < node->function_call_args_size; ++i)
-    {
-        asm_gen_expr(as, node->function_call_args[i]);
-
-        char *value = asm_str_from_node(as, node->function_call_args[i]);
-
-        size_t len = strlen(template) + strlen(value) + MAX_INT_LEN;
-
-        char *s = calloc(len + 1, sizeof(char));
-        sprintf(s, template, 5, value);
-
-        util_strcat(&as->root, s);
-        free(s);
-        free(value);
-    }
 }
 
 

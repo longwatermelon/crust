@@ -1,0 +1,1 @@
+fn strlen(string: str) -> int;

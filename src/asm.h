@@ -38,8 +38,6 @@ void asm_gen_binop(struct Asm *as, struct Node *node);
 
 void asm_gen_inline_asm(struct Asm *as, struct Node *node);
 
-void asm_gen_builtin_print(struct Asm *as, struct Node *node);
-
 // Get assembly representation of a node (x(%ebp), $.LCx, $x, %ebx, etc.)
 char *asm_str_from_node(struct Asm *as, struct Node *node);
 char *asm_str_from_int(struct Asm *as, struct Node *node);
