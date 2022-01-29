@@ -104,6 +104,7 @@ struct Node
     // Binop
     struct Node *op_l, *op_r;
     enum { OP_PLUS, OP_MINUS, OP_MUL, OP_DIV } op_type;
+    int op_stack_offset;
 
     // Error values
     size_t error_line;

@@ -11,6 +11,7 @@
 #include <ctype.h>
 
 #define MAX_INT_LEN 10
+#define MEMORY_REF(x) (isdigit(x[0]) || x[0] == '-')
 
 struct Asm *asm_alloc(struct Args *args, bool main)
 {
@@ -190,6 +191,20 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset)
 
     char *left = asm_str_from_node(as, node);
 
+    if (MEMORY_REF(left))
+    {
+        const char *tmp = "# Avoid too many memory references\n"
+                          "movl %s, %%eax\n";
+        char *s = calloc(strlen(template) + strlen(left) + 1, sizeof(char));
+        sprintf(s, tmp, left);
+        util_strcat(&as->root, s);
+
+        free(left);
+        free(s);
+
+        left = util_strcpy("%eax");
+    }
+
     size_t len = strlen(left) + MAX_INT_LEN + strlen(template);
     char *s = calloc(len + 1, sizeof(char));
     sprintf(s, template, left, stack_offset);
@@ -310,36 +325,21 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
 
 void asm_gen_binop(struct Asm *as, struct Node *node)
 {
-    const char *p1 = "# Move left operand into eax\nmovl %s, %%eax\n";
-    const char *p2 = "# Move right operand into ecx\nmovl %s, %%ecx\n";
-
-    char *left, *right;
-
-    if (node->op_l->type == NODE_BINOP)
-    {
-        left = util_strcpy("%ecx");
-    }
-    else
-    {
-        left = asm_str_from_node(as, node->op_l);
-    }
-
-    right = asm_str_from_node(as, node->op_r);
-
+    util_strcat(&as->root, "# Binop left\n");
     asm_gen_expr(as, node->op_l);
-    char *s1 = calloc(strlen(p1) + strlen(left) + 1, sizeof(char));
-    sprintf(s1, p1, left);
-    util_strcat(&as->root, s1);
-    free(s1);
+    asm_gen_add_to_stack(as, node->op_l, node->op_stack_offset);
 
+    util_strcat(&as->root, "# Binop right\n");
     asm_gen_expr(as, node->op_r);
-    char *s2 = calloc(strlen(p2) + strlen(right) + 1, sizeof(char));
-    sprintf(s2, p2, right);
-    util_strcat(&as->root, s2);
-    free(s2);
+    asm_gen_add_to_stack(as, node->op_r, node->op_stack_offset - 4);
 
-    free(left);
-    free(right);
+    const char *prepare_registers = "# Prepare registers for math\n"
+                                    "movl %d(%%ebp), %%eax\n"
+                                    "movl %d(%%ebp), %%ecx\n";
+    char *s = calloc(strlen(prepare_registers) + MAX_INT_LEN * 2 + 1, sizeof(char));
+    sprintf(s, prepare_registers, node->op_stack_offset, node->op_stack_offset - 4);
+    util_strcat(&as->root, s);
+    free(s);
 
     switch (node->op_type)
     {

@@ -460,6 +460,8 @@ struct Node *parser_parse_include(struct Parser *parser)
 struct Node *parser_parse_binop(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_BINOP);
+    node->op_stack_offset = -parser->stack_size;
+    parser->stack_size += 8;
 
     struct Node *left = parser_parse_expr(parser);
 

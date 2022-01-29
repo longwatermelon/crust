@@ -65,6 +65,7 @@ struct Node *node_alloc(int type)
     node->op_l = 0;
     node->op_r = 0;
     node->op_type = 0;
+    node->op_stack_offset = 0;
 
     node->error_line = 0;
 
