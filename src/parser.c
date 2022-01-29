@@ -142,6 +142,8 @@ struct Node *parser_parse_id(struct Parser *parser)
         return parser_parse_include(parser);
     else if (strcmp(parser->curr_tok->value, "idof") == 0)
         return parser_parse_idof(parser);
+    else if (strcmp(parser->curr_tok->value, "asm") == 0)
+        return parser_parse_inline_asm(parser);
     else
         return parser_parse_variable(parser);
 }
@@ -156,6 +158,10 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     node->function_def_name = util_strcpy(parser->curr_tok->value);
     parser_eat(parser, TOKEN_ID); // function name
 
+    size_t prev_size = parser->stack_size;
+    parser->stack_size = 4;
+    scope_push_layer(parser->scope);
+
     node->function_def_params = parser_parse_function_def_params(parser, &node->function_def_params_size);
 
     parser_eat(parser, TOKEN_ARROW);
@@ -167,16 +173,11 @@ struct Node *parser_parse_function_def(struct Parser *parser)
     if (parser->curr_tok->type == TOKEN_SEMI)
     {
         node->function_def_is_decl = true;
-        return node;
     }
     else
     {
         node->function_def_is_decl = false;
         parser_eat(parser, TOKEN_LBRACE);
-
-        size_t prev_size = parser->stack_size;
-        parser->stack_size = 4;
-        scope_push_layer(parser->scope);
 
         if (parser->curr_tok->type != TOKEN_RBRACE)
             node->function_def_body = parser_parse(parser);
@@ -188,12 +189,12 @@ struct Node *parser_parse_function_def(struct Parser *parser)
         }
 
         parser_eat(parser, TOKEN_RBRACE);
-
-        scope_pop_layer(parser->scope);
-        parser->stack_size = prev_size;
-
-        return node;
     }
+
+    scope_pop_layer(parser->scope);
+    parser->stack_size = prev_size;
+
+    return node;
 }
 
 
@@ -226,6 +227,9 @@ struct Node **parser_parse_function_def_params(struct Parser *parser, size_t *np
 
         parser_eat(parser, TOKEN_COMMA);
     }
+
+    parser->scope->curr_layer->params = params;
+    parser->scope->curr_layer->nparams = *nparams;
 
     parser_eat(parser, TOKEN_RPAREN);
 
@@ -425,6 +429,7 @@ struct Node *parser_parse_init_list(struct Parser *parser)
 struct Node *parser_parse_include(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_INCLUDE);
+    node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID);
     node->include_path = util_strcpy(parser->curr_tok->value);
     parser_eat(parser, TOKEN_STRING);
@@ -456,6 +461,7 @@ struct Node *parser_parse_include(struct Parser *parser)
 struct Node *parser_parse_binop(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_BINOP);
+    node->error_line = parser->curr_tok->line_num;
     node->op_stack_offset = -parser->stack_size;
     parser->stack_size += 8;
 
@@ -493,23 +499,55 @@ struct Node *parser_parse_binop(struct Parser *parser)
 struct Node *parser_parse_idof(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_IDOF);
+    node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID);
 
     struct Node *expr = parser_parse_expr(parser);
     node->idof_original_expr = expr;
 
     struct Node *literal = node_strip_to_literal(expr, parser->scope);
+    NodeDType type = node_type_from_node(literal, parser->scope);
 
-    if (literal->type != NODE_STRING)
+    if (type.type != NODE_STRING)
         errors_parser_idof_wrong_type(literal);
 
-    struct Node *string = node_alloc(NODE_STRING);
-    string->string_value = util_strcpy(literal->string_asm_id);
-    string->string_asm_id = parser_next_lc(parser);
-    string->error_line = parser->curr_tok->line_num;
+    if (literal->type == NODE_STRING)
+    {
+        struct Node *string = node_alloc(NODE_STRING);
+        string->string_value = util_strcpy(literal->string_asm_id);
+        string->string_asm_id = parser_next_lc(parser);
+        string->error_line = parser->curr_tok->line_num;
 
-    node->idof_new_expr = string;
+        node->idof_new_expr = string;
+    }
+    else
+    {
+        node->idof_new_expr = node_copy(literal);
+    }
 
+    return node;
+}
+
+
+struct Node *parser_parse_inline_asm(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_INLINE_ASM);
+    node->error_line = parser->curr_tok->line_num;
+
+    parser_eat(parser, TOKEN_ID);
+    parser_eat(parser, TOKEN_LBRACE);
+
+    while (parser->curr_tok->type != TOKEN_RBRACE)
+    {
+        node->asm_args = realloc(node->asm_args,
+            sizeof(struct Node*) * ++node->asm_nargs);
+        node->asm_args[node->asm_nargs - 1] = parser_parse_expr(parser);
+
+        if (parser->curr_tok->type != TOKEN_RBRACE)
+            parser_eat(parser, TOKEN_COMMA);
+    }
+
+    parser_eat(parser, TOKEN_RBRACE);
     return node;
 }
 
@@ -531,8 +569,8 @@ NodeDType parser_parse_dtype(struct Parser *parser)
 char *parser_next_lc(struct Parser *parser)
 {
     char *label = util_int_to_str(parser->lc);
-    char *s = calloc(strlen(label) + strlen(".LC") + 1, sizeof(char));
-    sprintf(s, ".LC%s", label);
+    char *s = calloc(strlen(label) + strlen("$.LC") + 1, sizeof(char));
+    sprintf(s, "$.LC%s", label);
 
     ++parser->lc;
     free(label);

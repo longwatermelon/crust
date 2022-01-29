@@ -101,6 +101,9 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
     case NODE_STRING:
         asm_gen_store_string(as, node);
         break;
+    case NODE_INLINE_ASM:
+        asm_gen_inline_asm(as, node);
+        break;
     default: break;
     }
 }
@@ -230,9 +233,10 @@ void asm_gen_store_string(struct Asm *as, struct Node *node)
 
     const char *template = "%s: .asciz \"%s\"\n";
 
-    size_t len = strlen(template) + strlen(node->string_value) + MAX_INT_LEN;
+    size_t len = strlen(template) + strlen(node->string_value) + MAX_INT_LEN - 1;
     char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, node->string_asm_id, node->string_value);
+    // &node->string_asm_id[1]: exclude the '$'
+    sprintf(s, template, &node->string_asm_id[1], node->string_value);
 
     util_strcat(&as->data, s);
 
@@ -361,6 +365,27 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
 }
 
 
+void asm_gen_inline_asm(struct Asm *as, struct Node *node)
+{
+    for (size_t i = 0; i < node->asm_nargs; ++i)
+    {
+        asm_gen_expr(as, node->asm_args[i]);
+        struct Node *literal = node_strip_to_literal(node->asm_args[i], as->scope);
+
+        char *s;
+
+        if (literal->type == NODE_STRING)
+            s = literal->string_value;
+        else
+            s = asm_str_from_node(as, literal);
+
+        util_strcat(&as->root, s);
+    }
+
+    util_strcat(&as->root, "\n");
+}
+
+
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
     // TODO Replace with custom print written in asm
@@ -423,9 +448,8 @@ char *asm_str_from_int(struct Asm *as, struct Node *node)
 char *asm_str_from_str(struct Asm *as, struct Node *node)
 {
     asm_gen_store_string(as, node);
-    char *value = malloc(sizeof(char) * (strlen(node->string_asm_id) + 2));
-    value[0] = '$';
-    strcpy(&value[1], node->string_asm_id);
+    char *value = malloc(sizeof(char) * (strlen(node->string_asm_id) + 1));
+    strcpy(value, node->string_asm_id);
     return value;
 }
 
@@ -504,7 +528,7 @@ bool asm_check_lc_defined(struct Asm *as, char *string_asm_id)
             while (as->data[i] != '\0' && as->data[++i] != ':')
                 buf[i - prev - 1] = as->data[i];
 
-            if (strcmp(string_asm_id, buf) == 0)
+            if (strcmp(&string_asm_id[1], buf) == 0)
                 return true;
         }
     }

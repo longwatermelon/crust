@@ -70,6 +70,9 @@ struct Node *node_alloc(int type)
     node->idof_original_expr = 0;
     node->idof_new_expr = 0;
 
+    node->asm_args = 0;
+    node->asm_nargs = 0;
+
     node->error_line = 0;
 
     return node;
@@ -116,6 +119,14 @@ void node_free(struct Node *node)
             node_free(node->init_list_values[i]);
 
         free(node->init_list_values);
+    }
+
+    if (node->asm_args)
+    {
+        for (size_t i = 0; i < node->asm_nargs; ++i)
+            node_free(node->asm_args[i]);
+
+        free(node->asm_args);
     }
 
     if (node->function_def_body) node_free(node->function_def_body);
@@ -253,6 +264,7 @@ char *node_str_from_node_type(int type)
     case NODE_INCLUDE: return "include";
     case NODE_BINOP: return "binop";
     case NODE_IDOF: return "idof";
+    case NODE_INLINE_ASM: return "asm";
     }
 
     return 0;
@@ -300,13 +312,16 @@ bool node_find_node(struct Node *node, struct Node *target)
             if (node_find_node(node->compound_nodes[i], target))
                 return true;
         }
+
         break;
     case NODE_FUNCTION_DEF:
         return node_find_node(node->function_def_body, target);
+
         break;
     case NODE_ASSIGNMENT:
         if (node->assignment_dst == target || node_find_node(node->assignment_src, target))
             return true;
+
         break;
     case NODE_INIT_LIST:
         for (size_t i = 0; i < node->init_list_len; ++i)
@@ -314,19 +329,42 @@ bool node_find_node(struct Node *node, struct Node *target)
             if (node_find_node(node->init_list_values[i], target))
                 return true;
         }
+
         break;
     case NODE_RETURN:
         return node_find_node(node->return_value, target);
+        break;
     case NODE_FUNCTION_CALL:
         for (size_t i = 0; i < node->function_call_args_size; ++i)
         {
             if (node_find_node(node->function_call_args[i], target))
                 return true;
         }
+
         break;
     case NODE_BINOP:
         if (node_find_node(node->op_l, target) || node_find_node(node->op_r, target))
             return true;
+
+        break;
+    case NODE_INLINE_ASM:
+        for (size_t i = 0; i < node->asm_nargs; ++i)
+        {
+            if (node_find_node(node->asm_args[i], target))
+                return true;
+        }
+
+        break;
+    case NODE_IDOF:
+        if (node_find_node(node->idof_original_expr, target) || node_find_node(node->idof_new_expr, target))
+            return true;
+
+        break;
+    case NODE_VARIABLE_DEF:
+        if (node_find_node(node->variable_def_value, target))
+            return true;
+
+        break;
     default: return false;
     }
 
@@ -477,6 +515,15 @@ struct Node *node_copy(struct Node *src)
     case NODE_IDOF:
         ret->idof_original_expr = node_copy(src->idof_original_expr);
         ret->idof_new_expr = node_copy(src->idof_new_expr);
+
+        return ret;
+
+    case NODE_INLINE_ASM:
+        ret->asm_args = malloc(sizeof(struct Node*) * src->asm_nargs);
+        ret->asm_nargs = src->asm_nargs;
+
+        for (size_t i = 0; i < src->asm_nargs; ++i)
+            ret->asm_args[i] = src->asm_args[i];
 
         return ret;
     }

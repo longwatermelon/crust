@@ -32,7 +32,8 @@ struct Node
         NODE_NOOP,
         NODE_INCLUDE,
         NODE_BINOP,
-        NODE_IDOF
+        NODE_IDOF,
+        NODE_INLINE_ASM
     } type;
 
     // Compound
@@ -109,6 +110,10 @@ struct Node
 
     // Idof
     struct Node *idof_original_expr, *idof_new_expr;
+
+    // Inline asm
+    struct Node **asm_args;
+    size_t asm_nargs;
 
     // Error values
     size_t error_line;

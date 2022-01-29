@@ -60,6 +60,8 @@ struct Node *parser_parse_binop(struct Parser *parser);
 
 struct Node *parser_parse_idof(struct Parser *parser);
 
+struct Node *parser_parse_inline_asm(struct Parser *parser);
+
 NodeDType parser_parse_dtype(struct Parser *parser);
 
 char *parser_next_lc(struct Parser *parser);
