@@ -37,6 +37,7 @@ struct Args *args_parse(int argc, char **argv);
 void args_free(struct Args *args);
 
 int args_index_from_warning(char *warning, bool *enabled);
+char *args_value_from_opt(char **argv, int *idx);
 
 #endif
 

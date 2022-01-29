@@ -75,6 +75,22 @@ struct Args *args_parse(int argc, char **argv)
         {
             args->link_objs = false;
         }
+        else if (strncmp(argv[i], "-L", 2) == 0)
+        {
+            args->libdirs = realloc(args->libdirs, sizeof(char*) * ++args->nlibdirs);
+            args->libdirs[args->nlibdirs - 1] = args_value_from_opt(argv, &i);
+        }
+        else if (strncmp(argv[i], "-l", 2) == 0)
+        {
+            args->libs = realloc(args->libs, sizeof(char*) * ++args->nlibs);
+            args->libs[args->nlibs - 1] = args_value_from_opt(argv, &i);
+        }
+        else if (strncmp(argv[i], "-I", 2) == 0)
+        {
+            args->include_dirs = realloc(args->include_dirs,
+                    sizeof(char*) * ++args->include_dirs_len);
+            args->include_dirs[args->include_dirs_len - 1] = args_value_from_opt(argv, &i);
+        }
         else
         {
             args->sources = realloc(args->sources, sizeof(char*) * ++args->nsources);
@@ -109,5 +125,14 @@ int args_index_from_warning(char *warning, bool *enabled)
     if (strcmp(warning, "no-unused-variable") == 0) return WARNING_UNUSED_VARIABLE;
 
     return -1;
+}
+
+
+char *args_value_from_opt(char **argv, int *idx)
+{
+    if (strlen(argv[*idx]) != 2)
+        return &argv[*idx][2];
+    else
+        return argv[++*idx];
 }
 
