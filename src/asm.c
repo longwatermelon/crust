@@ -256,6 +256,25 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     errors_asm_check_function_call(as->scope, func, node);
 
+    asm_gen_function_call_push_args(as, node);
+
+    const char *template = "# Function call\n"
+                           "call %s\n"
+                           "subl $4, %%esp\n"
+                           "movl %%ebx, %d(%%ebp)\n";
+
+    size_t len = strlen(template) + strlen(node->function_call_name) + MAX_INT_LEN;
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, template, node->function_call_name, node->function_call_return_stack_offset);
+    s = realloc(s, sizeof(char) * (strlen(s) + 1));
+
+    util_strcat(&as->root, s);
+    free(s);
+}
+
+
+void asm_gen_function_call_push_args(struct Asm *as, struct Node *node)
+{
     util_strcat(&as->root, "# Push function call args\n");
 
     // Push args on stack backwards so they're in order
@@ -275,19 +294,6 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
         free(s);
         free(value);
     }
-
-    const char *template = "# Function call\n"
-                           "call %s\n"
-                           "subl $4, %%esp\n"
-                           "movl %%ebx, %d(%%ebp)\n";
-
-    size_t len = strlen(template) + strlen(node->function_call_name) + MAX_INT_LEN;
-    char *s = calloc(len + 1, sizeof(char));
-    sprintf(s, template, node->function_call_name, node->function_call_return_stack_offset);
-    s = realloc(s, sizeof(char) * (strlen(s) + 1));
-
-    util_strcat(&as->root, s);
-    free(s);
 }
 
 

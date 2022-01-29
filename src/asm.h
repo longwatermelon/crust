@@ -30,6 +30,7 @@ void asm_gen_store_string(struct Asm *as, struct Node *node);
 void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset);
 
 void asm_gen_function_call(struct Asm *as, struct Node *node);
+void asm_gen_function_call_push_args(struct Asm *as, struct Node *node);
 
 void asm_gen_assignment(struct Asm *as, struct Node *node);
 
