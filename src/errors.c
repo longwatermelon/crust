@@ -56,6 +56,14 @@ void errors_parser_idof_wrong_type(struct Node *idof_expr)
 }
 
 
+void errors_parser_nonexistent_include(struct Node *node)
+{
+    fprintf(stderr, ERROR "File '%s' does not exist.\n", node->include_path);
+    errors_print_lines(node->error_line);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struct Node *call)
 {
     if (def->function_def_params_size != call->function_call_args_size)

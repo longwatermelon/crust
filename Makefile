@@ -2,7 +2,7 @@ SRC=$(wildcard src/*.c)
 OBJS=$(notdir $(SRC:.c=.o))
 
 CC=gcc
-CFLAGS=-std=gnu17 -ggdb -Wall -Werror -pedantic
+CFLAGS=-std=gnu17 -ggdb -Wall -Werror -pedantic -DDEBUG
 LDFLAGS=-lm
 
 LIBSRC=$(wildcard lib/*.crust)
@@ -32,4 +32,8 @@ install: crust stdlib
 	cp crust /bin
 	mkdir -p /usr/share/crust
 	cp -r lib /usr/share/crust
+
+uninstall:
+	rm /bin/crust
+	rm -rf /usr/share/crust
 
