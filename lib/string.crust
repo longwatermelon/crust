@@ -3,3 +3,4 @@ include "string";
 fn strlen(string: str) -> int {
     return 0;
 };
+
