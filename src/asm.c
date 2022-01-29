@@ -100,7 +100,8 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
 
 void asm_gen_function_def(struct Asm *as, struct Node *node)
 {
-    const char *template =  ".globl %s\n"
+    const char *template =  "# Function def\n"
+                            ".globl %s\n"
                             "%s:\n"
                             "pushl %%ebp\n"
                             "movl %%esp, %%ebp\n";
@@ -138,7 +139,8 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
 
 void asm_gen_return(struct Asm *as, struct Node *node)
 {
-    const char *template =  "movl %s, %%ebx\n"
+    const char *template =  "# Return\n"
+                            "movl %s, %%ebx\n"
                             "leave\n"
                             "ret\n";
 
@@ -182,7 +184,8 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset)
     if (node->type == NODE_STRING)
         asm_gen_store_string(as, node);
 
-    const char *template =  "subl $4, %%esp\n"
+    const char *template =  "# Add value to stack\n"
+                            "subl $4, %%esp\n"
                             "movl %s, %d(%%ebp)\n";
 
     char *left = asm_str_from_node(as, node);
@@ -355,7 +358,8 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
 void asm_gen_builtin_print(struct Asm *as, struct Node *node)
 {
     // TODO Replace with custom print written in asm
-    const char *template =  "movl $%d, %%edx\n"
+    const char *template =  "# Builtin print\n"
+                            "movl $%d, %%edx\n"
                             "movl $1, %%ebx\n"
                             "movl $4, %%eax\n"
                             "movl %s, %%ecx\n"
@@ -464,7 +468,8 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
 char *asm_str_from_function_call(struct Asm *as, struct Node *node)
 {
     // Redundant moving because gas complains about too many memory references
-    const char *template = "movl %d(%%ebp), %%ecx\n";
+    const char *template = "# Get function call return value: avoiding too many memory references\n"
+                           "movl %d(%%ebp), %%ecx\n";
     char *s = calloc(strlen(template) + MAX_INT_LEN + 1, sizeof(char));
     sprintf(s, template, node->function_call_return_stack_offset);
     util_strcat(&as->root, s);
