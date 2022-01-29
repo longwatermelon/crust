@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <dirent.h>
 
 
 char *util_read_file(const char *fp)
@@ -97,5 +98,72 @@ void util_strcat(char **dst, char *src)
 {
     *dst = realloc(*dst, sizeof(char) * (strlen(*dst) + strlen(src) + 1));
     strcat(*dst, src);
+}
+
+
+char *util_find_file(char **dirs, size_t ndirs, char *file)
+{
+    FILE *fp = fopen(file, "r");
+
+    if (fp)
+    {
+        fclose(fp);
+        return file;
+    }
+
+    for (size_t i = 0; i < ndirs; ++i)
+    {
+        if (util_find_file_dir(dirs[i], file))
+        {
+            char *path = util_strcpy(dirs[i]);
+            util_strcat(&path, file);
+            return path;
+        }
+    }
+
+    return 0;
+}
+
+
+bool util_find_file_dir(char *dir, char *file)
+{
+    DIR *d = opendir(dir);
+
+    if (!d)
+        return 0;
+
+    struct dirent *de;
+
+    while ((de = readdir(d)) != 0)
+    {
+        if (de->d_type == DT_REG)
+        {
+            if (strcmp(de->d_name, file) == 0)
+                return true;
+        }
+    }
+
+    closedir(d);
+    return false;
+}
+
+
+void util_rename_extension(char **file, char *ext)
+{
+    char *f = *file;
+
+    for (size_t i = strlen(f) - 1; i >= 0; --i)
+    {
+        if (f[i] == '.')
+        {
+            size_t len = i + strlen(ext);
+            char *new = malloc(sizeof(char) * (len + 1));
+            f[i] = '\0';
+            sprintf(new, "%s%s", f, ext);
+            free(f);
+            *file = new;
+            break;
+        }
+    }
 }
 

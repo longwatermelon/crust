@@ -12,7 +12,7 @@ struct Token **crust_tokenize(char *file, size_t *ntokens);
 char *crust_gen_asm(struct Node *root, struct Args *args, bool main);
 
 void crust_assemble(char *as, struct Args *args, char *file);
-void crust_link(char **files, size_t nfiles);
+void crust_link(struct Args *args, char **files, size_t nfiles);
 
 #endif
 

@@ -1,5 +1,6 @@
 #include "args.h"
 #include "errors.h"
+#include "util.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,20 @@ struct Args *args_parse(int argc, char **argv)
 
     args->warnings[WARNING_DEAD_CODE] = true;
     args->warnings[WARNING_UNUSED_VARIABLE] = true;
+
+    args->include_dirs_len = 1;
+    args->include_dirs = malloc(sizeof(char*) * args->include_dirs_len);
+    args->include_dirs[0] = "lib/include/";
+
+    args->nlibs = 1;
+    args->libs = malloc(sizeof(char*) * args->nlibs);
+    args->libs[0] = "std";
+
+    args->nlibdirs = 1;
+    args->libdirs = malloc(sizeof(char*) * args->nlibdirs);
+    args->libdirs[0] = "lib";
+
+    args->link_objs = true;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -46,6 +61,10 @@ struct Args *args_parse(int argc, char **argv)
             else
                 args->warnings[idx] = enabled;
         }
+        else if (strcmp(argv[i], "--obj") == 0)
+        {
+            args->link_objs = false;
+        }
         else
         {
             args->sources = realloc(args->sources, sizeof(char*) * ++args->nsources);
@@ -60,6 +79,9 @@ struct Args *args_parse(int argc, char **argv)
 void args_free(struct Args *args)
 {
     free(args->sources);
+    free(args->include_dirs);
+    free(args->libs);
+    free(args->libdirs);
     free(args);
 }
 

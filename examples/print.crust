@@ -1,0 +1,6 @@
+include "stdio";
+
+fn main() -> int {
+    print("test\n");
+    return 0;
+};

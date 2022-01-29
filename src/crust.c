@@ -11,31 +11,28 @@
 
 void crust_compile(struct Args *args)
 {
-    char **objs = 0;
-    size_t nobjs = 0;
+    char **objs = malloc(sizeof(char*) * args->nsources);
+    size_t nobjs = args->nsources;
 
     for (size_t i = 0; i < args->nsources; ++i)
     {
         crust_compile_file(args, args->sources[i]);
 
-        size_t len = strlen(args->sources[i]) + 2;
-        char *s = malloc(sizeof(char) * (len + 1));
-        sprintf(s, "%s.o", args->sources[i]);
-        s[len] = '\0';
-
-        objs = realloc(objs, sizeof(char*) * ++nobjs);
-        objs[nobjs - 1] = s;
+        objs[i] = util_strcpy(args->sources[i]);
+        util_rename_extension(&objs[i], ".o");
     }
 
-    crust_link(objs, nobjs);
+    if (args->link_objs)
+        crust_link(args, objs, nobjs);
 
     for (size_t i = 0; i < nobjs; ++i)
     {
-        remove(objs[i]);
+        if (args->link_objs)
+            remove(objs[i]);
 
         if (!args->keep_assembly)
         {
-            objs[i][strlen(objs[i]) - 1] = 's';
+            util_rename_extension(&objs[i], ".s");
             remove(objs[i]);
         }
 
@@ -136,19 +133,19 @@ char *crust_gen_asm(struct Node *root, struct Args *args, bool main)
 
 void crust_assemble(char *as, struct Args *args, char *file)
 {
-    char *path = calloc(1, sizeof(char));
-    util_strcat(&path, file);
-    util_strcat(&path, ".s");
+    char *path = util_strcpy(file);
+    util_rename_extension(&path, ".s");
 
     FILE *out = fopen(path, "w");
     fprintf(out, "%s\n", as);
     fclose(out);
 
     char *cmd = util_strcpy("as --32 ");
-    path[strlen(path) - 1] = 's';
+
     util_strcat(&cmd, path);
     util_strcat(&cmd, " -o ");
-    path[strlen(path) - 1] = 'o';
+
+    util_rename_extension(&path, ".o");
     util_strcat(&cmd, path);
 
     system(cmd);
@@ -157,7 +154,7 @@ void crust_assemble(char *as, struct Args *args, char *file)
 }
 
 
-void crust_link(char **files, size_t nfiles)
+void crust_link(struct Args *args, char **files, size_t nfiles)
 {
     char *s = util_strcpy("ld -m elf_i386");
 
@@ -165,6 +162,18 @@ void crust_link(char **files, size_t nfiles)
     {
         util_strcat(&s, " ");
         util_strcat(&s, files[i]);
+    }
+
+    for (size_t i = 0; i < args->nlibdirs; ++i)
+    {
+        util_strcat(&s, " -L ");
+        util_strcat(&s, args->libdirs[i]);
+    }
+
+    for (size_t i = 0; i < args->nlibs; ++i)
+    {
+        util_strcat(&s, " -l ");
+        util_strcat(&s, args->libs[i]);
     }
 
     system(s);

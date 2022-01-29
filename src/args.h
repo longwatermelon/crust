@@ -20,6 +20,17 @@ struct Args
     bool keep_assembly;
 
     bool warnings[2];
+
+    char **include_dirs;
+    size_t include_dirs_len;
+
+    char **libs;
+    size_t nlibs;
+
+    char **libdirs;
+    size_t nlibdirs;
+
+    bool link_objs;
 };
 
 struct Args *args_parse(int argc, char **argv);
