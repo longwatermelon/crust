@@ -5,6 +5,7 @@
 #include "scope.h"
 #include "asm.h"
 #include "token.h"
+#include "parser.h"
 
 void errors_load_source(char **source, size_t nlines);
 
@@ -12,6 +13,7 @@ void errors_load_source(char **source, size_t nlines);
 void errors_lexer_unrecognized_char(char c, size_t line);
 
 void errors_parser_unexpected_token(int expected, struct Token *found);
+void errors_parser_idof_wrong_type(struct Node *idof_expr);
 
 void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struct Node *call);
 void errors_asm_check_function_return(struct Scope *scope, struct Node *def);

@@ -121,13 +121,7 @@ struct Node *parser_parse_str(struct Parser *parser)
     struct Node *node = node_alloc(NODE_STRING);
     node->string_value = util_strcpy(parser->curr_tok->value);
     node->error_line = parser->curr_tok->line_num;
-
-    char *label = util_int_to_str(parser->lc);
-    node->string_asm_id = calloc(strlen(label) + strlen(".LC") + 1, sizeof(char));
-    sprintf(node->string_asm_id, ".LC%s", label);
-
-    ++parser->lc;
-    free(label);
+    node->string_asm_id = parser_next_lc(parser);
 
     parser_eat(parser, TOKEN_STRING);
     return node;
@@ -146,6 +140,8 @@ struct Node *parser_parse_id(struct Parser *parser)
         return parser_parse_struct(parser);
     else if (strcmp(parser->curr_tok->value, "include") == 0)
         return parser_parse_include(parser);
+    else if (strcmp(parser->curr_tok->value, "idof") == 0)
+        return parser_parse_idof(parser);
     else
         return parser_parse_variable(parser);
 }
@@ -494,6 +490,30 @@ struct Node *parser_parse_binop(struct Parser *parser)
 }
 
 
+struct Node *parser_parse_idof(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_IDOF);
+    parser_eat(parser, TOKEN_ID);
+
+    struct Node *expr = parser_parse_expr(parser);
+    node->idof_original_expr = expr;
+
+    struct Node *literal = node_strip_to_literal(expr, parser->scope);
+
+    if (literal->type != NODE_STRING)
+        errors_parser_idof_wrong_type(literal);
+
+    struct Node *string = node_alloc(NODE_STRING);
+    string->string_value = util_strcpy(literal->string_asm_id);
+    string->string_asm_id = parser_next_lc(parser);
+    string->error_line = parser->curr_tok->line_num;
+
+    node->idof_new_expr = string;
+
+    return node;
+}
+
+
 NodeDType parser_parse_dtype(struct Parser *parser)
 {
     char *name = util_strcpy(parser->curr_tok->value);
@@ -505,5 +525,18 @@ NodeDType parser_parse_dtype(struct Parser *parser)
     parser_eat(parser, TOKEN_ID);
 
     return type;
+}
+
+
+char *parser_next_lc(struct Parser *parser)
+{
+    char *label = util_int_to_str(parser->lc);
+    char *s = calloc(strlen(label) + strlen(".LC") + 1, sizeof(char));
+    sprintf(s, ".LC%s", label);
+
+    ++parser->lc;
+    free(label);
+
+    return s;
 }
 

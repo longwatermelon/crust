@@ -1,0 +1,11 @@
+fn func() -> int { return 100; };
+
+fn main() -> int {
+    let a: str = "test\n";
+    let b: str = idof "string";
+    let c: str = idof a;
+    pront(c, b);
+    let d: str = idof c;
+    pront(d);
+    return 0;
+};

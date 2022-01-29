@@ -31,7 +31,8 @@ struct Node
         NODE_INIT_LIST,
         NODE_NOOP,
         NODE_INCLUDE,
-        NODE_BINOP
+        NODE_BINOP,
+        NODE_IDOF
     } type;
 
     // Compound
@@ -106,6 +107,9 @@ struct Node
     enum { OP_PLUS, OP_MINUS, OP_MUL, OP_DIV } op_type;
     int op_stack_offset;
 
+    // Idof
+    struct Node *idof_original_expr, *idof_new_expr;
+
     // Error values
     size_t error_line;
 };
@@ -119,6 +123,9 @@ char *node_str_from_type(NodeDType type);
 NodeDType node_type_from_str(char *str);
 
 NodeDType node_type_from_node(struct Node *node, struct Scope *scope);
+
+// Node type enum to string
+char *node_str_from_node_type(int type);
 
 bool node_dtype_cmp(NodeDType d1, NodeDType d2);
 // Only compares two nodes of the same type; supports int, string, variable.

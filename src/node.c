@@ -67,6 +67,9 @@ struct Node *node_alloc(int type)
     node->op_type = 0;
     node->op_stack_offset = 0;
 
+    node->idof_original_expr = 0;
+    node->idof_new_expr = 0;
+
     node->error_line = 0;
 
     return node;
@@ -125,6 +128,8 @@ void node_free(struct Node *node)
     if (node->include_scope) scope_free(node->include_scope);
     if (node->op_l) node_free(node->op_l);
     if (node->op_r) node_free(node->op_r);
+    if (node->idof_original_expr) node_free(node->idof_original_expr);
+    if (node->idof_new_expr) node_free(node->idof_new_expr);
 
     if (node->string_value) free(node->string_value);
     if (node->string_asm_id) free(node->string_asm_id);
@@ -158,6 +163,8 @@ struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope)
         return node_strip_to_literal(scope_find_variable(scope, node), scope);
     case NODE_VARIABLE_DEF:
         return node_strip_to_literal(node->variable_def_value, scope);
+    case NODE_IDOF:
+        return node_strip_to_literal(node->idof_new_expr, scope);
     default: return node;
     }
 }
@@ -218,8 +225,37 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
         return node->init_list_type;
     case NODE_BINOP:
         return node_type_from_node(node->op_l, scope);
+    case NODE_IDOF:
+        return (NodeDType){ NODE_STRING, 0 };
     default: return (NodeDType){ 0, 0 };
     }
+}
+
+
+char *node_str_from_node_type(int type)
+{
+    switch (type)
+    {
+    case NODE_COMPOUND: return "compound";
+    case NODE_INT: return "integer";
+    case NODE_STRING: return "string";
+    case NODE_FUNCTION_DEF: return "function def";
+    case NODE_RETURN: return "return";
+    case NODE_VARIABLE_DEF: return "variable def";
+    case NODE_VARIABLE: return "variable";
+    case NODE_FUNCTION_CALL: return "function call";
+    case NODE_PARAMETER: return "parameter";
+    case NODE_ASSIGNMENT: return "assignment";
+    case NODE_STRUCT: return "struct";
+    case NODE_STRUCT_MEMBER: return "member";
+    case NODE_INIT_LIST: return "init list";
+    case NODE_NOOP: return "noop";
+    case NODE_INCLUDE: return "include";
+    case NODE_BINOP: return "binop";
+    case NODE_IDOF: return "idof";
+    }
+
+    return 0;
 }
 
 
@@ -315,18 +351,17 @@ size_t node_sizeof_dtype(struct Node *node)
 
 struct Node *node_copy(struct Node *src)
 {
+    struct Node *ret = node_alloc(src->type);
+    ret->error_line = src->error_line;
+
     switch (src->type)
     {
     case NODE_ASSIGNMENT:
-    {
-        struct Node *ret = node_alloc(NODE_ASSIGNMENT);
         ret->assignment_dst = node_copy(src->assignment_dst);
         ret->assignment_src = node_copy(src->assignment_src);
         return ret;
-    } break;
+
     case NODE_COMPOUND:
-    {
-        struct Node *ret = node_alloc(NODE_COMPOUND);
         ret->compound_nodes = malloc(sizeof(struct Node*) * src->compound_size);
         ret->compound_size = src->compound_size;
 
@@ -334,10 +369,8 @@ struct Node *node_copy(struct Node *src)
             ret->compound_nodes[i] = node_copy(src->compound_nodes[i]);
 
         return ret;
-    } break;
+
     case NODE_FUNCTION_CALL:
-    {
-        struct Node *ret = node_alloc(NODE_FUNCTION_CALL);
         ret->function_call_name = util_strcpy(src->function_call_name);
         ret->function_call_return_stack_offset = src->function_call_return_stack_offset;
         ret->function_call_args = malloc(sizeof(struct Node*) * src->function_call_args_size);
@@ -347,10 +380,8 @@ struct Node *node_copy(struct Node *src)
             ret->function_call_args[i] = node_copy(src->function_call_args[i]);
 
         return ret;
-    } break;
+
     case NODE_FUNCTION_DEF:
-    {
-        struct Node *ret = node_alloc(NODE_FUNCTION_DEF);
         ret->function_def_is_decl = src->function_def_is_decl;
         ret->function_def_name = util_strcpy(src->function_def_name);
 
@@ -366,16 +397,12 @@ struct Node *node_copy(struct Node *src)
             ret->function_def_params[i] = node_copy(src->function_def_params[i]);
 
         return ret;
-    } break;
+
     case NODE_INCLUDE:
-    {
-        struct Node *ret = node_alloc(NODE_INCLUDE);
         ret->include_path = util_strcpy(src->include_path);
         return ret;
-    } break;
+
     case NODE_INIT_LIST:
-    {
-        struct Node *ret = node_alloc(NODE_INIT_LIST);
         ret->init_list_type = src->init_list_type;
 
         ret->init_list_values = malloc(sizeof(struct Node*) * src->init_list_len);
@@ -385,41 +412,30 @@ struct Node *node_copy(struct Node *src)
             ret->init_list_values[i] = node_copy(src->init_list_values[i]);
 
         return ret;
-    } break;
+
     case NODE_INT:
-    {
-        struct Node *ret = node_alloc(NODE_INT);
         ret->int_value = src->int_value;
         return ret;
-    } break;
+
     case NODE_NOOP:
-    {
-        return node_alloc(NODE_NOOP);
-    } break;
+        return ret;
+
     case NODE_PARAMETER:
-    {
-        struct Node *ret = node_alloc(NODE_PARAMETER);
         ret->param_name = util_strcpy(src->param_name);
         ret->param_type = src->param_type;
         ret->param_stack_offset = src->param_stack_offset;
         return ret;
-    } break;
+
     case NODE_RETURN:
-    {
-        struct Node *ret = node_alloc(NODE_RETURN);
         ret->return_value = node_copy(src->return_value);
         return ret;
-    } break;
+
     case NODE_STRING:
-    {
-        struct Node *ret = node_alloc(NODE_STRING);
         ret->string_value = util_strcpy(src->string_value);
         ret->string_asm_id = util_strcpy(src->string_asm_id);
         return ret;
-    } break;
+
     case NODE_STRUCT:
-    {
-        struct Node *ret = node_alloc(NODE_STRUCT);
         ret->struct_name = util_strcpy(src->struct_name);
 
         ret->struct_members = malloc(sizeof(struct Node*) * src->struct_members_size);
@@ -429,43 +445,40 @@ struct Node *node_copy(struct Node *src)
             ret->struct_members[i] = node_copy(src->struct_members[i]);
 
         return ret;
-    } break;
+
     case NODE_STRUCT_MEMBER:
-    {
-        struct Node *ret = node_alloc(NODE_STRUCT_MEMBER);
         ret->member_name = util_strcpy(src->member_name);
         ret->member_type = src->member_type;
         return ret;
-    } break;
+
     case NODE_VARIABLE:
-    {
-        struct Node *ret = node_alloc(NODE_VARIABLE);
         ret->variable_name = util_strcpy(src->variable_name);
 
         if (src->variable_struct_member)
             ret->variable_struct_member = node_copy(src->variable_struct_member);
 
         return ret;
-    } break;
+
     case NODE_VARIABLE_DEF:
-    {
-        struct Node *ret = node_alloc(NODE_VARIABLE_DEF);
         ret->variable_def_name = util_strcpy(src->variable_def_name);
         ret->variable_def_stack_offset = src->variable_def_stack_offset;
         ret->variable_def_type = src->variable_def_type;
         ret->variable_def_value = node_copy(src->variable_def_value);
 
         return ret;
-    } break;
+
     case NODE_BINOP:
-    {
-        struct Node *ret = node_alloc(NODE_BINOP);
         ret->op_l = node_copy(src->op_l);
         ret->op_r = node_copy(src->op_r);
         ret->op_type = src->op_type;
 
         return ret;
-    } break;
+
+    case NODE_IDOF:
+        ret->idof_original_expr = node_copy(src->idof_original_expr);
+        ret->idof_new_expr = node_copy(src->idof_new_expr);
+
+        return ret;
     }
 
     return 0;

@@ -47,6 +47,15 @@ void errors_parser_unexpected_token(int expected, struct Token *found)
 }
 
 
+void errors_parser_idof_wrong_type(struct Node *idof_expr)
+{
+    fprintf(stderr, ERROR "Idof only accepts strings, but a node of type '%s' "
+                    "was passed.\n", node_str_from_node_type(idof_expr->type));
+    errors_print_lines(idof_expr->error_line);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struct Node *call)
 {
     if (def->function_def_params_size != call->function_call_args_size)

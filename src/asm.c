@@ -94,6 +94,13 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
     case NODE_BINOP:
         asm_gen_binop(as, node);
         break;
+    case NODE_IDOF:
+        asm_gen_expr(as, node->idof_original_expr);
+        asm_gen_expr(as, node->idof_new_expr);
+        break;
+    case NODE_STRING:
+        asm_gen_store_string(as, node);
+        break;
     default: break;
     }
 }
@@ -182,8 +189,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset)
         return;
     }
 
-    if (node->type == NODE_STRING)
-        asm_gen_store_string(as, node);
+    asm_gen_expr(as, node);
 
     const char *template =  "# Add value to stack\n"
                             "subl $4, %%esp\n"
@@ -393,6 +399,7 @@ char *asm_str_from_node(struct Asm *as, struct Node *node)
     case NODE_PARAMETER: return asm_str_from_param(as, node);
     case NODE_FUNCTION_CALL: return asm_str_from_function_call(as, node);
     case NODE_BINOP: return asm_str_from_binop(as, node);
+    case NODE_IDOF: return asm_str_from_node(as, node->idof_new_expr);
     default:
         errors_asm_str_from_node(node);
         break;
