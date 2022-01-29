@@ -23,7 +23,7 @@ struct Args *args_parse(int argc, char **argv)
 
     args->nlibs = 1;
     args->libs = malloc(sizeof(char*) * args->nlibs);
-    args->libs[0] = "std";
+    args->libs[0] = "stdcrust";
 
     args->nlibdirs = 1;
     args->libdirs = malloc(sizeof(char*) * args->nlibdirs);

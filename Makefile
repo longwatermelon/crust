@@ -19,7 +19,7 @@ crust: $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
 stdlib: $(LIBOBJS)
-	$(AR) $(ARFLAGS) lib/libstd.a $^
+	$(AR) $(ARFLAGS) lib/libstdcrust.a $^
 
 lib/%.o: lib/%.crust
 	./crust --obj $<
