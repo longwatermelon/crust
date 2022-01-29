@@ -28,3 +28,8 @@ clean:
 	-rm *.o crust
 	-rm lib/*.o lib/libstdcrust.a
 
+install: crust stdlib
+	cp crust /bin
+	mkdir -p /usr/share/crust
+	cp -r lib /usr/share/crust
+

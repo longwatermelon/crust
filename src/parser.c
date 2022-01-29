@@ -452,8 +452,11 @@ struct Node *parser_parse_include(struct Parser *parser)
     char *full_path = util_find_file(parser->args->include_dirs,
             parser->args->include_dirs_len, node->include_path);
 
-    free(node->include_path);
-    node->include_path = full_path;
+    if (full_path)
+    {
+        free(node->include_path);
+        node->include_path = full_path;
+    }
 
     size_t ntokens;
     struct Token **tokens = crust_tokenize(node->include_path, &ntokens);

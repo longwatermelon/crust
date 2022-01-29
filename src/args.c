@@ -19,7 +19,12 @@ struct Args *args_parse(int argc, char **argv)
 
     args->include_dirs_len = 1;
     args->include_dirs = malloc(sizeof(char*) * args->include_dirs_len);
+
+#ifdef DEBUG
     args->include_dirs[0] = "lib/include/";
+#else
+    args->include_dirs[0] = "/usr/share/crust/lib/include/";
+#endif
 
     args->nlibs = 1;
     args->libs = malloc(sizeof(char*) * args->nlibs);
@@ -27,7 +32,12 @@ struct Args *args_parse(int argc, char **argv)
 
     args->nlibdirs = 1;
     args->libdirs = malloc(sizeof(char*) * args->nlibdirs);
+
+#ifdef DEBUG
     args->libdirs[0] = "lib";
+#else
+    args->libdirs[0] = "/usr/share/crust/lib";
+#endif
 
     args->link_objs = true;
 
