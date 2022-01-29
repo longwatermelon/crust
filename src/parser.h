@@ -31,6 +31,7 @@ void parser_free(struct Parser *parser);
 
 void parser_eat(struct Parser *parser, int type);
 void parser_advance(struct Parser *parser, int i);
+struct Token *parser_next_expr(struct Parser *parser);
 
 struct Node *parser_parse(struct Parser *parser);
 struct Node *parser_parse_expr(struct Parser *parser);

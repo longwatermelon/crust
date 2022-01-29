@@ -5,5 +5,5 @@ fn other() -> int { return 2; };
 
 fn main() -> int {
     let a: int = func();
-    return a + 2 * other();
+    return func() + a + 2 * other();
 };

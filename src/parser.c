@@ -57,6 +57,21 @@ void parser_advance(struct Parser *parser, int i)
 }
 
 
+struct Token *parser_next_expr(struct Parser *parser)
+{
+    if (parser->curr_tok->type == TOKEN_ID)
+    {
+        if (strcmp(parser->curr_tok->value, "idof") == 0)
+            return parser->tokens[parser->curr_idx + 2];
+
+        if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_LPAREN)
+            return parser->tokens[parser->curr_idx + 3];
+    }
+
+    return parser->tokens[parser->curr_idx + 1];
+}
+
+
 struct Node *parser_parse(struct Parser *parser)
 {
     struct Node *root = node_alloc(NODE_COMPOUND);
@@ -87,7 +102,7 @@ struct Node *parser_parse(struct Parser *parser)
 struct Node *parser_parse_expr(struct Parser *parser)
 {
     if (!parser->ignore_ops && parser->curr_idx + 1 < parser->ntokens &&
-        parser->tokens[parser->curr_idx + 1]->type == TOKEN_BINOP)
+        parser_next_expr(parser)->type == TOKEN_BINOP)
     {
         parser->ignore_ops = true;
         struct Node *node = parser_parse_binop(parser);
