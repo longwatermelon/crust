@@ -4,7 +4,8 @@ fn other() -> int { return 2; };
 
 
 fn main() -> int {
-    let a: int = func();
+    // lmfaooo
+    let a: int = func(); // comment
     let b: int = other();
     return a + b;
 };
