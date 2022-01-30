@@ -548,7 +548,7 @@ struct Node *parser_parse_idof(struct Parser *parser)
         node->idof_new_expr = node_copy(literal);
     }
 
-    if (literal->type != NODE_STRING)
+    if (literal->type != NODE_STRING && parser->args->warnings[WARNING_REDUNDANT_IDOF])
         errors_warn_redundant_idof(node);
 
     return node;

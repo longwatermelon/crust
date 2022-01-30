@@ -16,6 +16,7 @@ struct Args *args_parse(int argc, char **argv)
 
     args->warnings[WARNING_DEAD_CODE] = true;
     args->warnings[WARNING_UNUSED_VARIABLE] = true;
+    args->warnings[WARNING_REDUNDANT_IDOF] = true;
 
     args->include_dirs_len = 1;
     args->include_dirs = malloc(sizeof(char*) * args->include_dirs_len);
@@ -118,11 +119,13 @@ int args_index_from_warning(char *warning, bool *enabled)
 
     if (strcmp(warning, "dead-code") == 0) return WARNING_DEAD_CODE;
     if (strcmp(warning, "unused-variable") == 0) return WARNING_UNUSED_VARIABLE;
+    if (strcmp(warning, "redundant-idof") == 0) return WARNING_REDUNDANT_IDOF;
 
     *enabled = false;
 
     if (strcmp(warning, "no-dead-code") == 0) return WARNING_DEAD_CODE;
     if (strcmp(warning, "no-unused-variable") == 0) return WARNING_UNUSED_VARIABLE;
+    if (strcmp(warning, "no-redundant-idof") == 0) return WARNING_REDUNDANT_IDOF;
 
     return -1;
 }

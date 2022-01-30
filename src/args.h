@@ -7,7 +7,8 @@
 enum
 {
     WARNING_DEAD_CODE,
-    WARNING_UNUSED_VARIABLE
+    WARNING_UNUSED_VARIABLE,
+    WARNING_REDUNDANT_IDOF
 };
 
 struct Args
@@ -19,7 +20,7 @@ struct Args
 
     bool keep_assembly;
 
-    bool warnings[2];
+    bool warnings[3];
 
     char **include_dirs;
     size_t include_dirs_len;
