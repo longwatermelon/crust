@@ -190,7 +190,7 @@ void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset)
         errors_asm_check_init_list(as->scope, node);
 
         for (size_t i = 0; i < node->init_list_len; ++i)
-            asm_gen_add_to_stack(as, node->init_list_values[i], stack_offset + 4 * i);
+            asm_gen_add_to_stack(as, node->init_list_values[i], stack_offset - 4 * i);
 
         return;
     }

@@ -1,6 +1,8 @@
 include "examples/test_header";
 
 fn other() -> void {
+    let a: A = A{ 1, "test\n" };
     print("other");
     print("    \n");
+    print(a.b);
 };

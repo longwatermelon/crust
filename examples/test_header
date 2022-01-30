@@ -1,3 +1,8 @@
 include "examples/other";
 
+struct A {
+    a: int,
+    b: str
+};
+
 fn print(arg: str) -> void;

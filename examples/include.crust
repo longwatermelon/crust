@@ -2,7 +2,9 @@ include "examples/test_header";
 
 fn ex() -> str { return "test\n"; };
 fn main() -> int {
+    let example: A = A{ 1, "kekw\n" };
     print(ex());
     other();
+    print(example.b);
     return 0;
 };
