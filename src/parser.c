@@ -66,6 +66,16 @@ struct Token *parser_next_expr(struct Parser *parser)
 
         if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_LPAREN)
             return parser->tokens[parser->curr_idx + 3];
+
+        if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_PERIOD)
+        {
+            int idx = parser->curr_idx + 1;
+
+            while (parser->tokens[idx]->type == TOKEN_PERIOD)
+                idx += 2;
+
+            return parser->tokens[idx];
+        }
     }
 
     return parser->tokens[parser->curr_idx + 1];
@@ -101,13 +111,23 @@ struct Node *parser_parse(struct Parser *parser)
 
 struct Node *parser_parse_expr(struct Parser *parser)
 {
-    if (!parser->ignore_ops && parser->curr_idx + 1 < parser->ntokens &&
-        parser_next_expr(parser)->type == TOKEN_BINOP)
+    if (!parser->ignore_ops && parser->curr_idx + 1 < parser->ntokens)
     {
-        parser->ignore_ops = true;
-        struct Node *node = parser_parse_binop(parser);
-        parser->ignore_ops = false;
-        return node;
+        if (parser_next_expr(parser)->type == TOKEN_BINOP)
+        {
+            parser->ignore_ops = true;
+            struct Node *node = parser_parse_binop(parser);
+            parser->ignore_ops = false;
+            return node;
+        }
+
+        if (parser_next_expr(parser)->type == TOKEN_EQUALS)
+        {
+            parser->ignore_ops = true;
+            struct Node *node = parser_parse_assignment(parser);
+            parser->ignore_ops = false;
+            return node;
+        }
     }
 
     switch (parser->curr_tok->type)
@@ -324,8 +344,6 @@ struct Node *parser_parse_variable(struct Parser *parser)
 
     if (parser->curr_tok->type == TOKEN_LPAREN)
         return parser_parse_function_call(parser);
-    else if (!parser->ignore_ops && parser->curr_tok->type == TOKEN_EQUALS)
-        return parser_parse_assignment(parser);
 
     // TODO Decrease amount of repeated code
     struct Node *node = node_alloc(NODE_VARIABLE);
@@ -414,10 +432,7 @@ struct Node *parser_parse_assignment(struct Parser *parser)
     struct Node *node = node_alloc(NODE_ASSIGNMENT);
     node->error_line = parser->curr_tok->line_num;
 
-    parser_advance(parser, -1);
-    parser->ignore_ops = true;
     node->assignment_dst = parser_parse_variable(parser);
-    parser->ignore_ops = false;
 
     parser_eat(parser, TOKEN_EQUALS);
 

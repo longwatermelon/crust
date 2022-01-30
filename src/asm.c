@@ -350,7 +350,7 @@ void asm_gen_assignment(struct Asm *as, struct Node *node)
                     "movl %s, %%ecx\n"
                     "movl %%ecx, %s\n";
     else
-        template =  "# Assignment"
+        template =  "# Assignment\n"
                     "movl %s, %s\n";
 
     size_t len = strlen(template) + strlen(src) + strlen(dst);
@@ -501,15 +501,14 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
             free(s);
             free(value);
 
-            const char *temp = "movl %d(%%ebx), %%ecx\n";
+//            const char *temp = "movl %d(%%ebx), %%ecx\n";
+            const char *temp = "%d(%%ebx)";
             offset = var->variable_stack_offset - node->variable_stack_offset;
 
-            s = calloc(strlen(temp) + MAX_INT_LEN + 1, sizeof(char));
+            s = calloc(MAX_INT_LEN + 1, sizeof(char));
             sprintf(s, temp, offset);
-            util_strcat(&as->root, s);
-            free(s);
 
-            return util_strcpy("%ecx");
+            return s;
         }
 
 #if 0
