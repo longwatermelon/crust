@@ -295,9 +295,6 @@ bool node_cmp(struct Node *n1, struct Node *n2)
         if (n1->variable_struct_member && n2->variable_struct_member)
             return node_cmp(n1->variable_struct_member, n2->variable_struct_member);
 
-        if ((n1->variable_struct_member == 0) != (n2->variable_struct_member == 0))
-            return false;
-
         return strcmp(n1->variable_name, n2->variable_name) == 0;
     case NODE_FUNCTION_CALL: return strcmp(n1->function_call_name, n2->function_call_name) == 0;
     default: return false;

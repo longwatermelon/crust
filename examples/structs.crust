@@ -1,3 +1,5 @@
+include "stdio";
+
 struct test {
     a: int,
     b: str
@@ -9,8 +11,8 @@ fn func() -> test {
 };
 
 fn main() -> int {
-    let a: test = func();
-    pront(a.b);
+    let a: test = test{ 1, "test\n" };
+    print(a.b);
     return 0;
 };
 
