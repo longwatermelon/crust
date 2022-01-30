@@ -1,12 +1,21 @@
+<div align="center">
+
 # Crust
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8babf4c8e0c141568ee9647f9bccb6ff)](https://app.codacy.com/gh/longwatermelon/crust?utm_source=github.com&utm_medium=referral&utm_content=longwatermelon/crust&utm_campaign=Badge_Grade_Settings)
+
+![Commits](https://img.shields.io/github/commit-activity/w/longwatermelon/crust)
+![Code grade](https://api.codiga.io/project/30823/status/svg)
+</div>
 
 Crust programming language
 
 I don't have any experience with x86 assembly, everything I know about it is from writing this compiler, so the generated code is probably not the best.
 
 # Runtime dependencies
-* as (GNU assembler)
-* ld (GNU linker)
+* as
+* ld
+* cp
 
 # Building
 ```
@@ -16,8 +25,8 @@ make
 ```
 
 # Todo
+* Inline asm
 * Rewrite builtin function pront to print variable length strings
-* More standard library functions
 * Implement returning structs from functions and passing structs to functions
 * Loops, if statements, etc.
 * List data type
