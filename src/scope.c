@@ -1,4 +1,5 @@
 #include "scope.h"
+#include "errors.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -91,7 +92,7 @@ void scope_add_struct_def(struct Scope *scope, struct Node *node)
 }
 
 
-struct Node *scope_find_variable(struct Scope *scope, struct Node *var)
+struct Node *scope_find_variable(struct Scope *scope, struct Node *var, int err_line)
 {
     for (size_t layer = 0; layer < scope->nlayers; ++layer)
     {
@@ -105,7 +106,7 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var)
                 if (var->variable_struct_member)
                 {
                     struct Node *struct_def = scope_find_struct(scope,
-                        node_type_from_node(def->variable_def_value, scope).struct_type);
+                        node_type_from_node(def->variable_def_value, scope).struct_type, err_line);
 
                     for (size_t i = 0; i < struct_def->struct_members_size; ++i)
                     {
@@ -129,11 +130,14 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var)
             return param;
     }
 
+    if (err_line != -1)
+        errors_scope_nonexistent_variable(var->variable_name, err_line);
+
     return 0;
 }
 
 
-struct Node *scope_find_function(struct Scope *scope, char *name)
+struct Node *scope_find_function(struct Scope *scope, char *name, int err_line)
 {
     for (size_t i = 0; i < scope->function_defs_size; ++i)
     {
@@ -141,11 +145,14 @@ struct Node *scope_find_function(struct Scope *scope, char *name)
             return scope->function_defs[i];
     }
 
+    if (err_line != -1)
+        errors_scope_nonexistent_function(name, err_line);
+
     return 0;
 }
 
 
-struct Node *scope_find_function_def(struct Scope *scope, char *name)
+struct Node *scope_find_function_def(struct Scope *scope, char *name, int err_line)
 {
     for (size_t i = 0; i < scope->function_defs_size; ++i)
     {
@@ -154,11 +161,14 @@ struct Node *scope_find_function_def(struct Scope *scope, char *name)
             return scope->function_defs[i];
     }
 
+    if (err_line != -1)
+        errors_scope_nonexistent_function(name, err_line);
+
     return 0;
 }
 
 
-struct Node *scope_find_function_decl(struct Scope *scope, char *name)
+struct Node *scope_find_function_decl(struct Scope *scope, char *name, int err_line)
 {
     for (size_t i = 0; i < scope->function_defs_size; ++i)
     {
@@ -167,17 +177,23 @@ struct Node *scope_find_function_decl(struct Scope *scope, char *name)
             return scope->function_defs[i];
     }
 
+    if (err_line != -1)
+        errors_scope_nonexistent_function(name, err_line);
+
     return 0;
 }
 
 
-struct Node *scope_find_struct(struct Scope *scope, char *name)
+struct Node *scope_find_struct(struct Scope *scope, char *name, int err_line)
 {
     for (size_t i = 0; i < scope->struct_defs_size; ++i)
     {
         if (strcmp(scope->struct_defs[i]->struct_name, name) == 0)
             return scope->struct_defs[i];
     }
+
+    if (err_line != -1)
+        errors_scope_nonexistent_struct(name, err_line);
 
     return 0;
 }
