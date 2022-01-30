@@ -64,6 +64,7 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
         for (size_t i = 0; i < node->compound_size; ++i)
             asm_gen_expr(as, node->compound_nodes[i]);
         break;
+
     case NODE_FUNCTION_DEF:
         if (node->function_def_is_decl)
         {
@@ -75,38 +76,49 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
         scope_add_function_def(as->scope, node);
         asm_gen_function_def(as, node);
         break;
+
     case NODE_RETURN:
         asm_gen_return(as, node);
         break;
+
     case NODE_VARIABLE_DEF:
         scope_add_variable_def(as->scope, node);
         asm_gen_variable_def(as, node);
         break;
+
     case NODE_FUNCTION_CALL:
         asm_gen_function_call(as, node);
         break;
+
     case NODE_ASSIGNMENT:
         asm_gen_assignment(as, node);
         break;
+
     case NODE_STRUCT:
         scope_add_struct_def(as->scope, node);
         break;
+
     case NODE_INCLUDE:
         scope_combine(as->scope, node->include_scope);
         break;
+
     case NODE_BINOP:
         asm_gen_binop(as, node);
         break;
+
     case NODE_IDOF:
         asm_gen_expr(as, node->idof_original_expr);
         asm_gen_expr(as, node->idof_new_expr);
         break;
+
     case NODE_STRING:
         asm_gen_store_string(as, node);
         break;
+
     case NODE_INLINE_ASM:
         asm_gen_inline_asm(as, node);
         break;
+
     default: break;
     }
 }

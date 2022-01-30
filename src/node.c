@@ -213,31 +213,43 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_INT:
     case NODE_STRING:
         return (NodeDType){ node->type, 0 };
+
     case NODE_RETURN:
         return node_type_from_node(node->return_value, scope);
+
     case NODE_VARIABLE:
     {
         struct Node *def = scope_find_variable(scope, node, node->error_line);
         return node_type_from_node(def, scope);
     } break;
+
     case NODE_VARIABLE_DEF:
         return node_type_from_node(node_strip_to_literal(node->variable_def_value, scope), scope);
+
     case NODE_PARAMETER:
         return node->param_type;
+
     case NODE_FUNCTION_DEF:
         return node->function_def_return_type;
+
     case NODE_FUNCTION_CALL:
         return scope_find_function(scope, node->function_call_name, node->error_line)->function_def_return_type;
+
     case NODE_STRUCT_MEMBER:
         return node->member_type;
+
     case NODE_STRUCT:
         return (NodeDType){ NODE_STRUCT, node->struct_name };
+
     case NODE_INIT_LIST:
         return node->init_list_type;
+
     case NODE_BINOP:
         return node_type_from_node(node->op_l, scope);
+
     case NODE_IDOF:
         return (NodeDType){ NODE_STRING, 0 };
+
     default: return (NodeDType){ 0, 0 };
     }
 }
