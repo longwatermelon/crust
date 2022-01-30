@@ -354,7 +354,7 @@ struct Node *parser_parse_variable_struct_member(struct Parser *parser, struct N
         // FIX stack_offset - 4 is incorrect
         node->variable_struct_member = parser_parse_variable_struct_member(parser,
                 scope_find_struct(parser->scope, node->variable_type.struct_type, -1),
-                stack_offset - 4);
+                node->variable_stack_offset);
     }
 
     return node;

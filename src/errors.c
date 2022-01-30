@@ -217,13 +217,13 @@ void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
 
     for (size_t i = 0; i < list->init_list_len; ++i)
     {
-        if (list->init_list_values[i]->type != struct_node->struct_members[i]->member_type.type)
+        if (node_type_from_node(list->init_list_values[i], scope).type != struct_node->struct_members[i]->member_type.type)
         {
             fprintf(stderr, ERROR "Attempting to initialize member '%s' of type '%s' from struct '%s' "
                                   "with type '%s'.\n", struct_node->struct_members[i]->member_name,
                                   node_str_from_type(struct_node->struct_members[i]->member_type),
                                   struct_node->struct_name,
-                                  node_str_from_type((NodeDType){ list->init_list_values[i]->type }));
+                                  node_str_from_type(node_type_from_node(list->init_list_values[i], scope)));
             errors_print_lines(list->error_line);
 
             fprintf(stderr, "\nStruct first defined here:\n");
