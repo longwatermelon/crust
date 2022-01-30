@@ -70,6 +70,7 @@ struct Node
     struct Node *variable_struct_member;
     NodeDType variable_type;
     int variable_stack_offset;
+    bool variable_is_param;
 
     // Function call
     char *function_call_name;

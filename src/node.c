@@ -36,6 +36,7 @@ struct Node *node_alloc(int type)
     node->variable_struct_member = 0;
     node->variable_type = (NodeDType){ 0, 0 };
     node->variable_stack_offset = 0;
+    node->variable_is_param = false;
 
     node->function_call_name = 0;
     node->function_call_args = 0;
@@ -512,6 +513,7 @@ struct Node *node_copy(struct Node *src)
 
         ret->variable_type = node_dtype_copy(src->variable_type);
         ret->variable_stack_offset = src->variable_stack_offset;
+        ret->variable_is_param = src->variable_is_param;
 
         return ret;
 

@@ -34,6 +34,7 @@ void scope_add_struct_def(struct Scope *scope, struct Node *node);
 
 // Pass -1 for error_line to suppress errors if target is not found
 struct Node *scope_find_variable(struct Scope *scope, struct Node *var, int err_line);
+struct Node *scope_find_variable_struct_member(struct Scope *scope, struct Node *var, int err_line);
 struct Node *scope_find_function(struct Scope *scope, char *name, int err_line);
 struct Node *scope_find_function_def(struct Scope *scope, char *name, int err_line);
 struct Node *scope_find_function_decl(struct Scope *scope, char *name, int err_line);

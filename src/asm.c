@@ -410,20 +410,25 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
 
 void asm_gen_inline_asm(struct Asm *as, struct Node *node)
 {
+    char *s = calloc(1, sizeof(char));
+
     for (size_t i = 0; i < node->asm_nargs; ++i)
     {
         asm_gen_expr(as, node->asm_args[i]);
         struct Node *literal = node_strip_to_literal(node->asm_args[i], as->scope);
 
-        char *s;
+        char *tmp;
 
         if (literal->type == NODE_STRING)
-            s = literal->string_value;
+            tmp = literal->string_value;
         else
-            s = asm_str_from_node(as, literal);
+            tmp = asm_str_from_node(as, literal);
 
-        util_strcat(&as->root, s);
+        util_strcat(&s, tmp);
     }
+
+    util_strcat(&as->root, s);
+    free(s);
 
     util_strcat(&as->root, "\n");
 }
@@ -475,15 +480,40 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 
     if (var->type == NODE_VARIABLE)
     {
-        var = node;
+        int offset = var->variable_stack_offset;
+
+        if (node->variable_is_param)
+            offset = node->variable_stack_offset;
 
         const char *tmp = "%d(%%ebp)";
 
         char *value = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
-        sprintf(value, tmp, node->variable_stack_offset);
+        sprintf(value, tmp, offset);
         value = realloc(value, sizeof(char) * (strlen(value) + 1));
 
-        if (var->variable_type.type == NODE_STRUCT)
+        if (node->variable_is_param && node != var)
+        {
+            const char *template =  "# Param struct member\n"
+                                    "movl %s, %%ebx\n";
+            char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
+            sprintf(s, template, value);
+            util_strcat(&as->root, s);
+            free(s);
+            free(value);
+
+            const char *temp = "movl %d(%%ebx), %%ecx\n";
+            offset = var->variable_stack_offset - node->variable_stack_offset;
+
+            s = calloc(strlen(temp) + MAX_INT_LEN + 1, sizeof(char));
+            sprintf(s, temp, offset);
+            util_strcat(&as->root, s);
+            free(s);
+
+            return util_strcpy("%ecx");
+        }
+
+#if 0
+        if (node->variable_type.type == NODE_STRUCT)
         {
             const char *template = "movl %s, %%ebx\n";
             char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
@@ -494,9 +524,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 
             const char *temp = "movl %d(%%ebx), %%eax\n";
             int offset = 0;
-
-            if (var->variable_struct_member)
-                offset = var->variable_struct_member->variable_stack_offset - var->variable_stack_offset;
+            offset = var->variable_stack_offset - node->variable_stack_offset;
 
             s = calloc(strlen(temp) + MAX_INT_LEN + 1, sizeof(char));
             sprintf(s, temp, offset);
@@ -505,10 +533,9 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 
             return util_strcpy("%eax");
         }
-        else
-        {
-            return value;
-        }
+#endif
+
+        return value;
     }
     else if (var->type == NODE_VARIABLE_DEF)
     {

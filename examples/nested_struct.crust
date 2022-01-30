@@ -1,12 +1,12 @@
 include "stdio";
 
-struct ex { value: str };
-struct A { val: ex };
+struct ex { a: int, value: str };
+struct A { a: int, b: int, val: ex };
 struct B { am: A };
 
 
 fn main() -> int {
-    let a: B = B{ A { ex{ "kekw\n" }} };
+    let a: B = B{ A { 1, 2, ex{ 1, "kekw\n" }} };
     print(a.am.val.value);
     return 0;
 };

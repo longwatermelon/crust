@@ -102,20 +102,8 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var, int err_
 
             if (strcmp(def->variable_def_name, var->variable_name) == 0)
             {
-                // TODO Rewrite to handle nested initializer lists
                 if (var->variable_struct_member)
-                {
-                    struct Node *struct_def = scope_find_struct(scope,
-                        node_type_from_node(def->variable_def_value, scope).struct_type, err_line);
-
-                    for (size_t i = 0; i < struct_def->struct_members_size; ++i)
-                    {
-                        if (strcmp(struct_def->struct_members[i]->member_name, var->variable_struct_member->variable_name) == 0)
-                        {
-                            return def->variable_def_value->init_list_values[i];
-                        }
-                    }
-                }
+                    return scope_find_variable_struct_member(scope, var, var->error_line);
 
                 return def;
             }
@@ -127,13 +115,31 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var, int err_
         struct Node *param = scope->curr_layer->params[i];
 
         if (strcmp(param->variable_name, var->variable_name) == 0)
+        {
+            if (var->variable_struct_member)
+                return scope_find_variable_struct_member(scope, var, var->error_line);
+
             return param;
+        }
     }
 
     if (err_line != -1)
         errors_scope_nonexistent_variable(var->variable_name, err_line);
 
     return 0;
+}
+
+
+struct Node *scope_find_variable_struct_member(struct Scope *scope, struct Node *var, int err_line)
+{
+    if (var->variable_struct_member)
+    {
+        return scope_find_variable_struct_member(scope,
+            var->variable_struct_member, var->variable_struct_member->error_line
+        );
+    }
+
+    return var;
 }
 
 

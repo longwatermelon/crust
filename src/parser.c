@@ -234,6 +234,8 @@ struct Node **parser_parse_function_def_params(struct Parser *parser, size_t *np
         parser_eat(parser, TOKEN_COLON);
         param->variable_type = parser_parse_dtype(parser);
 
+        param->variable_is_param = true;
+
         params = realloc(params, sizeof(struct Node*) * ++*nparams);
         params[*nparams - 1] = param;
 
@@ -304,13 +306,18 @@ struct Node *parser_parse_variable(struct Parser *parser)
         struct Node *node = node_alloc(NODE_VARIABLE);
         node->error_line = parser->curr_tok->line_num;
         node->variable_name = util_strcpy(variable_name);
-        node->variable_type = node_dtype_copy(node_type_from_node(scope_find_variable(parser->scope, node, node->error_line), parser->scope));
-        node->variable_stack_offset = node_stack_offset(scope_find_variable(parser->scope, node, node->error_line));
+
+        struct Node *def = scope_find_variable(parser->scope, node, node->error_line);
+        node->variable_type = node_dtype_copy(node_type_from_node(def, parser->scope));
+        node->variable_stack_offset = node_stack_offset(def);
+        node->variable_is_param = def->variable_is_param;
 
         // TODO Error if node->variable_type is not a struct
-        node->variable_struct_member = parser_parse_variable_struct_member(parser, scope_find_struct(
+        struct Node *member = parser_parse_variable_struct_member(parser, scope_find_struct(
             parser->scope, node->variable_type.struct_type, -1
         ), node->variable_stack_offset);
+
+        node->variable_struct_member = member;
 
         return node;
     }
