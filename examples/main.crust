@@ -1,10 +1,14 @@
+include "stdio";
+
 struct example {
     a: int,
     b: str
 };
 
 fn func(a: str, b: str, c: int) -> str {
-    pront(a, b, "    \n");
+    print(a);
+    print(b);
+    print("    \n");
     return b;
 };
 
@@ -16,24 +20,25 @@ fn main() -> int {
     let z: example = example { 1, "string" };
     func("aaaaa", "bbbbb", 0);
 
-    pront("   \n\n");
+    print("   \n");
 
     let a: str = "aaaaa";
     let b: str = "bbbbb";
     let c: int = 9;
-    let d: str = "aaaaa";
+    let d: str = "ddddd";
 
     func(a, "bbbbb", 0);
     func(b, "bbbbb", 0);
 
     let b2: str = b;
-    pront(b2, "    \n");
+    print(b2);
+    print("    \n");
     b = d;
     b2 = func(a, b, 0);
 
-    pront(b2);
+    print(b2);
 
-    pront(" k  \n");
+    print(" k  \n");
     return 0;
 };
 
