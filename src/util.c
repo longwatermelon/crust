@@ -108,7 +108,7 @@ char *util_find_file(char **dirs, size_t ndirs, char *file)
     if (fp)
     {
         fclose(fp);
-        return file;
+        return util_strcpy(file);
     }
 
     for (size_t i = 0; i < ndirs; ++i)
