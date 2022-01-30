@@ -293,7 +293,7 @@ struct Node *parser_parse_variable(struct Parser *parser)
 {
     char *variable_name = parser->curr_tok->value;
 
-    if (scope_find_struct(parser->scope, variable_name) &&
+    if (scope_find_struct(parser->scope, variable_name, -1) &&
         parser->tokens[parser->curr_idx + 1]->type == TOKEN_LBRACE)
         return parser_parse_init_list(parser);
 
@@ -348,14 +348,13 @@ struct Node *parser_parse_function_call(struct Parser *parser)
 
     node->function_call_return_stack_offset = -parser->stack_size;
 
-    struct Node *func_def = scope_find_function(parser->scope, node->function_call_name);
+    struct Node *func_def = scope_find_function(parser->scope, node->function_call_name, -1);
     size_t size = 4;
 
-    // FIX func_def is 0 for builtin language functions; any language functions that might return structs will have issues with this
     if (func_def && func_def->function_def_return_type.struct_type)
     {
         size = node_sizeof_dtype(
-            scope_find_struct(parser->scope, func_def->function_def_return_type.struct_type)
+            scope_find_struct(parser->scope, func_def->function_def_return_type.struct_type, func_def->error_line)
         );
     }
 
