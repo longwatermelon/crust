@@ -10,6 +10,9 @@ LIBOBJS=$(LIBSRC:.crust=.o)
 AR=ar
 ARFLAGS=rc
 
+CRUSTC=./crust
+CRUSTFLAGS=--obj
+
 all: crust
 
 crust: $(OBJS)
@@ -22,7 +25,7 @@ stdlib: $(LIBOBJS)
 	$(AR) $(ARFLAGS) lib/libstdcrust.a $^
 
 lib/%.o: lib/%.crust
-	./crust --obj $<
+	$(CRUSTC) $(CRUSTFLAGS) $<
 
 clean:
 	-rm *.o crust
