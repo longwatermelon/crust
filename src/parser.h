@@ -46,6 +46,7 @@ struct Node *parser_parse_return(struct Parser *parser);
 
 struct Node *parser_parse_variable_def(struct Parser *parser);
 struct Node *parser_parse_variable(struct Parser *parser);
+struct Node *parser_parse_variable_struct_member(struct Parser *parser, struct Node *parent_struct, int stack_offset);
 
 struct Node *parser_parse_function_call(struct Parser *parser);
 

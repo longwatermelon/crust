@@ -265,7 +265,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 
     errors_asm_check_function_call(as->scope, func, node);
 
-    asm_gen_function_call_push_args(as, node);
+    asm_gen_push_args(as, node);
 
     const char *template = "# Function call\n"
                            "call %s\n"
@@ -282,7 +282,7 @@ void asm_gen_function_call(struct Asm *as, struct Node *node)
 }
 
 
-void asm_gen_function_call_push_args(struct Asm *as, struct Node *node)
+void asm_gen_push_args(struct Asm *as, struct Node *node)
 {
     util_strcat(&as->root, "# Push function call args\n");
 
@@ -290,19 +290,47 @@ void asm_gen_function_call_push_args(struct Asm *as, struct Node *node)
     for (int i = node->function_call_args_size - 1; i >= 0; --i)
     {
         asm_gen_expr(as, node->function_call_args[i]);
+        NodeDType type = node_type_from_node(node->function_call_args[i], as->scope);
 
-        const char *template = "pushl %s\n";
-        struct Node *arg = node_strip_to_literal(node->function_call_args[i], as->scope);
-        char *value = asm_str_from_node(as, arg);
-
-        size_t len = strlen(template) + strlen(value);
-        char *s = calloc(len + 1, sizeof(char));
-        sprintf(s, template, value);
-
-        util_strcat(&as->root, s);
-        free(s);
-        free(value);
+        if (type.type == NODE_STRUCT)
+            asm_gen_push_args_struct(as, node->function_call_args[i]);
+        else
+            asm_gen_push_args_primitive(as, node->function_call_args[i]);
     }
+}
+
+
+void asm_gen_push_args_primitive(struct Asm *as, struct Node *node)
+{
+    const char *template = "pushl %s\n";
+    struct Node *arg = node_strip_to_literal(node, as->scope);
+    char *value = asm_str_from_node(as, arg);
+
+    size_t len = strlen(template) + strlen(value);
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, template, value);
+
+    util_strcat(&as->root, s);
+    free(s);
+    free(value);
+}
+
+
+void asm_gen_push_args_struct(struct Asm *as, struct Node *node)
+{
+    struct Node *list = node_strip_to_literal(node, as->scope);
+    char *value = asm_str_from_node(as, list);
+
+    const char *template = "# Push init list ptr into function call args\n"
+                           "leal %s, %%eax\n"
+                           "pushl %%eax\n";
+    char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
+    sprintf(s, template, value);
+
+    util_strcat(&as->root, s);
+
+    free(value);
+    free(s);
 }
 
 
@@ -408,10 +436,10 @@ char *asm_str_from_node(struct Asm *as, struct Node *node)
     case NODE_INT: return asm_str_from_int(as, node);
     case NODE_STRING: return asm_str_from_str(as, node);
     case NODE_VARIABLE: return asm_str_from_var(as, node);
-    case NODE_PARAMETER: return asm_str_from_param(as, node);
     case NODE_FUNCTION_CALL: return asm_str_from_function_call(as, node);
     case NODE_BINOP: return asm_str_from_binop(as, node);
     case NODE_IDOF: return asm_str_from_node(as, node->idof_new_expr);
+    case NODE_INIT_LIST: return asm_str_from_init_list(as, node);
     default:
         errors_asm_str_from_node(node);
         break;
@@ -445,9 +473,42 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 {
     struct Node *var = scope_find_variable(as->scope, node, node->error_line);
 
-    if (var->type == NODE_PARAMETER)
+    if (var->type == NODE_VARIABLE)
     {
-        return asm_str_from_param(as, var);
+        var = node;
+
+        const char *tmp = "%d(%%ebp)";
+
+        char *value = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
+        sprintf(value, tmp, node->variable_stack_offset);
+        value = realloc(value, sizeof(char) * (strlen(value) + 1));
+
+        if (var->variable_type.type == NODE_STRUCT)
+        {
+            const char *template = "movl %s, %%ebx\n";
+            char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
+            sprintf(s, template, value);
+            util_strcat(&as->root, s);
+            free(s);
+            free(value);
+
+            const char *temp = "movl %d(%%ebx), %%eax\n";
+            int offset = 0;
+
+            if (var->variable_struct_member)
+                offset = var->variable_struct_member->variable_stack_offset - var->variable_stack_offset;
+
+            s = calloc(strlen(temp) + MAX_INT_LEN + 1, sizeof(char));
+            sprintf(s, temp, offset);
+            util_strcat(&as->root, s);
+            free(s);
+
+            return util_strcpy("%eax");
+        }
+        else
+        {
+            return value;
+        }
     }
     else if (var->type == NODE_VARIABLE_DEF)
     {
@@ -466,7 +527,7 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     return 0;
 }
 
-
+#if 0
 char *asm_str_from_param(struct Asm *as, struct Node *node)
 {
     const char *tmp = "%d(%%ebp)";
@@ -474,13 +535,25 @@ char *asm_str_from_param(struct Asm *as, struct Node *node)
     char *value = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
     sprintf(value, tmp, node->param_stack_offset);
     value = realloc(value, sizeof(char) * (strlen(value) + 1));
+
+    if (node->param_type.struct_type)
+    {
+        const char *template = "movl %s, %%ebx\n";
+        char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
+        sprintf(s, template, value);
+        util_strcat(&as->root, s);
+        free(s);
+        free(value);
+
+        return util_strcpy("(%ebx)");
+    }
+
     return value;
 }
-
+#endif
 
 char *asm_str_from_function_call(struct Asm *as, struct Node *node)
 {
-    // Redundant moving because gas complains about too many memory references
     const char *template = "# Get function call return value: avoiding too many memory references\n"
                            "movl %d(%%ebp), %%ecx\n";
     char *s = calloc(strlen(template) + MAX_INT_LEN + 1, sizeof(char));
@@ -495,6 +568,16 @@ char *asm_str_from_function_call(struct Asm *as, struct Node *node)
 char *asm_str_from_binop(struct Asm *as, struct Node *node)
 {
     return util_strcpy("%ecx");
+}
+
+
+char *asm_str_from_init_list(struct Asm *as, struct Node *node)
+{
+    const char *tmp = "%d(%%ebp)";
+    char *s = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
+    sprintf(s, tmp, node->init_list_stack_offset);
+    s = realloc(s, sizeof(char) * (strlen(s) + 1));
+    return s;
 }
 
 

@@ -30,7 +30,9 @@ void asm_gen_store_string(struct Asm *as, struct Node *node);
 void asm_gen_add_to_stack(struct Asm *as, struct Node *node, int stack_offset);
 
 void asm_gen_function_call(struct Asm *as, struct Node *node);
-void asm_gen_function_call_push_args(struct Asm *as, struct Node *node);
+void asm_gen_push_args(struct Asm *as, struct Node *node);
+void asm_gen_push_args_primitive(struct Asm *as, struct Node *node);
+void asm_gen_push_args_struct(struct Asm *as, struct Node *node);
 
 void asm_gen_assignment(struct Asm *as, struct Node *node);
 
@@ -43,9 +45,9 @@ char *asm_str_from_node(struct Asm *as, struct Node *node);
 char *asm_str_from_int(struct Asm *as, struct Node *node);
 char *asm_str_from_str(struct Asm *as, struct Node *node);
 char *asm_str_from_var(struct Asm *as, struct Node *node);
-char *asm_str_from_param(struct Asm *as, struct Node *node);
 char *asm_str_from_function_call(struct Asm *as, struct Node *node);
 char *asm_str_from_binop(struct Asm *as, struct Node *node);
+char *asm_str_from_init_list(struct Asm *as, struct Node *node);
 
 bool asm_check_lc_defined(struct Asm *as, char *string_asm_id);
 

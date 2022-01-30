@@ -34,15 +34,13 @@ struct Node *node_alloc(int type)
 
     node->variable_name = 0;
     node->variable_struct_member = 0;
+    node->variable_type = (NodeDType){ 0, 0 };
+    node->variable_stack_offset = 0;
 
     node->function_call_name = 0;
     node->function_call_args = 0;
     node->function_call_args_size = 0;
     node->function_call_return_stack_offset = 0;
-
-    node->param_name = 0;
-    node->param_type = (NodeDType){ 0, 0 };
-    node->param_stack_offset = 0;
 
     node->assignment_dst = 0;
     node->assignment_src = 0;
@@ -57,6 +55,7 @@ struct Node *node_alloc(int type)
     node->init_list_values = 0;
     node->init_list_len = 0;
     node->init_list_type = (NodeDType){ 0, 0 };
+    node->init_list_stack_offset = 0;
 
     node->include_path = 0;
     node->include_root = 0;
@@ -148,16 +147,15 @@ void node_free(struct Node *node)
     if (node->variable_def_name) free(node->variable_def_name);
     if (node->variable_name) free(node->variable_name);
     if (node->function_call_name) free(node->function_call_name);
-    if (node->param_name) free(node->param_name);
     if (node->struct_name) free(node->struct_name);
     if (node->member_name) free(node->member_name);
     if (node->include_path) free(node->include_path);
 
     if (node->function_def_return_type.struct_type) free(node->function_def_return_type.struct_type);
     if (node->variable_def_type.struct_type) free(node->variable_def_type.struct_type);
-    if (node->param_type.struct_type) free(node->param_type.struct_type);
     if (node->member_type.struct_type) free(node->member_type.struct_type);
     if (node->init_list_type.struct_type) free(node->init_list_type.struct_type);
+    if (node->variable_type.struct_type) free(node->variable_type.struct_type);
 
     free(node);
 }
@@ -171,7 +169,17 @@ struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope)
     case NODE_STRING:
         return node;
     case NODE_VARIABLE:
-        return node_strip_to_literal(scope_find_variable(scope, node, node->error_line), scope);
+    {
+        if (node->variable_struct_member)
+            return node;
+
+        struct Node *var = scope_find_variable(scope, node, node->error_line);
+
+        if (var->type == NODE_VARIABLE)
+            return var;
+        else
+            return node_strip_to_literal(var, scope);
+    } break;
     case NODE_VARIABLE_DEF:
         return node_strip_to_literal(node->variable_def_value, scope);
     case NODE_IDOF:
@@ -219,15 +227,14 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
 
     case NODE_VARIABLE:
     {
-        struct Node *def = scope_find_variable(scope, node, node->error_line);
-        return node_type_from_node(def, scope);
+        if (node->variable_struct_member)
+            return node_type_from_node(node->variable_struct_member, scope);
+
+        return node->variable_type;
     } break;
 
     case NODE_VARIABLE_DEF:
         return node_type_from_node(node_strip_to_literal(node->variable_def_value, scope), scope);
-
-    case NODE_PARAMETER:
-        return node->param_type;
 
     case NODE_FUNCTION_DEF:
         return node->function_def_return_type;
@@ -267,7 +274,6 @@ char *node_str_from_node_type(int type)
     case NODE_VARIABLE_DEF: return "variable def";
     case NODE_VARIABLE: return "variable";
     case NODE_FUNCTION_CALL: return "function call";
-    case NODE_PARAMETER: return "parameter";
     case NODE_ASSIGNMENT: return "assignment";
     case NODE_STRUCT: return "struct";
     case NODE_STRUCT_MEMBER: return "member";
@@ -441,7 +447,7 @@ struct Node *node_copy(struct Node *src)
         if (!src->function_def_is_decl)
             ret->function_def_body = node_copy(src->function_def_body);
 
-        ret->function_def_return_type = src->function_def_return_type;
+        ret->function_def_return_type = node_dtype_copy(src->function_def_return_type);
 
         ret->function_def_params = malloc(sizeof(struct Node*) * src->function_def_params_size);
         ret->function_def_params_size = src->function_def_params_size;
@@ -456,7 +462,7 @@ struct Node *node_copy(struct Node *src)
         return ret;
 
     case NODE_INIT_LIST:
-        ret->init_list_type = src->init_list_type;
+        ret->init_list_type = node_dtype_copy(src->init_list_type);
 
         ret->init_list_values = malloc(sizeof(struct Node*) * src->init_list_len);
         ret->init_list_len = src->init_list_len;
@@ -471,12 +477,6 @@ struct Node *node_copy(struct Node *src)
         return ret;
 
     case NODE_NOOP:
-        return ret;
-
-    case NODE_PARAMETER:
-        ret->param_name = util_strcpy(src->param_name);
-        ret->param_type = src->param_type;
-        ret->param_stack_offset = src->param_stack_offset;
         return ret;
 
     case NODE_RETURN:
@@ -501,7 +501,7 @@ struct Node *node_copy(struct Node *src)
 
     case NODE_STRUCT_MEMBER:
         ret->member_name = util_strcpy(src->member_name);
-        ret->member_type = src->member_type;
+        ret->member_type = node_dtype_copy(src->member_type);
         return ret;
 
     case NODE_VARIABLE:
@@ -510,12 +510,15 @@ struct Node *node_copy(struct Node *src)
         if (src->variable_struct_member)
             ret->variable_struct_member = node_copy(src->variable_struct_member);
 
+        ret->variable_type = node_dtype_copy(src->variable_type);
+        ret->variable_stack_offset = src->variable_stack_offset;
+
         return ret;
 
     case NODE_VARIABLE_DEF:
         ret->variable_def_name = util_strcpy(src->variable_def_name);
         ret->variable_def_stack_offset = src->variable_def_stack_offset;
-        ret->variable_def_type = src->variable_def_type;
+        ret->variable_def_type = node_dtype_copy(src->variable_def_type);
         ret->variable_def_value = node_copy(src->variable_def_value);
 
         return ret;
@@ -523,7 +526,6 @@ struct Node *node_copy(struct Node *src)
     case NODE_BINOP:
         ret->op_l = node_copy(src->op_l);
         ret->op_r = node_copy(src->op_r);
-        ret->op_type = src->op_type;
 
         return ret;
 
@@ -542,6 +544,26 @@ struct Node *node_copy(struct Node *src)
 
         return ret;
     }
+
+    return 0;
+}
+
+
+NodeDType node_dtype_copy(NodeDType src)
+{
+    return (NodeDType){
+        src.type,
+        src.struct_type ? util_strcpy(src.struct_type) : 0
+    };
+}
+
+
+int node_stack_offset(struct Node *var)
+{
+    if (var->type == NODE_VARIABLE)
+        return var->variable_stack_offset;
+    else if (var->type == NODE_VARIABLE_DEF)
+        return var->variable_def_stack_offset;
 
     return 0;
 }

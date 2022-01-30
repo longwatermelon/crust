@@ -24,7 +24,6 @@ struct Node
         NODE_VARIABLE_DEF,
         NODE_VARIABLE,
         NODE_FUNCTION_CALL,
-        NODE_PARAMETER,
         NODE_ASSIGNMENT,
         NODE_STRUCT,
         NODE_STRUCT_MEMBER,
@@ -69,17 +68,14 @@ struct Node
     // Variable
     char *variable_name;
     struct Node *variable_struct_member;
+    NodeDType variable_type;
+    int variable_stack_offset;
 
     // Function call
     char *function_call_name;
     struct Node **function_call_args;
     size_t function_call_args_size;
     int function_call_return_stack_offset;
-
-    // Parameter
-    char *param_name;
-    NodeDType param_type;
-    int param_stack_offset;
 
     // Assignment
     struct Node *assignment_dst, *assignment_src;
@@ -97,6 +93,7 @@ struct Node
     struct Node **init_list_values;
     size_t init_list_len;
     NodeDType init_list_type;
+    int init_list_stack_offset;
 
     // Include
     char *include_path;
@@ -144,6 +141,9 @@ bool node_find_node(struct Node *node, struct Node *target);
 size_t node_sizeof_dtype(struct Node *node);
 
 struct Node *node_copy(struct Node *src);
+NodeDType node_dtype_copy(NodeDType src);
+
+int node_stack_offset(struct Node *var);
 
 #endif
 

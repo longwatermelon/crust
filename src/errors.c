@@ -80,11 +80,11 @@ void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struc
     {
         NodeDType type = node_type_from_node(call->function_call_args[i], scope);
 
-        if (!node_dtype_cmp(type, def->function_def_params[i]->param_type))
+        if (!node_dtype_cmp(type, def->function_def_params[i]->variable_type))
         {
             fprintf(stderr, ERROR "Parameter %zu of function '%s' is of type %s but "
                             "data of type %s was passed.\n", i,
-                            def->function_def_name, node_str_from_type(def->function_def_params[i]->param_type),
+                            def->function_def_name, node_str_from_type(def->function_def_params[i]->variable_type),
                             node_str_from_type(type));
             errors_print_lines(call->error_line);
             exit(EXIT_FAILURE);
@@ -237,7 +237,7 @@ void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
 
 void errors_asm_str_from_node(struct Node *node)
 {
-    fprintf(stderr, INTERNAL_ERROR "Unable to extract value from data of type %d.\n", node->type);
+    fprintf(stderr, INTERNAL_ERROR "Unable to extract value from data of type '%s'.\n", node_str_from_node_type(node->type));
     errors_print_lines(node->error_line);
     exit(EXIT_FAILURE);
 }
@@ -314,13 +314,8 @@ void errors_warn_unused_variable(struct Scope *scope, struct Node *func_def)
     {
         struct Node *param = func_def->function_def_params[i];
 
-        struct Node *var = node_alloc(NODE_VARIABLE);
-        var->variable_name = util_strcpy(param->param_name);
-
-        if (!node_find_node(func_def, var))
-            errors_warn_print_unused_variable(param->error_line, param->param_name);
-
-        node_free(var);
+        if (!node_find_node(func_def, func_def->function_def_params[i]))
+            errors_warn_print_unused_variable(param->error_line, param->variable_name);
     }
 }
 

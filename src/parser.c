@@ -224,15 +224,15 @@ struct Node **parser_parse_function_def_params(struct Parser *parser, size_t *np
 
     while (parser->curr_tok->type != TOKEN_RPAREN)
     {
-        struct Node *param = node_alloc(NODE_PARAMETER);
+        struct Node *param = node_alloc(NODE_VARIABLE);
         param->error_line = parser->curr_tok->line_num;
-        param->param_stack_offset = offset;
+        param->variable_stack_offset = offset;
         offset += 4;
 
-        param->param_name = util_strcpy(parser->curr_tok->value);
+        param->variable_name = util_strcpy(parser->curr_tok->value);
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_COLON);
-        param->param_type = parser_parse_dtype(parser);
+        param->variable_type = parser_parse_dtype(parser);
 
         params = realloc(params, sizeof(struct Node*) * ++*nparams);
         params[*nparams - 1] = param;
@@ -302,22 +302,60 @@ struct Node *parser_parse_variable(struct Parser *parser)
     if (parser->curr_tok->type == TOKEN_PERIOD)
     {
         struct Node *node = node_alloc(NODE_VARIABLE);
+        node->error_line = parser->curr_tok->line_num;
         node->variable_name = util_strcpy(variable_name);
+        node->variable_type = node_dtype_copy(node_type_from_node(scope_find_variable(parser->scope, node, node->error_line), parser->scope));
+        node->variable_stack_offset = node_stack_offset(scope_find_variable(parser->scope, node, node->error_line));
 
-        parser_eat(parser, TOKEN_PERIOD);
+        // TODO Error if node->variable_type is not a struct
+        node->variable_struct_member = parser_parse_variable_struct_member(parser, scope_find_struct(
+            parser->scope, node->variable_type.struct_type, -1
+        ), node->variable_stack_offset);
 
-        node->variable_struct_member = parser_parse_variable(parser);
         return node;
     }
 
     if (parser->curr_tok->type == TOKEN_LPAREN)
         return parser_parse_function_call(parser);
-    else if (parser->curr_tok->type == TOKEN_EQUALS)
+    else if (!parser->ignore_ops && parser->curr_tok->type == TOKEN_EQUALS)
         return parser_parse_assignment(parser);
 
+    // TODO Decrease amount of repeated code
     struct Node *node = node_alloc(NODE_VARIABLE);
     node->error_line = parser->curr_tok->line_num;
     node->variable_name = util_strcpy(variable_name);
+    node->variable_type = node_dtype_copy(node_type_from_node(scope_find_variable(parser->scope, node, node->error_line), parser->scope));
+    node->variable_stack_offset = scope_find_variable(parser->scope, node, node->error_line)->variable_def_stack_offset;
+
+    return node;
+}
+
+
+struct Node *parser_parse_variable_struct_member(struct Parser *parser, struct Node *parent_struct, int stack_offset)
+{
+    parser_eat(parser, TOKEN_PERIOD);
+    struct Node *node = node_alloc(NODE_VARIABLE);
+    node->variable_name = util_strcpy(parser->curr_tok->value);
+    parser_eat(parser, TOKEN_ID);
+
+    for (size_t i = 0; i < parent_struct->struct_members_size; ++i)
+    {
+        if (strcmp(parent_struct->struct_members[i]->member_name, node->variable_name) == 0)
+        {
+            node->variable_type = node_dtype_copy(parent_struct->struct_members[i]->member_type);
+            node->variable_stack_offset = stack_offset - i * 4;
+            break;
+        }
+    }
+
+    if (parser->curr_tok->type == TOKEN_PERIOD)
+    {
+        // TODO Error if node->variable_type is not a struct_name
+        // FIX stack_offset - 4 is incorrect
+        node->variable_struct_member = parser_parse_variable_struct_member(parser,
+                scope_find_struct(parser->scope, node->variable_type.struct_type, -1),
+                stack_offset - 4);
+    }
 
     return node;
 }
@@ -368,8 +406,12 @@ struct Node *parser_parse_assignment(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_ASSIGNMENT);
     node->error_line = parser->curr_tok->line_num;
-    node->assignment_dst = node_alloc(NODE_VARIABLE);
-    node->assignment_dst->variable_name = util_strcpy(parser->tokens[parser->curr_idx - 1]->value);
+
+    parser_advance(parser, -1);
+    parser->ignore_ops = true;
+    node->assignment_dst = parser_parse_variable(parser);
+    parser->ignore_ops = false;
+
     parser_eat(parser, TOKEN_EQUALS);
 
     node->assignment_src = parser_parse_expr(parser);
@@ -419,6 +461,7 @@ struct Node *parser_parse_init_list(struct Parser *parser)
 {
     struct Node *node = node_alloc(NODE_INIT_LIST);
     node->init_list_type = parser_parse_dtype(parser);
+    node->init_list_stack_offset = -parser->stack_size;
     node->error_line = parser->curr_tok->line_num;
 
     parser_eat(parser, TOKEN_LBRACE);
@@ -436,6 +479,7 @@ struct Node *parser_parse_init_list(struct Parser *parser)
     }
 
     parser_eat(parser, TOKEN_RBRACE);
+
     return node;
 }
 

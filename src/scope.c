@@ -126,7 +126,7 @@ struct Node *scope_find_variable(struct Scope *scope, struct Node *var, int err_
     {
         struct Node *param = scope->curr_layer->params[i];
 
-        if (strcmp(param->param_name, var->variable_name) == 0)
+        if (strcmp(param->variable_name, var->variable_name) == 0)
             return param;
     }
 

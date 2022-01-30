@@ -1,0 +1,13 @@
+include "stdio";
+
+struct A { a: int, b: str };
+
+fn func(a: A) -> void {
+    print(a.b);
+};
+
+fn main() -> int {
+    let a: A = A{ 1, "test\n" };
+    func(a);
+    return 0;
+};
