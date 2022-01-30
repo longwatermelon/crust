@@ -171,7 +171,7 @@ struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope)
     case NODE_STRING:
         return node;
     case NODE_VARIABLE:
-        return node_strip_to_literal(scope_find_variable(scope, node, node->error_line), scope);
+        return node_strip_to_literal(scope_find_variable(scope, node), scope);
     case NODE_VARIABLE_DEF:
         return node_strip_to_literal(node->variable_def_value, scope);
     case NODE_IDOF:
@@ -217,7 +217,7 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
         return node_type_from_node(node->return_value, scope);
     case NODE_VARIABLE:
     {
-        struct Node *def = scope_find_variable(scope, node, node->error_line);
+        struct Node *def = scope_find_variable(scope, node);
         return node_type_from_node(def, scope);
     } break;
     case NODE_VARIABLE_DEF:
@@ -227,7 +227,7 @@ NodeDType node_type_from_node(struct Node *node, struct Scope *scope)
     case NODE_FUNCTION_DEF:
         return node->function_def_return_type;
     case NODE_FUNCTION_CALL:
-        return scope_find_function(scope, node->function_call_name, node->error_line)->function_def_return_type;
+        return scope_find_function(scope, node->function_call_name)->function_def_return_type;
     case NODE_STRUCT_MEMBER:
         return node->member_type;
     case NODE_STRUCT:

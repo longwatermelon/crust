@@ -132,7 +132,7 @@ void errors_asm_check_function_return(struct Scope *scope, struct Node *def)
 
 void errors_asm_check_function_def(struct Scope *scope, struct Node *def)
 {
-    struct Node *existing = scope_find_function_def(scope, def->function_def_name, -1);
+    struct Node *existing = scope_find_function_def(scope, def->function_def_name);
 
     if (existing)
     {
@@ -204,7 +204,7 @@ void errors_asm_check_assignment(struct Scope *scope, struct Node *assignment)
 
 void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
 {
-    struct Node *struct_node = scope_find_struct(scope, list->init_list_type.struct_type, list->error_line);
+    struct Node *struct_node = scope_find_struct(scope, list->init_list_type.struct_type);
 
     if (list->init_list_len != struct_node->struct_members_size)
     {
@@ -235,6 +235,14 @@ void errors_asm_check_init_list(struct Scope *scope, struct Node *list)
 }
 
 
+void errors_asm_nonexistent_variable(struct Node *var)
+{
+    fprintf(stderr, ERROR "Variable '%s' referenced but not defined.\n", var->variable_name);
+    errors_print_lines(var->error_line);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_asm_str_from_node(struct Node *node)
 {
     fprintf(stderr, INTERNAL_ERROR "Unable to extract value from data of type %d.\n", node->type);
@@ -253,30 +261,6 @@ void errors_args_nonexistent_warning(char *warning)
 void errors_args_no_opt_value(char *opt)
 {
     fprintf(stderr, ERROR "Expected expression after option '%s'.\n", opt);
-    exit(EXIT_FAILURE);
-}
-
-
-void errors_scope_nonexistent_variable(char *name, size_t line)
-{
-    fprintf(stderr, ERROR "Variable '%s' does not exist.\n", name);
-    errors_print_lines(line);
-    exit(EXIT_FAILURE);
-}
-
-
-void errors_scope_nonexistent_function(char *name, size_t line)
-{
-    fprintf(stderr, ERROR "Function '%s' does not exist.\n", name);
-    errors_print_lines(line);
-    exit(EXIT_FAILURE);
-}
-
-
-void errors_scope_nonexistent_struct(char *name, size_t line)
-{
-    fprintf(stderr, ERROR "Struct '%s' does not exist.\n", name);
-    errors_print_lines(line);
     exit(EXIT_FAILURE);
 }
 

@@ -27,14 +27,12 @@ void errors_asm_check_assignment(struct Scope *scope, struct Node *assignment);
 
 void errors_asm_check_init_list(struct Scope *scope, struct Node *list);
 
+void errors_asm_nonexistent_variable(struct Node *var);
+
 void errors_asm_str_from_node(struct Node *node);
 
 void errors_args_nonexistent_warning(char *warning);
 void errors_args_no_opt_value(char *opt);
-
-void errors_scope_nonexistent_variable(char *name, size_t line);
-void errors_scope_nonexistent_function(char *name, size_t line);
-void errors_scope_nonexistent_struct(char *name, size_t line);
 
 /* Warnings */
 void errors_warn_dead_code(struct Node *func_def);
