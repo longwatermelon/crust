@@ -335,6 +335,17 @@ void errors_warn_print_unused_variable(size_t line, char *var_name)
 }
 
 
+void errors_warn_redundant_idof(struct Node *idof)
+{
+    fprintf(stderr, WARNING "Redundant 'idof'; Node of type '%s' does not need idof. "
+                    "Idof is only necessary for string literals and variables, excluding "
+                    "parameters. " WARNING_FLAG("-Wno-redundant-idof") "\n",
+                    node_str_from_node_type(idof->idof_new_expr->type));
+    errors_print_lines(idof->error_line);
+    printf("\n");
+}
+
+
 void errors_print_lines(size_t line)
 {
     int begin = line - ERROR_RANGE;

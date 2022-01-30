@@ -548,6 +548,9 @@ struct Node *parser_parse_idof(struct Parser *parser)
         node->idof_new_expr = node_copy(literal);
     }
 
+    if (literal->type != NODE_STRING)
+        errors_warn_redundant_idof(node);
+
     return node;
 }
 
