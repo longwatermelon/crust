@@ -1,0 +1,1 @@
+fn exit(code: int) -> void;

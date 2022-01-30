@@ -1,0 +1,8 @@
+include "stdlib";
+include "stdio";
+
+fn main() -> int {
+    exit(1);
+    print("test\n");
+    return 0;
+};
