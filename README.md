@@ -1,10 +1,4 @@
-<div align="center">
-
 # Crust
-
-![Commits](https://img.shields.io/github/commit-activity/w/longwatermelon/crust)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8babf4c8e0c141568ee9647f9bccb6ff)](https://app.codacy.com/gh/longwatermelon/crust?utm_source=github.com&utm_medium=referral&utm_content=longwatermelon/crust&utm_campaign=Badge_Grade_Settings)
-</div>
 
 Crust programming language
 
