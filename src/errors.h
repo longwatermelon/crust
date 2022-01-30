@@ -32,6 +32,7 @@ void errors_asm_nonexistent_variable(struct Node *var);
 void errors_asm_str_from_node(struct Node *node);
 
 void errors_args_nonexistent_warning(char *warning);
+void errors_args_no_opt_value(char *opt);
 
 /* Warnings */
 void errors_warn_dead_code(struct Node *func_def);

@@ -258,6 +258,13 @@ void errors_args_nonexistent_warning(char *warning)
 }
 
 
+void errors_args_no_opt_value(char *opt)
+{
+    fprintf(stderr, ERROR "Expected expression after option '%s'.\n", opt);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_warn_dead_code(struct Node *func_def)
 {
     if (!func_def->function_def_is_decl &&

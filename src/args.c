@@ -61,7 +61,7 @@ struct Args *args_parse(int argc, char **argv)
         }
         else if (strncmp(argv[i], "-W", 2) == 0)
         {
-            char *warning = &argv[i][2];
+            char *warning = args_value_from_opt(argc, argv, &i);
 
             bool enabled;
             int idx = args_index_from_warning(warning, &enabled);
@@ -78,18 +78,18 @@ struct Args *args_parse(int argc, char **argv)
         else if (strncmp(argv[i], "-L", 2) == 0)
         {
             args->libdirs = realloc(args->libdirs, sizeof(char*) * ++args->nlibdirs);
-            args->libdirs[args->nlibdirs - 1] = args_value_from_opt(argv, &i);
+            args->libdirs[args->nlibdirs - 1] = args_value_from_opt(argc, argv, &i);
         }
         else if (strncmp(argv[i], "-l", 2) == 0)
         {
             args->libs = realloc(args->libs, sizeof(char*) * ++args->nlibs);
-            args->libs[args->nlibs - 1] = args_value_from_opt(argv, &i);
+            args->libs[args->nlibs - 1] = args_value_from_opt(argc, argv, &i);
         }
         else if (strncmp(argv[i], "-I", 2) == 0)
         {
             args->include_dirs = realloc(args->include_dirs,
                     sizeof(char*) * ++args->include_dirs_len);
-            args->include_dirs[args->include_dirs_len - 1] = args_value_from_opt(argv, &i);
+            args->include_dirs[args->include_dirs_len - 1] = args_value_from_opt(argc, argv, &i);
         }
         else
         {
@@ -128,11 +128,20 @@ int args_index_from_warning(char *warning, bool *enabled)
 }
 
 
-char *args_value_from_opt(char **argv, int *idx)
+char *args_value_from_opt(int argc, char **argv, int *idx)
 {
     if (strlen(argv[*idx]) != 2)
         return &argv[*idx][2];
     else
-        return argv[++*idx];
+        return args_advance(argc, argv, idx);
+}
+
+
+char *args_advance(int argc, char **argv, int *idx)
+{
+    if (++*idx >= argc)
+        errors_args_no_opt_value(argv[*idx - 1]);
+
+    return argv[*idx];
 }
 
