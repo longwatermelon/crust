@@ -1,7 +1,7 @@
 include "stdlib";
 
 fn exit(code: int) -> void {
-    asm { "movl $1, %eax" };
-    asm { "movl ", code, ", %ebx" };
-    asm { "int $0x80" };
+    asm "movl $1, %eax";
+    asm "movl ", code, ", %ebx";
+    asm "int $0x80";
 };

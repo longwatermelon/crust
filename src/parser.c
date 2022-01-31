@@ -627,19 +627,17 @@ struct Node *parser_parse_inline_asm(struct Parser *parser)
     node->error_line = parser->curr_tok->line_num;
 
     parser_eat(parser, TOKEN_ID);
-    parser_eat(parser, TOKEN_LBRACE);
 
-    while (parser->curr_tok->type != TOKEN_RBRACE)
+    while (parser->curr_tok->type != TOKEN_SEMI)
     {
         node->asm_args = realloc(node->asm_args,
             sizeof(struct Node*) * ++node->asm_nargs);
         node->asm_args[node->asm_nargs - 1] = parser_parse_expr(parser);
 
-        if (parser->curr_tok->type != TOKEN_RBRACE)
+        if (parser->curr_tok->type != TOKEN_SEMI)
             parser_eat(parser, TOKEN_COMMA);
     }
 
-    parser_eat(parser, TOKEN_RBRACE);
     return node;
 }
 

@@ -1,10 +1,10 @@
 include "stdio";
 
 fn print(arg: str) -> void {
-    asm { "movl $5, %edx" };
-    asm { "movl $1, %ebx" };
-    asm { "movl $4, %eax" };
-    asm { "movl ", arg, ", %ecx" };
-    asm { "int $0x80" };
+    asm "movl $5, %edx";
+    asm "movl $1, %ebx";
+    asm "movl $4, %eax";
+    asm "movl ", arg, ", %ecx";
+    asm "int $0x80";
 };
 
