@@ -81,6 +81,29 @@ struct Node *node_alloc(int type)
 
 void node_free(struct Node *node)
 {
+    node_free_lists(node);
+    node_free_strings(node);
+    node_free_dtypes(node);
+
+    if (node->function_def_body) node_free(node->function_def_body);
+    if (node->return_value) node_free(node->return_value);
+    if (node->variable_def_value) node_free(node->variable_def_value);
+    if (node->assignment_dst) node_free(node->assignment_dst);
+    if (node->assignment_src) node_free(node->assignment_src);
+    if (node->variable_struct_member) node_free(node->variable_struct_member);
+    if (node->include_root) node_free(node->include_root);
+    if (node->include_scope) scope_free(node->include_scope);
+    if (node->op_l) node_free(node->op_l);
+    if (node->op_r) node_free(node->op_r);
+    if (node->idof_original_expr) node_free(node->idof_original_expr);
+    if (node->idof_new_expr) node_free(node->idof_new_expr);
+
+    free(node);
+}
+
+
+void node_free_lists(struct Node *node)
+{
     if (node->compound_nodes)
     {
         for (size_t i = 0; i < node->compound_size; ++i)
@@ -128,20 +151,11 @@ void node_free(struct Node *node)
 
         free(node->asm_args);
     }
+}
 
-    if (node->function_def_body) node_free(node->function_def_body);
-    if (node->return_value) node_free(node->return_value);
-    if (node->variable_def_value) node_free(node->variable_def_value);
-    if (node->assignment_dst) node_free(node->assignment_dst);
-    if (node->assignment_src) node_free(node->assignment_src);
-    if (node->variable_struct_member) node_free(node->variable_struct_member);
-    if (node->include_root) node_free(node->include_root);
-    if (node->include_scope) scope_free(node->include_scope);
-    if (node->op_l) node_free(node->op_l);
-    if (node->op_r) node_free(node->op_r);
-    if (node->idof_original_expr) node_free(node->idof_original_expr);
-    if (node->idof_new_expr) node_free(node->idof_new_expr);
 
+void node_free_strings(struct Node *node)
+{
     if (node->string_value) free(node->string_value);
     if (node->string_asm_id) free(node->string_asm_id);
     if (node->function_def_name) free(node->function_def_name);
@@ -151,14 +165,16 @@ void node_free(struct Node *node)
     if (node->struct_name) free(node->struct_name);
     if (node->member_name) free(node->member_name);
     if (node->include_path) free(node->include_path);
+}
 
+
+void node_free_dtypes(struct Node *node)
+{
     if (node->function_def_return_type.struct_type) free(node->function_def_return_type.struct_type);
     if (node->variable_def_type.struct_type) free(node->variable_def_type.struct_type);
     if (node->member_type.struct_type) free(node->member_type.struct_type);
     if (node->init_list_type.struct_type) free(node->init_list_type.struct_type);
     if (node->variable_type.struct_type) free(node->variable_type.struct_type);
-
-    free(node);
 }
 
 

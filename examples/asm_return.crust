@@ -1,0 +1,12 @@
+include "stdio";
+
+fn func() -> int {
+    #noreturn
+    asm "movl $1, %ebx";
+};
+
+fn main() -> void {
+    let a: int = func();
+    return a;
+};
+

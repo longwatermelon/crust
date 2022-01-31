@@ -119,6 +119,9 @@ struct Node
 
 struct Node *node_alloc(int type);
 void node_free(struct Node *node);
+void node_free_lists(struct Node *node);
+void node_free_strings(struct Node *node);
+void node_free_dtypes(struct Node *node);
 
 struct Node *node_strip_to_literal(struct Node *node, struct Scope *scope);
 
