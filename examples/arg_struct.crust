@@ -4,10 +4,13 @@ struct A { a: int, b: str };
 
 fn func(a: A) -> void {
     print(a.b);
+    a.b = "kekw\n";
 };
 
 fn main() -> int {
     let a: A = A{ 1, "test\n" };
     func(a);
+
+    print(a.b);
     return 0;
 };

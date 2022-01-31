@@ -404,6 +404,8 @@ size_t node_sizeof_dtype(struct Node *node)
         return 4;
     case NODE_STRUCT:
         return node->struct_members_size * 4;
+    case NODE_INIT_LIST:
+        return node->init_list_len * 4;
     default: return 0;
     }
 }

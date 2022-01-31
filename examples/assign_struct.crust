@@ -1,0 +1,19 @@
+include "stdio";
+
+struct A {
+    a: int, b: str
+};
+
+fn main() -> int {
+    let a: A = A{ 1, "test\n" };
+    let b: A = a;
+    let string: str = a.b;
+    b.b = "kekw\n";
+
+    print(b.b);
+    print(string);
+    print(a.b);
+
+    return 0;
+};
+
