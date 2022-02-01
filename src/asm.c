@@ -151,9 +151,6 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     as->scope->curr_layer->params = node->function_def_params;
     as->scope->curr_layer->nparams = node->function_def_params_size;
 
-    size_t prev_label = as->func_label;
-    as->func_label = 1;
-
     asm_gen_expr(as, node->function_def_body);
 
     if (node->function_def_return_type.type == NODE_NOOP)
@@ -165,7 +162,6 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
         errors_warn_unused_variable(as->scope, node);
 
     scope_pop_layer(as->scope);
-    as->func_label = prev_label;
 
     if (as->args->warnings[WARNING_DEAD_CODE])
         errors_warn_dead_code(node);
