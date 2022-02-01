@@ -495,9 +495,7 @@ char *asm_str_from_int(struct Asm *as, struct Node *node)
 char *asm_str_from_str(struct Asm *as, struct Node *node)
 {
     asm_gen_store_string(as, node);
-    char *value = malloc(sizeof(char) * (strlen(node->string_asm_id) + 1));
-    strcpy(value, node->string_asm_id);
-    return value;
+    return util_strcpy(node->string_asm_id);
 }
 
 
@@ -528,7 +526,6 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
             free(s);
             free(value);
 
-//            const char *temp = "movl %d(%%ebx), %%ecx\n";
             const char *temp = "%d(%%ebx)";
             offset = var->variable_stack_offset - node->variable_stack_offset;
 
@@ -537,29 +534,6 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
 
             return s;
         }
-
-#if 0
-        if (node->variable_type.type == NODE_STRUCT)
-        {
-            const char *template = "movl %s, %%ebx\n";
-            char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
-            sprintf(s, template, value);
-            util_strcat(&as->root, s);
-            free(s);
-            free(value);
-
-            const char *temp = "movl %d(%%ebx), %%eax\n";
-            int offset = 0;
-            offset = var->variable_stack_offset - node->variable_stack_offset;
-
-            s = calloc(strlen(temp) + MAX_INT_LEN + 1, sizeof(char));
-            sprintf(s, temp, offset);
-            util_strcat(&as->root, s);
-            free(s);
-
-            return util_strcpy("%eax");
-        }
-#endif
 
         return value;
     }
@@ -580,30 +554,6 @@ char *asm_str_from_var(struct Asm *as, struct Node *node)
     return 0;
 }
 
-#if 0
-char *asm_str_from_param(struct Asm *as, struct Node *node)
-{
-    const char *tmp = "%d(%%ebp)";
-
-    char *value = calloc(strlen(tmp) + MAX_INT_LEN + 1, sizeof(char));
-    sprintf(value, tmp, node->param_stack_offset);
-    value = realloc(value, sizeof(char) * (strlen(value) + 1));
-
-    if (node->param_type.struct_type)
-    {
-        const char *template = "movl %s, %%ebx\n";
-        char *s = calloc(strlen(template) + strlen(value) + 1, sizeof(char));
-        sprintf(s, template, value);
-        util_strcat(&as->root, s);
-        free(s);
-        free(value);
-
-        return util_strcpy("(%ebx)");
-    }
-
-    return value;
-}
-#endif
 
 char *asm_str_from_function_call(struct Asm *as, struct Node *node)
 {
