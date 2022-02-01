@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include "token.h"
 #include "errors.h"
+#include "util.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -98,33 +99,33 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
 
         switch (lexer->current_c)
         {
-        case ';': lexer_advance(lexer); return token_alloc(TOKEN_SEMI, make_dyn_str(";"), lexer->line_num);
-        case '(': lexer_advance(lexer); return token_alloc(TOKEN_LPAREN, make_dyn_str("("), lexer->line_num);
-        case ')': lexer_advance(lexer); return token_alloc(TOKEN_RPAREN, make_dyn_str(")"), lexer->line_num);
-        case '{': lexer_advance(lexer); return token_alloc(TOKEN_LBRACE, make_dyn_str("{"), lexer->line_num);
-        case '}': lexer_advance(lexer); return token_alloc(TOKEN_RBRACE, make_dyn_str("}"), lexer->line_num);
+        case ';': lexer_advance(lexer); return token_alloc(TOKEN_SEMI, util_strcpy(";"), lexer->line_num);
+        case '(': lexer_advance(lexer); return token_alloc(TOKEN_LPAREN, util_strcpy("("), lexer->line_num);
+        case ')': lexer_advance(lexer); return token_alloc(TOKEN_RPAREN, util_strcpy(")"), lexer->line_num);
+        case '{': lexer_advance(lexer); return token_alloc(TOKEN_LBRACE, util_strcpy("{"), lexer->line_num);
+        case '}': lexer_advance(lexer); return token_alloc(TOKEN_RBRACE, util_strcpy("}"), lexer->line_num);
         case '=':
         {
             lexer_advance(lexer);
 
             if (lexer->current_c != '=')
-                return token_alloc(TOKEN_EQUALS, make_dyn_str("="), lexer->line_num);
+                return token_alloc(TOKEN_EQUALS, util_strcpy("="), lexer->line_num);
             else
             {
                 lexer_advance(lexer);
-                struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("=="), lexer->line_num);
+                struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy("=="), lexer->line_num);
                 t->binop_type = TOKEN_OP_CMP;
                 return t;
             }
         } break;
-        case ',': lexer_advance(lexer); return token_alloc(TOKEN_COMMA, make_dyn_str(","), lexer->line_num);
-        case ':': lexer_advance(lexer); return token_alloc(TOKEN_COLON, make_dyn_str(":"), lexer->line_num);
-        case '.': lexer_advance(lexer); return token_alloc(TOKEN_PERIOD, make_dyn_str("."), lexer->line_num);
+        case ',': lexer_advance(lexer); return token_alloc(TOKEN_COMMA, util_strcpy(","), lexer->line_num);
+        case ':': lexer_advance(lexer); return token_alloc(TOKEN_COLON, util_strcpy(":"), lexer->line_num);
+        case '.': lexer_advance(lexer); return token_alloc(TOKEN_PERIOD, util_strcpy("."), lexer->line_num);
         case '+':
         case '*':
         {
             char tmp[2] = { lexer->current_c, '\0' };
-            struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str(tmp), lexer->line_num);
+            struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy(tmp), lexer->line_num);
 
             switch (lexer->current_c)
             {
@@ -140,11 +141,11 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             if (lexer->current_c == '>')
             {
                 lexer_advance(lexer);
-                return token_alloc(TOKEN_ARROW, make_dyn_str("->"), lexer->line_num);
+                return token_alloc(TOKEN_ARROW, util_strcpy("->"), lexer->line_num);
             }
             else
             {
-                struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("+"), lexer->line_num);
+                struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy("+"), lexer->line_num);
                 t->binop_type = TOKEN_OP_MINUS;
                 return t;
             }
@@ -161,7 +162,7 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             }
             else
             {
-                struct Token *t = token_alloc(TOKEN_BINOP, make_dyn_str("/"), lexer->line_num);
+                struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy("/"), lexer->line_num);
                 t->binop_type = TOKEN_OP_DIV;
                 return t;
             }
@@ -176,14 +177,7 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
         }
     }
 
-    return token_alloc(TOKEN_EOF, make_dyn_str(""), lexer->line_num);
+    return token_alloc(TOKEN_EOF, util_strcpy(""), lexer->line_num);
 }
 
-
-char *make_dyn_str(const char *s)
-{
-    char *str = malloc(sizeof(char) * (strlen(s) + 1));
-    strcpy(str, s);
-    return str;
-}
 

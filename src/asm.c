@@ -474,12 +474,15 @@ void asm_gen_if_statement(struct Asm *as, struct Node *node)
     char *str = calloc(strlen(tmp) + strlen(s) + strlen(label) + 1, sizeof(char));
     sprintf(str, tmp, s, label);
     util_strcat(&as->root, str);
-    free(str);
 
     asm_gen_expr(as, node->if_body);
 
     util_strcat(&as->root, label);
     util_strcat(&as->root, ":");
+
+    free(label);
+    free(str);
+    free(s);
 }
 
 

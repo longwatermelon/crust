@@ -25,7 +25,5 @@ char *lexer_collect_str(struct Lexer *lexer);
 
 struct Token *lexer_get_next_token(struct Lexer *lexer);
 
-char *make_dyn_str(const char *s);
-
 #endif
 
