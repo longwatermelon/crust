@@ -39,6 +39,7 @@ void asm_gen_push_args_struct(struct Asm *as, struct Node *node);
 void asm_gen_assignment(struct Asm *as, struct Node *node);
 
 void asm_gen_binop(struct Asm *as, struct Node *node);
+void asm_gen_binop_cmp(struct Asm *as, struct Node *node);
 
 void asm_gen_inline_asm(struct Asm *as, struct Node *node);
 

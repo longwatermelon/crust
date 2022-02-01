@@ -1,0 +1,22 @@
+include "stdio";
+
+fn main() -> int {
+    let a: int = 1;
+    let b: int = 1;
+
+    if a == b {
+        print("test\n");
+    };
+
+    b = 2;
+
+    if a == b {
+        print("shit\n");
+    };
+
+    if b == 2 {
+        print("ok  \n");
+    };
+
+    return 0;
+};

@@ -407,7 +407,29 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
         util_strcat(&as->root, "imull %eax, %ecx\n"); break;
     case OP_DIV:
         util_strcat(&as->root, "idivl %ecx\nmovl %eax, %ecx\n"); break;
+    case OP_CMP:
+        asm_gen_binop_cmp(as, node);
     }
+}
+
+
+void asm_gen_binop_cmp(struct Asm *as, struct Node *node)
+{
+    const char *tmp = "cmpl %%eax, %%ecx\n"
+                      "jne .L%zu\n" // label
+                      "movl $1, %%ecx\n"
+                      "jmp .L%zu\n" // label + 1
+                      ".L%zu:\n" // label
+                      "movl $0, %%ecx\n"
+                      ".L%zu:\n"; // label + 1
+
+    size_t len = strlen(tmp) + MAX_INT_LEN * 4;
+    char *s = calloc(len + 1, sizeof(char));
+    sprintf(s, tmp, as->func_label, as->func_label + 1, as->func_label, as->func_label + 1);
+    util_strcat(&as->root, s);
+    free(s);
+
+    as->func_label += 3;
 }
 
 

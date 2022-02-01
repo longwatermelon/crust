@@ -104,7 +104,7 @@ struct Node
 
     // Binop
     struct Node *op_l, *op_r;
-    enum { OP_PLUS, OP_MINUS, OP_MUL, OP_DIV } op_type;
+    enum { OP_PLUS, OP_MINUS, OP_MUL, OP_DIV, OP_CMP } op_type;
     int op_stack_offset;
 
     // Idof
