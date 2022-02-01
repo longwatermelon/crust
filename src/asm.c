@@ -29,7 +29,7 @@ struct Asm *asm_alloc(struct Args *args, bool main)
         const char *begin = ".globl _start\n"
                             "_start:\n"
                             "call main\n"
-                            "mov $1, %eax\n"
+                            "movl $1, %eax\n"
                             "int $0x80\n";
 
         util_strcat(&as->root, begin);
