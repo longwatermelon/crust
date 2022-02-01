@@ -32,7 +32,8 @@ struct Node
         NODE_INCLUDE,
         NODE_BINOP,
         NODE_IDOF,
-        NODE_INLINE_ASM
+        NODE_INLINE_ASM,
+        NODE_IF
     } type;
 
     // Compound
@@ -112,6 +113,10 @@ struct Node
     // Inline asm
     struct Node **asm_args;
     size_t asm_nargs;
+
+    // If
+    struct Node *if_cond;
+    struct Node *if_body;
 
     // Error values
     size_t error_line;

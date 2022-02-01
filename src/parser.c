@@ -179,6 +179,8 @@ struct Node *parser_parse_id(struct Parser *parser)
         return parser_parse_idof(parser);
     else if (strcmp(parser->curr_tok->value, "asm") == 0)
         return parser_parse_inline_asm(parser);
+    else if (strcmp(parser->curr_tok->value, "if") == 0)
+        return parser_parse_if_statement(parser);
     else
         return parser_parse_variable(parser);
 }
@@ -637,6 +639,21 @@ struct Node *parser_parse_inline_asm(struct Parser *parser)
         if (parser->curr_tok->type != TOKEN_SEMI)
             parser_eat(parser, TOKEN_COMMA);
     }
+
+    return node;
+}
+
+
+struct Node *parser_parse_if_statement(struct Parser *parser)
+{
+    struct Node *node = node_alloc(NODE_IF);
+    parser_eat(parser, TOKEN_ID);
+
+    node->if_cond = parser_parse_expr(parser);
+
+    parser_eat(parser, TOKEN_LBRACE);
+    node->if_body = parser_parse(parser);
+    parser_eat(parser, TOKEN_RBRACE);
 
     return node;
 }

@@ -43,6 +43,8 @@ struct Asm *asm_alloc(struct Args *args, bool main)
 
     as->args = args;
 
+    as->func_label = 1;
+
     return as;
 }
 
@@ -119,6 +121,10 @@ void asm_gen_expr(struct Asm *as, struct Node *node)
         asm_gen_inline_asm(as, node);
         break;
 
+    case NODE_IF:
+        asm_gen_if_statement(as, node);
+        break;
+
     default: break;
     }
 }
@@ -145,8 +151,10 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
     as->scope->curr_layer->params = node->function_def_params;
     as->scope->curr_layer->nparams = node->function_def_params_size;
 
-    for (size_t i = 0; i < node->function_def_body->compound_size; ++i)
-        asm_gen_expr(as, node->function_def_body->compound_nodes[i]);
+    size_t prev_label = as->func_label;
+    as->func_label = 1;
+
+    asm_gen_expr(as, node->function_def_body);
 
     if (node->function_def_return_type.type == NODE_NOOP)
         util_strcat(&as->root, "movl $0, %ebx\nleave\nret\n");
@@ -157,6 +165,7 @@ void asm_gen_function_def(struct Asm *as, struct Node *node)
         errors_warn_unused_variable(as->scope, node);
 
     scope_pop_layer(as->scope);
+    as->func_label = prev_label;
 
     if (as->args->warnings[WARNING_DEAD_CODE])
         errors_warn_dead_code(node);
@@ -431,6 +440,30 @@ void asm_gen_inline_asm(struct Asm *as, struct Node *node)
     free(s);
 
     util_strcat(&as->root, "\n");
+}
+
+
+void asm_gen_if_statement(struct Asm *as, struct Node *node)
+{
+    asm_gen_expr(as, node->if_cond);
+    char *s = asm_str_from_node(as, node->if_cond);
+
+    const char *label_template = ".L%zu";
+    char *label = calloc(strlen(label_template) + MAX_INT_LEN + 1, sizeof(char));
+    sprintf(label, label_template, as->func_label);
+    ++as->func_label;
+
+    const char *tmp = "cmpl $0, %s\n"
+                      "je %s\n";
+    char *str = calloc(strlen(tmp) + strlen(s) + strlen(label) + 1, sizeof(char));
+    sprintf(str, tmp, s, label);
+    util_strcat(&as->root, str);
+    free(str);
+
+    asm_gen_expr(as, node->if_body);
+
+    util_strcat(&as->root, label);
+    util_strcat(&as->root, ":");
 }
 
 

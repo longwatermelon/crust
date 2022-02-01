@@ -1,0 +1,15 @@
+include "stdio";
+
+fn main() -> int {
+    let a: int = 0;
+    let b: int = 1;
+    if b {
+        if a {
+            print("kekw\n");
+        };
+
+        print("test\n");
+    };
+
+    return 0;
+};

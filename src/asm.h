@@ -13,6 +13,8 @@ struct Asm
     struct Scope *scope;
 
     struct Args *args;
+
+    size_t func_label;
 };
 
 struct Asm *asm_alloc(struct Args *args, bool main);
@@ -39,6 +41,8 @@ void asm_gen_assignment(struct Asm *as, struct Node *node);
 void asm_gen_binop(struct Asm *as, struct Node *node);
 
 void asm_gen_inline_asm(struct Asm *as, struct Node *node);
+
+void asm_gen_if_statement(struct Asm *as, struct Node *node);
 
 // Get assembly representation of a node (x(%ebp), $.LCx, $x, %ebx, etc.)
 char *asm_str_from_node(struct Asm *as, struct Node *node);

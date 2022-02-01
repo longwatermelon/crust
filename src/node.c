@@ -73,6 +73,9 @@ struct Node *node_alloc(int type)
     node->asm_args = 0;
     node->asm_nargs = 0;
 
+    node->if_cond = 0;
+    node->if_body = 0;
+
     node->error_line = 0;
 
     return node;
@@ -97,6 +100,8 @@ void node_free(struct Node *node)
     if (node->op_r) node_free(node->op_r);
     if (node->idof_original_expr) node_free(node->idof_original_expr);
     if (node->idof_new_expr) node_free(node->idof_new_expr);
+    if (node->if_cond) node_free(node->if_cond);
+    if (node->if_body) node_free(node->if_body);
 
     free(node);
 }
@@ -300,6 +305,7 @@ char *node_str_from_node_type(int type)
     case NODE_BINOP: return "binop";
     case NODE_IDOF: return "idof";
     case NODE_INLINE_ASM: return "asm";
+    case NODE_IF: return "if statement";
     }
 
     return 0;
@@ -400,6 +406,11 @@ bool node_find_node(struct Node *node, struct Node *target)
         break;
     case NODE_VARIABLE_DEF:
         if (node_find_node(node->variable_def_value, target))
+            return true;
+
+        break;
+    case NODE_IF:
+        if (node_find_node(node->if_cond, target) || node_find_node(node->if_body, target))
             return true;
 
         break;
@@ -561,6 +572,12 @@ struct Node *node_copy(struct Node *src)
 
         for (size_t i = 0; i < src->asm_nargs; ++i)
             ret->asm_args[i] = src->asm_args[i];
+
+        return ret;
+
+    case NODE_IF:
+        ret->if_cond = node_copy(src->if_cond);
+        ret->if_body = node_copy(src->if_body);
 
         return ret;
     }
