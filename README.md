@@ -19,8 +19,8 @@ make stdlib
 # Todo
 * Rewrite builtin function pront to print variable length strings
 * More standard library functions
-* Implement returning struct from function
-* Implement struct copying
-* Loops, if statements, etc.
-* List data type
+* Loops
+* Real integer type that can hold a reasonable range of numbers
+* Else if / else
+* Comparison operators
 
