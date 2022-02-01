@@ -49,6 +49,8 @@ char *asm_str_from_node(struct Asm *as, struct Node *node);
 char *asm_str_from_int(struct Asm *as, struct Node *node);
 char *asm_str_from_str(struct Asm *as, struct Node *node);
 char *asm_str_from_var(struct Asm *as, struct Node *node);
+char *asm_str_from_var_var(struct Asm *as, struct Node *node);
+char *asm_str_from_var_def(struct Asm *as, struct Node *node);
 char *asm_str_from_function_call(struct Asm *as, struct Node *node);
 char *asm_str_from_binop(struct Asm *as, struct Node *node);
 char *asm_str_from_init_list(struct Asm *as, struct Node *node);
