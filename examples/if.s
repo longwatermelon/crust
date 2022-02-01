@@ -1,6 +1,7 @@
 .section .data
 .LC0: .asciz "kekw\n"
 .LC1: .asciz "test\n"
+.section .text
 .globl _start
 _start:
 call main

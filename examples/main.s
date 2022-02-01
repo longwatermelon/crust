@@ -1,23 +1,17 @@
 .section .data
 .LC0: .asciz "    \n"
-.LC1: .int 1
-.LC2: .asciz "string"
-.LC5: .int 0
-.LC4: .asciz "bbbbb"
-.LC3: .asciz "aaaaa"
-.LC6: .asciz "   \n"
-.LC7: .asciz "aaaaa"
+.LC1: .asciz "string"
+.LC3: .asciz "bbbbb"
+.LC2: .asciz "aaaaa"
+.LC4: .asciz "   \n"
+.LC5: .asciz "aaaaa"
+.LC6: .asciz "bbbbb"
+.LC7: .asciz "ddddd"
 .LC8: .asciz "bbbbb"
-.LC9: .int 9
-.LC10: .asciz "ddddd"
-.LC12: .int 0
-.LC11: .asciz "bbbbb"
-.LC14: .int 0
-.LC13: .asciz "bbbbb"
-.LC15: .asciz "    \n"
-.LC16: .int 0
-.LC17: .asciz " k  \n"
-.LC18: .int 0
+.LC9: .asciz "bbbbb"
+.LC10: .asciz "    \n"
+.LC11: .asciz " k  \n"
+.section .text
 .globl _start
 _start:
 call main
@@ -63,69 +57,65 @@ ret
 main:
 pushl %ebp
 movl %esp, %ebp
-# Avoid too many memory references
-movl 1, %eax
 # Add value to stack
 subl $4, %esp
-movl %eax, -4(%ebp)
+movl $1, -4(%ebp)
 # Add value to stack
 subl $4, %esp
-movl $.LC2, -8(%ebp)
+movl $.LC1, -8(%ebp)
 # Push function call args
-pushl 0
-pushl $.LC4
+pushl $0
 pushl $.LC3
+pushl $.LC2
 # Function call
 call func
 subl $4, %esp
 movl %ebx, -12(%ebp)
 # Push function call args
-pushl $.LC6
+pushl $.LC4
 # Function call
 call print
 subl $4, %esp
 movl %ebx, -16(%ebp)
 # Add value to stack
 subl $4, %esp
-movl $.LC7, -20(%ebp)
+movl $.LC5, -20(%ebp)
 # Add value to stack
 subl $4, %esp
-movl $.LC8, -24(%ebp)
-# Avoid too many memory references
-movl 9, %eax
+movl $.LC6, -24(%ebp)
 # Add value to stack
 subl $4, %esp
-movl %eax, -28(%ebp)
+movl $9, -28(%ebp)
 # Add value to stack
 subl $4, %esp
-movl $.LC10, -32(%ebp)
+movl $.LC7, -32(%ebp)
 # Push function call args
-pushl 0
-pushl $.LC11
-pushl $.LC7
+pushl $0
+pushl $.LC8
+pushl $.LC5
 # Function call
 call func
 subl $4, %esp
 movl %ebx, -36(%ebp)
 # Push function call args
-pushl 0
-pushl $.LC13
-pushl $.LC8
+pushl $0
+pushl $.LC9
+pushl $.LC6
 # Function call
 call func
 subl $4, %esp
 movl %ebx, -40(%ebp)
 # Add value to stack
 subl $4, %esp
-movl $.LC8, -44(%ebp)
+movl $.LC6, -44(%ebp)
 # Push function call args
-pushl $.LC8
+pushl $.LC6
 # Function call
 call print
 subl $4, %esp
 movl %ebx, -48(%ebp)
 # Push function call args
-pushl $.LC15
+pushl $.LC10
 # Function call
 call print
 subl $4, %esp
@@ -134,9 +124,9 @@ movl %ebx, -52(%ebp)
 movl -32(%ebp), %ecx
 movl %ecx, -24(%ebp)
 # Push function call args
-pushl 0
-pushl $.LC10
+pushl $0
 pushl $.LC7
+pushl $.LC5
 # Function call
 call func
 subl $4, %esp
@@ -146,19 +136,19 @@ movl -56(%ebp), %ecx
 # Assignment
 movl %ecx, -44(%ebp)
 # Push function call args
-pushl $.LC10
+pushl $.LC7
 # Function call
 call print
 subl $4, %esp
 movl %ebx, -60(%ebp)
 # Push function call args
-pushl $.LC17
+pushl $.LC11
 # Function call
 call print
 subl $4, %esp
 movl %ebx, -64(%ebp)
 # Return
-movl 0, %ebx
+movl $0, %ebx
 leave
 ret
 
