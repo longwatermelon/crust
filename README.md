@@ -22,5 +22,5 @@ make stdlib
 * Loops
 * Real integer type that can hold a reasonable range of numbers
 * Else if / else
-* Comparison operators
+* Parentheses for binops
 
