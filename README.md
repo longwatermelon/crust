@@ -23,4 +23,5 @@ make stdlib
 * Real integer type that can hold a reasonable range of numbers
 * Else if / else
 * Parentheses for binops
+* Fix binop parsing; functions are not parsed properly
 
