@@ -81,7 +81,7 @@ struct Node *crust_gen_ast(struct Args *args, char *file)
     struct Token **tokens = crust_tokenize(file, &ntokens);
 
     struct Parser *parser = parser_alloc(tokens, ntokens, args);
-    struct Node *root = parser_parse(parser);
+    struct Node *root = parser_parse_compound(parser);
 
     parser_free(parser);
 

@@ -82,19 +82,12 @@ struct Token *parser_next_expr(struct Parser *parser)
 }
 
 
-struct Node *parser_parse(struct Parser *parser)
+struct Node *parser_parse_compound(struct Parser *parser)
 {
     struct Node *root = node_alloc(NODE_COMPOUND);
-    root->compound_nodes = malloc(sizeof(struct Node*));
-    root->compound_nodes[0] = parser_parse_expr(parser);
-
-    if (root->compound_nodes[0])
-        ++root->compound_size;
 
     while (parser->curr_idx < parser->ntokens)
     {
-        parser_eat(parser, TOKEN_SEMI);
-
         struct Node *expr = parser_parse_expr(parser);
 
         if (!expr)
@@ -103,6 +96,8 @@ struct Node *parser_parse(struct Parser *parser)
         root->compound_nodes = realloc(root->compound_nodes,
                                    sizeof(struct Node*) * ++root->compound_size);
         root->compound_nodes[root->compound_size - 1] = expr;
+
+        parser_eat(parser, TOKEN_SEMI);
     }
 
     return root;
@@ -217,7 +212,7 @@ struct Node *parser_parse_function_def(struct Parser *parser)
         parser_eat(parser, TOKEN_LBRACE);
 
         if (parser->curr_tok->type != TOKEN_RBRACE)
-            node->function_def_body = parser_parse(parser);
+            node->function_def_body = parser_parse_compound(parser);
         else
         {
             node->function_def_body = node_alloc(NODE_COMPOUND);
@@ -528,7 +523,7 @@ struct Node *parser_parse_include(struct Parser *parser)
     size_t ntokens;
     struct Token **tokens = crust_tokenize(node->include_path, &ntokens);
     struct Parser *p = parser_alloc(tokens, ntokens, parser->args);
-    node->include_root = parser_parse(p);
+    node->include_root = parser_parse_compound(p);
     scope_combine(parser->scope, p->scope);
 
     if (!node->include_scope)
@@ -652,7 +647,7 @@ struct Node *parser_parse_if_statement(struct Parser *parser)
     node->if_cond = parser_parse_expr(parser);
 
     parser_eat(parser, TOKEN_LBRACE);
-    node->if_body = parser_parse(parser);
+    node->if_body = parser_parse_compound(parser);
     parser_eat(parser, TOKEN_RBRACE);
 
     return node;
