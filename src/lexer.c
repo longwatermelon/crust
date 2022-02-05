@@ -114,7 +114,7 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             {
                 lexer_advance(lexer);
                 struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy("=="), lexer->line_num);
-                t->binop_type = TOKEN_OP_CMP;
+                t->binop_type = OP_CMP;
                 return t;
             }
         } break;
@@ -129,8 +129,8 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
 
             switch (lexer->current_c)
             {
-            case '+': t->binop_type = TOKEN_OP_PLUS; break;
-            case '*': t->binop_type = TOKEN_OP_MUL; break;
+            case '+': t->binop_type = OP_PLUS; break;
+            case '*': t->binop_type = OP_MUL; break;
             }
 
             lexer_advance(lexer);
@@ -146,7 +146,7 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             else
             {
                 struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy("+"), lexer->line_num);
-                t->binop_type = TOKEN_OP_MINUS;
+                t->binop_type = OP_MINUS;
                 return t;
             }
 
@@ -163,7 +163,7 @@ struct Token *lexer_get_next_token(struct Lexer *lexer)
             else
             {
                 struct Token *t = token_alloc(TOKEN_BINOP, util_strcpy("/"), lexer->line_num);
-                t->binop_type = TOKEN_OP_DIV;
+                t->binop_type = OP_DIV;
                 return t;
             }
 

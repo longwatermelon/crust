@@ -29,11 +29,11 @@ struct Token
 
     enum
     {
-        TOKEN_OP_PLUS,
-        TOKEN_OP_MINUS,
-        TOKEN_OP_MUL,
-        TOKEN_OP_DIV,
-        TOKEN_OP_CMP
+        OP_PLUS,
+        OP_MINUS,
+        OP_MUL,
+        OP_DIV,
+        OP_CMP
     } binop_type;
 };
 
