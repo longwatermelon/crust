@@ -401,8 +401,7 @@ struct Node *parser_parse_assignment(struct Parser *parser)
     struct Node *node = node_alloc(NODE_ASSIGNMENT);
     node->error_line = parser->curr_tok->line_num;
 
-    node->assignment_dst = parser_parse_variable(parser);
-
+    node->assignment_dst = parser->prev_node;
     parser_eat(parser, TOKEN_EQUALS);
 
     node->assignment_src = parser_parse_expr(parser, false);
