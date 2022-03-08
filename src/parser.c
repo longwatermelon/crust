@@ -24,7 +24,7 @@ struct Parser *parser_alloc(struct Token **tokens, size_t ntokens, struct Args *
 
     parser->args = args;
 
-    parser->ignore_ops = false;
+    parser->prev_node = 0;
 
     return parser;
 }
@@ -57,38 +57,13 @@ void parser_advance(struct Parser *parser, int i)
 }
 
 
-struct Token *parser_next_expr(struct Parser *parser)
-{
-    if (parser->curr_tok->type == TOKEN_ID)
-    {
-        if (strcmp(parser->curr_tok->value, "idof") == 0)
-            return parser->tokens[parser->curr_idx + 2];
-
-        if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_LPAREN)
-            return parser->tokens[parser->curr_idx + 3];
-
-        if (parser->tokens[parser->curr_idx + 1]->type == TOKEN_PERIOD)
-        {
-            int idx = parser->curr_idx + 1;
-
-            while (parser->tokens[idx]->type == TOKEN_PERIOD)
-                idx += 2;
-
-            return parser->tokens[idx];
-        }
-    }
-
-    return parser->tokens[parser->curr_idx + 1];
-}
-
-
 struct Node *parser_parse_compound(struct Parser *parser)
 {
     struct Node *root = node_alloc(NODE_COMPOUND);
 
     while (parser->curr_idx < parser->ntokens)
     {
-        struct Node *expr = parser_parse_expr(parser);
+        struct Node *expr = parser_parse_expr(parser, false);
 
         if (!expr)
             break;
@@ -104,34 +79,31 @@ struct Node *parser_parse_compound(struct Parser *parser)
 }
 
 
-struct Node *parser_parse_expr(struct Parser *parser)
+struct Node *parser_parse_expr(struct Parser *parser, bool ignore_ops)
 {
-    if (!parser->ignore_ops && parser->curr_idx + 1 < parser->ntokens)
-    {
-        if (parser_next_expr(parser)->type == TOKEN_BINOP)
-        {
-            parser->ignore_ops = true;
-            struct Node *node = parser_parse_binop(parser);
-            parser->ignore_ops = false;
-            return node;
-        }
-
-        if (parser_next_expr(parser)->type == TOKEN_EQUALS)
-        {
-            parser->ignore_ops = true;
-            struct Node *node = parser_parse_assignment(parser);
-            parser->ignore_ops = false;
-            return node;
-        }
-    }
+    struct Node *node;
 
     switch (parser->curr_tok->type)
     {
-    case TOKEN_INT: return parser_parse_int(parser);
-    case TOKEN_STRING: return parser_parse_str(parser);
-    case TOKEN_ID: return parser_parse_id(parser);
-    default: return 0;
+    case TOKEN_INT: node = parser_parse_int(parser); break;
+    case TOKEN_STRING: node = parser_parse_str(parser); break;
+    case TOKEN_ID: node = parser_parse_id(parser); break;
+    case TOKEN_BINOP: node = parser_parse_binop(parser); break;
+    default: node = 0; break;
     }
+
+    parser->prev_node = node;
+
+    if (node && !ignore_ops)
+    {
+        if (parser->curr_tok->type == TOKEN_BINOP)
+            return parser_parse_binop(parser);
+
+        if (parser->curr_tok->type == TOKEN_EQUALS)
+            return parser_parse_assignment(parser);
+    }
+
+    return node;
 }
 
 
@@ -277,7 +249,7 @@ struct Node *parser_parse_return(struct Parser *parser)
     node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID);
 
-    node->return_value = parser_parse_expr(parser);
+    node->return_value = parser_parse_expr(parser, false);
     return node;
 }
 
@@ -297,7 +269,7 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
     parser_eat(parser, TOKEN_EQUALS);
 
     node->variable_def_name = name;
-    node->variable_def_value = parser_parse_expr(parser);
+    node->variable_def_value = parser_parse_expr(parser, false);
 
     node->variable_def_stack_offset = -parser->stack_size;
     parser->stack_size += node_sizeof_dtype(node_strip_to_literal(node->variable_def_value, parser->scope));
@@ -393,7 +365,7 @@ struct Node *parser_parse_function_call(struct Parser *parser)
 
     while (parser->curr_tok->type != TOKEN_RPAREN)
     {
-        struct Node *expr = parser_parse_expr(parser);
+        struct Node *expr = parser_parse_expr(parser, false);
 
         node->function_call_args = realloc(node->function_call_args,
             sizeof(struct Node*) * ++node->function_call_args_size);
@@ -433,7 +405,7 @@ struct Node *parser_parse_assignment(struct Parser *parser)
 
     parser_eat(parser, TOKEN_EQUALS);
 
-    node->assignment_src = parser_parse_expr(parser);
+    node->assignment_src = parser_parse_expr(parser, false);
 
     return node;
 }
@@ -487,7 +459,7 @@ struct Node *parser_parse_init_list(struct Parser *parser)
 
     while (parser->curr_tok->type != TOKEN_RBRACE)
     {
-        struct Node *expr = parser_parse_expr(parser);
+        struct Node *expr = parser_parse_expr(parser, false);
 
         node->init_list_values = realloc(node->init_list_values,
                         sizeof(struct Node*) * ++node->init_list_len);
@@ -551,28 +523,17 @@ struct Node *parser_parse_binop(struct Parser *parser)
     node->op_stack_offset = -parser->stack_size;
     parser->stack_size += 8;
 
-    struct Node *left = parser_parse_expr(parser);
-
     node->op_type = parser->curr_tok->binop_type;
     parser_advance(parser, 1);
 
-    node->op_l = left;
-    node->op_r = parser_parse_expr(parser);
+    node->op_l = parser->prev_node;
+    node->op_r = parser_parse_expr(parser, true);
 
     if (parser->curr_tok->type == TOKEN_BINOP)
     {
-        parser_advance(parser, -1);
-
+        parser->prev_node = node;
         struct Node *root = parser_parse_binop(parser);
 
-        // Get bottom left node of root to attach node to
-        struct Node **bot_l = &root->op_l;
-
-        while ((*bot_l)->type == NODE_BINOP)
-            bot_l = &(*bot_l)->op_l;
-
-        node_free(*bot_l);
-        *bot_l = node;
         return root;
     }
     else
@@ -588,7 +549,7 @@ struct Node *parser_parse_idof(struct Parser *parser)
     node->error_line = parser->curr_tok->line_num;
     parser_eat(parser, TOKEN_ID);
 
-    struct Node *expr = parser_parse_expr(parser);
+    struct Node *expr = parser_parse_expr(parser, false);
     node->idof_original_expr = expr;
 
     struct Node *literal = node_strip_to_literal(expr, parser->scope);
@@ -629,7 +590,7 @@ struct Node *parser_parse_inline_asm(struct Parser *parser)
     {
         node->asm_args = realloc(node->asm_args,
             sizeof(struct Node*) * ++node->asm_nargs);
-        node->asm_args[node->asm_nargs - 1] = parser_parse_expr(parser);
+        node->asm_args[node->asm_nargs - 1] = parser_parse_expr(parser, false);
 
         if (parser->curr_tok->type != TOKEN_SEMI)
             parser_eat(parser, TOKEN_COMMA);
@@ -644,7 +605,7 @@ struct Node *parser_parse_if_statement(struct Parser *parser)
     struct Node *node = node_alloc(NODE_IF);
     parser_eat(parser, TOKEN_ID);
 
-    node->if_cond = parser_parse_expr(parser);
+    node->if_cond = parser_parse_expr(parser, false);
 
     parser_eat(parser, TOKEN_LBRACE);
     node->if_body = parser_parse_compound(parser);

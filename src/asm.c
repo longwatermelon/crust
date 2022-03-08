@@ -402,7 +402,7 @@ void asm_gen_binop(struct Asm *as, struct Node *node)
     case OP_PLUS:
         util_strcat(&as->root, "addl %eax, %ecx\n"); break;
     case OP_MINUS:
-        util_strcat(&as->root, "subl %ecx, %eax\n"); break;
+        util_strcat(&as->root, "subl %ecx, %eax\nmovl %eax, %ecx\n"); break;
     case OP_MUL:
         util_strcat(&as->root, "imull %eax, %ecx\n"); break;
     case OP_DIV:
