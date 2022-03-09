@@ -293,12 +293,12 @@ struct Node *parser_parse_variable(struct Parser *parser)
 
     parser_eat(parser, TOKEN_ID);
 
+    struct Node *node = node_alloc(NODE_VARIABLE);
+    node->error_line = parser->curr_tok->line_num;
+    node->variable_name = util_strcpy(variable_name);
+
     if (parser->curr_tok->type == TOKEN_PERIOD)
     {
-        struct Node *node = node_alloc(NODE_VARIABLE);
-        node->error_line = parser->curr_tok->line_num;
-        node->variable_name = util_strcpy(variable_name);
-
         struct Node *def = scope_find_variable(parser->scope, node, node->error_line);
         node->variable_type = node_dtype_copy(node_type_from_node(def, parser->scope));
 
@@ -323,10 +323,6 @@ struct Node *parser_parse_variable(struct Parser *parser)
     if (parser->curr_tok->type == TOKEN_LPAREN)
         return parser_parse_function_call(parser);
 
-    // TODO Decrease amount of repeated code
-    struct Node *node = node_alloc(NODE_VARIABLE);
-    node->error_line = parser->curr_tok->line_num;
-    node->variable_name = util_strcpy(variable_name);
     node->variable_type = node_dtype_copy(node_type_from_node(scope_find_variable(parser->scope, node, node->error_line), parser->scope));
     node->variable_stack_offset = scope_find_variable(parser->scope, node, node->error_line)->variable_def_stack_offset;
 
