@@ -266,6 +266,8 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
     parser_eat(parser, TOKEN_COLON);
     node->variable_def_type = parser_parse_dtype(parser);
 
+    scope_find_struct(parser->scope, node->variable_def_type.struct_type, node->error_line);
+
     parser_eat(parser, TOKEN_EQUALS);
 
     node->variable_def_name = name;
@@ -350,8 +352,6 @@ struct Node *parser_parse_variable_struct_member(struct Parser *parser, struct N
 
     if (parser->curr_tok->type == TOKEN_PERIOD)
     {
-        // TODO Error if node->variable_type is not a struct_name
-        // FIX stack_offset - 4 is incorrect
         node->variable_struct_member = parser_parse_variable_struct_member(parser,
                 scope_find_struct(parser->scope, node->variable_type.struct_type, -1),
                 node->variable_stack_offset);

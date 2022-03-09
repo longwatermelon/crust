@@ -51,8 +51,8 @@ void crust_compile_file(struct Args *args, char *file)
 
     struct Node *root = crust_gen_ast(args, file);
 
-    // TODO Figure out a better way to find main function
     bool main = false;
+
     for (size_t i = 0; i < root->compound_size; ++i)
     {
         if (root->compound_nodes[i]->type == NODE_FUNCTION_DEF &&
