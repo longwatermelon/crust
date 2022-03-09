@@ -266,7 +266,8 @@ struct Node *parser_parse_variable_def(struct Parser *parser)
     parser_eat(parser, TOKEN_COLON);
     node->variable_def_type = parser_parse_dtype(parser);
 
-    scope_find_struct(parser->scope, node->variable_def_type.struct_type, node->error_line);
+    if (node->variable_def_type.struct_type)
+        scope_find_struct(parser->scope, node->variable_def_type.struct_type, node->error_line);
 
     parser_eat(parser, TOKEN_EQUALS);
 
