@@ -44,7 +44,6 @@ void scope_pop_layer(struct Scope *scope);
 void scope_push_layer(struct Scope *scope);
 
 // Copies all defs from s2 to s1
-// TODO Copy all layers
 void scope_combine(struct Scope *s1, struct Scope *s2);
 
 #endif

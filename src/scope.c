@@ -241,4 +241,3 @@ void scope_combine(struct Scope *s1, struct Scope *s2)
 
     s1->struct_defs_size += s2->struct_defs_size;
 }
-
