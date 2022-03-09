@@ -64,6 +64,14 @@ void errors_parser_nonexistent_include(struct Node *node)
 }
 
 
+void errors_parser_invalid_member_access(struct Scope *scope, struct Node *node, char *member)
+{
+    fprintf(stderr, ERROR "Type '%s' has no property '%s'.\n", node_str_from_type(node->variable_type), member);
+    errors_print_lines(node->error_line);
+    exit(EXIT_FAILURE);
+}
+
+
 void errors_asm_check_function_call(struct Scope *scope, struct Node *def, struct Node *call)
 {
     if (def->function_def_params_size != call->function_call_args_size)

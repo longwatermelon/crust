@@ -1,0 +1,13 @@
+
+struct A {
+    a: int,
+    b: str
+};
+
+fn main() -> int {
+    let a: A = A{ 1, "test\n" };
+    let b: int = 1;
+    pront(a.b);
+    pront(b.b);
+    return 0;
+};

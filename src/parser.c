@@ -298,10 +298,16 @@ struct Node *parser_parse_variable(struct Parser *parser)
 
         struct Node *def = scope_find_variable(parser->scope, node, node->error_line);
         node->variable_type = node_dtype_copy(node_type_from_node(def, parser->scope));
+
+        if (node->variable_type.type != NODE_STRUCT)
+        {
+            parser_eat(parser, TOKEN_PERIOD);
+            errors_parser_invalid_member_access(parser->scope, node, parser->curr_tok->value);
+        }
+
         node->variable_stack_offset = node_stack_offset(def);
         node->variable_is_param = def->variable_is_param;
 
-        // TODO Error if node->variable_type is not a struct
         struct Node *member = parser_parse_variable_struct_member(parser, scope_find_struct(
             parser->scope, node->variable_type.struct_type, -1
         ), node->variable_stack_offset);
