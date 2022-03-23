@@ -47,10 +47,10 @@ fn main() -> int {
 
 To compile this program, run `./crust file`, file being the file that contains the code to be compiled. The executable will be named `a.out` by default.
 
-Running `./a.out` will print `Hello`, because I still need to write the standard library, and without a string length function, I can't print variable length strings. Therefore, I decided all strings should be exactly 5 characters long. If the string length is less than 5, it is classified as UB, and if it is greater than 5, all extra characters will be cut off.
+Running `./a.out` will print `Hello`, because I hard coded the string length printed in my standard library. < 5 characters is UB, > 5 characters will be cut off.
 
 ## Comments
-Only felt like implementing full line comments, aka `//` in C.
+Only felt like implementing full line comments (`//` in C)
 ```
 fn main() -> int {
   // this is a comment.
@@ -70,14 +70,13 @@ fn main() -> int {
 ```
 
 ## Arithmetic
-The four basic math operators (+ - * /) are implemented. Order of operations is not, and parentheses are not implemented either. Order of operations was braindead and completely arbitrary anyways.
+The four basic math operators (+ - * /) are implemented. Order of operations is not, and parentheses are not implemented either.
 ```
 include "stdio";
 
 fn main() -> int {
-  let a: int = 1 + 1;
-  let b: int = a + 1;
-  print(b);
+  let a: int = 1 - 2;
+  print(a);
   return 0;
 };
 ```
@@ -85,22 +84,12 @@ fn main() -> int {
 Compiling and running this program prints nothing, because I need to write a standard library (I'm not going to) that is capable of converting integers to strings. Instead, the only way to enjoy crust's arithmetic experience is to print out the return value of the program. Modify the program:
 ```
 fn main() -> int {
-  let a: int = 1 + 1;
-  let b: int = a + 1;
-  return b;
+  let a: int = 1 - 2;
+  return a;
 };
 ```
 
-`echo $?` should print out `3` after compiling this program.
-
-Now guess the return value of this program. -1, right?
-```
-fn main() -> int {
-  return 1 - 1 - 1;
-};
-```
-
-Get jebaited nerd, integers are crippled and basically useless in crust, because I haven't figured out how to store integers of a reasonable size in assembly. The return value of this program is 255. Contributions are welcome.
+`echo $?` should print out `255` after compiling this program. "Integers" are crippled and almost useless in crust, they can only hold numbers from 0-255. Contributions are welcome.
 
 ## User defined functions
 ```
@@ -116,7 +105,7 @@ fn main() -> int {
 };
 ```
 
-Compiling this program will give an error, because underscores are not a recognized character by the lexer. It would be an easy fix, but I think it's funnier when people are forced to use garbage naming conventions such as camelCase.
+Compiling this program will give an error, because underscores are not a recognized character by the lexer. It would be an easy fix, but it's funny when people are forced to use garbage naming conventions like camel case.
 
 ![image](https://user-images.githubusercontent.com/73869536/158003281-a61cc309-678a-42b5-addc-05a2441c3400.png)
 
