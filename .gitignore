@@ -2,3 +2,5 @@
 crust
 a.out
 a.s
+.cache
+compile_commands.json
